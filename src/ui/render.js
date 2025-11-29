@@ -11,10 +11,12 @@ import {
 } from '../engine/state.js';
 
 
-const $ = (id) => {
+const $ = (selector) => {
+  if (!selector) return null;
+  const id = selector[0] === '#' ? selector.slice(1) : selector;
   const el = document.getElementById(id);
   if (!el) {
-    console.warn('[render] Missing element with id:', id);
+    console.warn('[render] Missing element with id:', selector);
   }
   return el;
 };
