@@ -5,9 +5,9 @@ import {
   STAGE_DREAMER,
   getActivePlayer,
   updateActivePlayer
-} from './state.js';
+} from '../state.js';
 
-import { rollD6 } from './dice.js';
+import { rollD6 } from '../dice.js';
 
 /**
  * Home stage reducer.
