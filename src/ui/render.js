@@ -10,7 +10,15 @@ import {
   JOBS
 } from '../engine/state.js';
 
-const $ = (id) => document.getElementById(id);
+
+const $ = (id) => {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn('[render] Missing element with id:', id);
+  }
+  return el;
+};
+
 
 /**
  * Render the current gameState into the DOM.
