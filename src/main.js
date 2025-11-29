@@ -170,3 +170,15 @@ render(gameState);
 // Optional: one "auto" step so it feels alive.
 // e.g. automatically START_TURN at load:
 dispatch({ type: ActionTypes.START_TURN });
+
+// --- Debug panel toggle ---
+const toggleBtn = document.getElementById('toggleDebug');
+const debugLogEl = document.getElementById('debugLog');
+
+if (toggleBtn && debugLogEl) {
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = debugLogEl.style.display === 'none';
+    debugLogEl.style.display = isHidden ? 'block' : 'none';
+  });
+}
+
