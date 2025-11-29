@@ -15,6 +15,7 @@ import { rollD6 } from './dice.js';
 import { homeReducer } from './stages/home_stage.js';
 import { dreamerReducer } from './stages/dreamer_stage.js';
 import { amateurReducer } from './stages/amateur_stage.js';
+import { proReducer } from './stages/pro_stage.js';
 
 /**
  * Main reducer. Takes the current gameState and an action,
@@ -56,7 +57,13 @@ export function applyAction(gameState, action) {
     case ActionTypes.ATTEMPT_ADVANCE_PRO:
       return amateurReducer(gameState, action);
 
-    // TODO: Pro & Culture next.
+    // Pro
+    case ActionTypes.WORK_ON_MASTERWORK:
+    case ActionTypes.DRAW_PRO_CARD:
+    case ActionTypes.PRO_MAINTENANCE_CHECK:
+      return proReducer(gameState, action);
+
+    // Culture, etc. will go here later.
 
     default:
       return gameState;
@@ -101,7 +108,8 @@ function startTurn(gameState) {
                 updated.food = (updated.food || 0) + delta;
                 break;
               case 'inspiration':
-                updated.inspiration = (updated.inspiration || 0) + delta;
+                updated.inspiration =
+                  (updated.inspiration || 0) + delta;
                 break;
               case 'craft':
                 updated.craft = (updated.craft || 0) + delta;
