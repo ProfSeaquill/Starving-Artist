@@ -14,6 +14,7 @@ import { rollD6 } from './dice.js';
 
 import { homeReducer } from './stages/home_stage.js';
 import { dreamerReducer } from './stages/dreamer_stage.js';
+import { amateurReducer } from './stages/amateur_stage.js';
 
 /**
  * Main reducer. Takes the current gameState and an action,
@@ -35,18 +36,27 @@ export function applyAction(gameState, action) {
     case ActionTypes.ROLL_TIME:
       return rollTime(gameState);
 
-    // Home stage actions
+    // Home
     case ActionTypes.DRAW_HOME_CARD:
     case ActionTypes.ATTEMPT_LEAVE_HOME:
       return homeReducer(gameState, action);
 
-    // Dreamer stage actions
+    // Dreamer
     case ActionTypes.ATTEND_SOCIAL_EVENT:
     case ActionTypes.SKIP_SOCIAL_EVENT:
     case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
       return dreamerReducer(gameState, action);
 
-    // TODO: Amateur & Pro actions will be wired here later.
+    // Amateur
+    case ActionTypes.CHOOSE_JOB:
+    case ActionTypes.GO_TO_WORK:
+    case ActionTypes.TAKE_PROF_DEV:
+    case ActionTypes.START_MINOR_WORK:
+    case ActionTypes.COMPILE_PORTFOLIO:
+    case ActionTypes.ATTEMPT_ADVANCE_PRO:
+      return amateurReducer(gameState, action);
+
+    // TODO: Pro & Culture next.
 
     default:
       return gameState;
@@ -56,17 +66,59 @@ export function applyAction(gameState, action) {
 /**
  * START_TURN:
  * - Reset timeThisTurn for the active player.
- * - (Later) Rotate Culture cards, apply start-of-turn effects, etc.
+ * - Apply start-of-turn effects (e.g. Minor Works).
+ * - (Later) Rotate culture cards.
  */
 function startTurn(gameState) {
-  const next = updateActivePlayer(gameState, (player) => {
-    return {
-      ...player,
-      timeThisTurn: 0
-    };
+  let next = gameState;
+
+  // Apply Minor Work per-turn effects for Amateur & Pro.
+  next = updateActivePlayer(next, (player) => {
+    if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
+      // No Minor Work income at Home or Dreamer (for now).
+      return {
+        ...player,
+        timeThisTurn: 0
+      };
+    }
+
+    let updated = { ...player };
+    updated.timeThisTurn = 0;
+
+    if (Array.isArray(updated.minorWorks)) {
+      for (const mw of updated.minorWorks) {
+        if (!mw || !Array.isArray(mw.effectsPerTurn)) continue;
+        for (const eff of mw.effectsPerTurn) {
+          if (!eff || typeof eff !== 'object') continue;
+          if (eff.type === 'stat') {
+            const stat = eff.stat;
+            const delta = eff.delta || 0;
+            switch (stat) {
+              case 'money':
+                updated.money = (updated.money || 0) + delta;
+                break;
+              case 'food':
+                updated.food = (updated.food || 0) + delta;
+                break;
+              case 'inspiration':
+                updated.inspiration = (updated.inspiration || 0) + delta;
+                break;
+              case 'craft':
+                updated.craft = (updated.craft || 0) + delta;
+                break;
+              default:
+                break;
+            }
+          }
+        }
+      }
+    }
+
+    return updated;
   });
 
-  // TODO: draw or rotate Culture cards at the start of each full round.
+  // TODO later: culture rotation here.
+
   return next;
 }
 
