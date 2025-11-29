@@ -122,14 +122,16 @@
   </style>
 </head>
 <body>
-  <main class="app">
-    <header>
-      <h1>Starving Artist</h1>
-      <div>Turn: <span id="turn">0</span></div>
-      <div>Art Path: <span id="artPath"></span></div>
-    </header>
+  <!-- Header now sits above the grid -->
+  <header>
+    <h1>Starving Artist</h1>
+    <div>Turn: <span id="turn">0</span></div>
+    <div>Art Path: <span id="artPath"></span></div>
+  </header>
 
-    <section id="statsPanel">
+  <main class="app">
+    <!-- Stats panel -->
+    <section id="statsPanel" class="panel">
       <h2>Stats</h2>
       <ul>
         <li>Money: <span id="statMoney">0</span></li>
@@ -143,37 +145,89 @@
       <p>Masterwork: <span id="masterworkProgress">0 / 0</span></p>
     </section>
 
-    <section id="stagePanel">
+    <!-- Stage panel -->
+    <section id="stagePanel" class="panel">
       <h2>Stage</h2>
       <p>
-        Stage: <span id="stageName">Home</span>
+        Stage:
+        <span id="stageName" class="stage-name">Home</span>
         <span id="stageBadge" class="badge home">Home</span>
       </p>
       <p>Job: <span id="jobInfo">No job</span></p>
       <p>Culture: <span id="cultureInfo">None (not implemented yet)</span></p>
     </section>
 
-    <section id="gameOverPanel">
-      <div id="gameOverBanner" style="display:none;"></div>
+    <!-- Actions / Controls panel wired to controls.js -->
+    <section id="controlsPanel" class="panel">
+      <h2>Actions</h2>
+
+      <div class="section-title">Turn</div>
+      <div class="controls-grid">
+        <button id="startTurnBtn" type="button">Start Turn</button>
+        <button id="rollTimeBtn" type="button">Roll Time</button>
+        <button id="endTurnBtn" type="button">End Turn</button>
+      </div>
+
+      <div class="section-title">Home</div>
+      <div class="controls-grid">
+        <button id="drawHomeBtn" type="button">Draw Home Card</button>
+        <button id="attemptLeaveHomeBtn" type="button">Try to Leave Home</button>
+      </div>
+
+      <div class="section-title">Dreamer</div>
+      <div class="controls-grid">
+        <button id="attendSocialBtn" type="button">Attend Social Event</button>
+        <button id="skipSocialBtn" type="button">Skip Social Event</button>
+        <button id="attemptAdvanceDreamerBtn" type="button">Try to Advance</button>
+      </div>
+
+      <div class="section-title">Amateur</div>
+      <div class="controls-grid">
+        <select id="jobSelect">
+          <option value="">Choose a Job…</option>
+          <!-- JS will populate real jobs from JOBS -->
+        </select>
+        <button id="chooseJobBtn" type="button">Choose Job</button>
+        <button id="goToWorkBtn" type="button">Go To Work</button>
+        <button id="takeProfDevBtn" type="button">Take Prof Dev</button>
+        <button id="startMinorWorkBtn" type="button">Start Minor Work</button>
+        <button id="compilePortfolioBtn" type="button">Compile Portfolio</button>
+        <button id="attemptAdvanceProBtn" type="button">Try to Go Pro</button>
+      </div>
+
+      <div class="section-title">Pro</div>
+      <div class="controls-grid">
+        <button id="workMasterworkBtn" type="button">Work on Masterwork</button>
+        <button id="drawProCardBtn" type="button">Draw Pro Card</button>
+        <button id="proMaintenanceBtn" type="button">Maintenance Check</button>
+      </div>
     </section>
 
-    <section id="minorWorksPanel">
+    <!-- Game over panel -->
+    <section id="gameOverPanel" class="panel">
+      <div id="gameOverBanner" class="game-over" style="display:none;"></div>
+    </section>
+
+    <!-- Minor works panel -->
+    <section id="minorWorksPanel" class="panel">
       <h2>Minor Works</h2>
       <pre id="minorWorksList">None yet.</pre>
     </section>
 
-    <section id="cardPanel">
+    <!-- Recent events / card panel -->
+    <section id="cardPanel" class="panel">
       <h2>Recent Events</h2>
       <pre id="cardInfo">No recent events yet.</pre>
     </section>
 
-    <section id="debugPanel">
-  <h2>
-    Debug
-    <button id="toggleDebug" type="button">Toggle Debug</button>
-  </h2>
-  <pre id="debugLog" style="display: none;">{}</pre>
-</section>
+    <!-- Debug panel -->
+    <section id="debugPanel" class="panel">
+      <h2>
+        Debug
+        <button id="toggleDebug" type="button">Toggle Debug</button>
+      </h2>
+      <pre id="debugLog" class="log" style="display: none;">{}</pre>
+    </section>
   </main>
 
   <!-- keep this at the very end -->
