@@ -7,7 +7,7 @@ import {
   isGameOver
 } from './state.js';
 
-import { homeReducer } from './stage_home.js';
+import { homeReducer } from './stages/stage_home.js';
 
 /**
  * Main reducer. Takes the current gameState and an action,
