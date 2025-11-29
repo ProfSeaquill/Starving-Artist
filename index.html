@@ -122,115 +122,58 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Starving Artist – Prototype</h1>
-  </header>
-  <main>
-    <!-- Left: Stats & stage info -->
-    <section class="panel">
-      <h2>Artist</h2>
-      <div class="stats-grid">
-        <div class="label">Turn</div>
-        <div class="value" id="turn"></div>
+  <main class="app">
+    <header>
+      <h1>Starving Artist</h1>
+      <div>Turn: <span id="turn">0</span></div>
+      <div>Art Path: <span id="artPath"></span></div>
+    </header>
 
-        <div class="label">Art Path</div>
-        <div class="value" id="artPath"></div>
-
-        <div class="label">Stage</div>
-        <div class="value">
-          <span id="stageName" class="stage-name"></span>
-          <span id="stageBadge" class="badge"></span>
-        </div>
-
-        <div class="label">Money</div>
-        <div class="value" id="statMoney"></div>
-
-        <div class="label">Food</div>
-        <div class="value" id="statFood"></div>
-
-        <div class="label">Inspiration</div>
-        <div class="value" id="statInspiration"></div>
-
-        <div class="label">Craft</div>
-        <div class="value" id="statCraft"></div>
-
-        <div class="label">Time (this turn)</div>
-        <div class="value" id="statTime"></div>
-
-        <div class="label">Minor Works</div>
-        <div class="value" id="minorWorksCount"></div>
-
-        <div class="label">Portfolio</div>
-        <div class="value" id="portfolioStatus"></div>
-
-        <div class="label">Masterwork</div>
-        <div class="value" id="masterworkProgress"></div>
-      </div>
-
-      <div class="section-title">Job</div>
-      <div id="jobInfo"></div>
-
-      <div class="section-title">Culture</div>
-      <div id="cultureInfo"></div>
-
-      <div id="gameOverBanner" class="game-over" style="display:none;"></div>
+    <section id="statsPanel">
+      <h2>Stats</h2>
+      <ul>
+        <li>Money: <span id="statMoney">0</span></li>
+        <li>Food: <span id="statFood">0</span></li>
+        <li>Inspiration: <span id="statInspiration">0</span></li>
+        <li>Craft: <span id="statCraft">0</span></li>
+        <li>Time (this turn): <span id="statTime">0</span></li>
+      </ul>
+      <p>Minor Works: <span id="minorWorksCount">0</span></p>
+      <p>Portfolio: <span id="portfolioStatus">Not yet</span></p>
+      <p>Masterwork: <span id="masterworkProgress">0 / 0</span></p>
     </section>
 
-    <!-- Right: Controls & log -->
-    <section class="panel">
-      <h2>Actions</h2>
+    <section id="stagePanel">
+      <h2>Stage</h2>
+      <p>
+        Stage: <span id="stageName">Home</span>
+        <span id="stageBadge" class="badge home">Home</span>
+      </p>
+      <p>Job: <span id="jobInfo">No job</span></p>
+      <p>Culture: <span id="cultureInfo">None (not implemented yet)</span></p>
+    </section>
 
-      <div class="section-title">Turn</div>
-      <div class="controls-grid">
-        <button id="startTurnBtn">Start Turn</button>
-        <button id="rollTimeBtn">Roll Time</button>
-        <button id="endTurnBtn">End Turn</button>
-      </div>
+    <section id="gameOverPanel">
+      <div id="gameOverBanner" style="display:none;"></div>
+    </section>
 
-      <div class="section-title">Home</div>
-      <div class="controls-grid">
-        <button id="drawHomeBtn">Draw Home Card</button>
-        <button id="attemptLeaveHomeBtn">Attempt Leave Home</button>
-      </div>
+    <section id="minorWorksPanel">
+      <h2>Minor Works</h2>
+      <pre id="minorWorksList">None yet.</pre>
+    </section>
 
-      <div class="section-title">Dreamer</div>
-      <div class="controls-grid">
-        <button id="attendSocialBtn">Attend Social Event</button>
-        <button id="skipSocialBtn">Skip Social Event</button>
-        <button id="attemptAdvanceDreamerBtn">Try to Go Amateur</button>
-      </div>
+    <section id="cardPanel">
+      <h2>Recent Events</h2>
+      <pre id="cardInfo">No recent events yet.</pre>
+    </section>
 
-      <div class="section-title">Amateur</div>
-      <div class="controls-grid">
-        <select id="jobSelect">
-          <option value="">Select Job…</option>
-        </select>
-        <button id="chooseJobBtn">Choose Job</button>
-        <button id="goToWorkBtn">Go to Work</button>
-        <button id="takeProfDevBtn">Pro Dev (Skip Work)</button>
-        <button id="startMinorWorkBtn">Start Minor Work (Test)</button>
-        <button id="compilePortfolioBtn">Compile Portfolio</button>
-        <button id="attemptAdvanceProBtn">Try to Go Pro</button>
-      </div>
-
-      <div class="section-title">Pro</div>
-      <div class="controls-grid">
-        <button id="workMasterworkBtn">Work on Masterwork</button>
-        <button id="drawProCardBtn">Draw Pro Card</button>
-        <button id="proMaintenanceBtn">Pro Maintenance Check</button>
-      </div>
-
-      <div class="section-title">Last Card / Rolls</div>
-      <div id="cardInfo"></div>
-
-      <div class="section-title">Minor Works</div>
-      <div id="minorWorksList"></div>
-
-      <div class="section-title">Debug Log</div>
-      <div id="debugLog" class="log"></div>
+    <section id="debugPanel">
+      <h2>Debug</h2>
+      <pre id="debugLog">{}</pre>
     </section>
   </main>
 
+  <!-- keep this at the very end -->
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
