@@ -4,10 +4,16 @@ import { ActionTypes } from './actions.js';
 import {
   getActivePlayer,
   updateActivePlayer,
-  isGameOver
+  isGameOver,
+  STAGE_DREAMER,
+  STAGE_AMATEUR,
+  STAGE_PRO
 } from './state.js';
 
-import { homeReducer } from './stages/stage_home.js';
+import { rollD6 } from './dice.js';
+
+import { homeReducer } from './stages/home_stage.js';
+import { dreamerReducer } from './stages/dreamer_stage.js';
 
 /**
  * Main reducer. Takes the current gameState and an action,
@@ -26,12 +32,22 @@ export function applyAction(gameState, action) {
     case ActionTypes.END_TURN:
       return endTurn(gameState);
 
+    case ActionTypes.ROLL_TIME:
+      return rollTime(gameState);
+
     // Home stage actions
     case ActionTypes.DRAW_HOME_CARD:
     case ActionTypes.ATTEMPT_LEAVE_HOME:
       return homeReducer(gameState, action);
 
-    // Other actions (Dreamer, Amateur, Pro, etc.) will get their own reducers later.
+    // Dreamer stage actions
+    case ActionTypes.ATTEND_SOCIAL_EVENT:
+    case ActionTypes.SKIP_SOCIAL_EVENT:
+    case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
+      return dreamerReducer(gameState, action);
+
+    // TODO: Amateur & Pro actions will be wired here later.
+
     default:
       return gameState;
   }
@@ -40,7 +56,7 @@ export function applyAction(gameState, action) {
 /**
  * START_TURN:
  * - Reset timeThisTurn for the active player.
- * - (Later) Rotate culture cards, apply start-of-turn effects, etc.
+ * - (Later) Rotate Culture cards, apply start-of-turn effects, etc.
  */
 function startTurn(gameState) {
   const next = updateActivePlayer(gameState, (player) => {
@@ -51,6 +67,42 @@ function startTurn(gameState) {
   });
 
   // TODO: draw or rotate Culture cards at the start of each full round.
+  return next;
+}
+
+/**
+ * ROLL_TIME:
+ * - Roll a d6 and set timeThisTurn for the active player.
+ * - Only applies in Dreamer, Amateur, or Pro stages.
+ */
+function rollTime(gameState) {
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
+
+  const stage = player.stage;
+  if (
+    stage !== STAGE_DREAMER &&
+    stage !== STAGE_AMATEUR &&
+    stage !== STAGE_PRO
+  ) {
+    // Time does nothing in Home (for now).
+    return gameState;
+  }
+
+  const roll = rollD6();
+
+  const next = updateActivePlayer(gameState, (p) => {
+    const flags = {
+      ...(p.flags || {}),
+      lastTimeRoll: roll
+    };
+    return {
+      ...p,
+      timeThisTurn: roll,
+      flags
+    };
+  });
+
   return next;
 }
 
