@@ -583,12 +583,29 @@ if (rollTimeBtn) {
   }
 
   if (flags.lastHomeCard) {
-    lines.push(
-      `Home Card: ${flags.lastHomeCard.name} — ${
-        flags.lastHomeCard.text || ''
-      }`
-    );
+  const card = flags.lastHomeCard;
+
+  let line = `Home Card: ${card.name} — ${card.text || ''}`;
+
+  // Show only actual stat changes, like "money +2, food -1"
+  if (Array.isArray(card.effects) && card.effects.length) {
+    const effectsText = card.effects
+      .map((eff) =>
+        eff.type === 'stat'
+          ? `${eff.stat} ${eff.delta >= 0 ? '+' : ''}${eff.delta}`
+          : ''
+      )
+      .filter(Boolean)
+      .join(', ');
+
+    if (effectsText) {
+      line += ` (Effects: ${effectsText})`;
+    }
   }
+
+  lines.push(line);
+}
+
   if (flags.lastHomeRoll !== undefined) {
     lines.push(
       `Home roll: ${flags.lastHomeRoll} vs >${
