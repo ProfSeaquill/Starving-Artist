@@ -66,9 +66,6 @@ function renderHomePathTrack(gameState) {
   container.innerHTML = '';
 
   gameState.players.forEach((p) => {
-    // If you only want to show players still at Home, uncomment this:
-    // if (p.stage !== STAGE_HOME) return;
-
     const row = document.createElement('div');
     row.className = 'track-row';
 
@@ -264,6 +261,73 @@ function renderMasterworkTrack(gameState) {
 }
 
 /**
+ * Promotion / advancement rules per stage, based on config.
+ */
+function renderPromotionRules(gameState) {
+  // Home → Dreamer
+  const homeEl = $('#homePromotion');
+  if (homeEl) {
+    const seq = gameState.config?.home?.rollSequence || [];
+    const parts = seq.map((v) => `>${v}`);
+    if (seq.length) {
+      homeEl.textContent = `Home → Dreamer: succeed ${seq.length} rolls (${parts.join(', ')}).`;
+    } else {
+      homeEl.textContent = 'Home → Dreamer: succeed the required Home rolls.';
+    }
+  }
+
+  // Dreamer → Amateur
+  const dreamerEl = $('#dreamerPromotion');
+  if (dreamerEl) {
+    const thresholds = gameState.config?.dreamer?.advanceThresholds || {};
+    const tParts = Object.entries(thresholds).map(
+      ([stat, val]) => `${stat} ≥ ${val}`
+    );
+    const rollTarget = gameState.config?.dreamer?.advanceRollTarget;
+    let text = 'Dreamer → Amateur: ';
+    if (tParts.length) {
+      text += `need ${tParts.join(', ')}`;
+    } else {
+      text += 'meet the Dreamer thresholds';
+    }
+    if (rollTarget !== undefined) {
+      text += `, then roll ≥ ${rollTarget}.`;
+    } else {
+      text += '.';
+    }
+    dreamerEl.textContent = text;
+  }
+
+  // Amateur → Pro
+  const amateurEl = $('#amateurPromotion');
+  if (amateurEl) {
+    const maxMinor = gameState.config?.amateur?.maxMinorWorks ?? 3;
+    const portfolioCost = gameState.config?.amateur?.portfolioCost || {};
+    const costParts = Object.entries(portfolioCost).map(
+      ([stat, val]) => `${val} ${stat}`
+    );
+    const rollTarget = gameState.config?.amateur?.proAdvanceRollTarget;
+    let text = `Amateur → Pro: build a Portfolio of ${maxMinor} Minor Works`;
+    if (costParts.length) {
+      text += ` (pay ${costParts.join(', ')})`;
+    }
+    if (rollTarget !== undefined) {
+      text += `, then roll ≥ ${rollTarget}.`;
+    } else {
+      text += '.';
+    }
+    amateurEl.textContent = text;
+  }
+
+  // Pro win condition
+  const proEl = $('#proPromotion');
+  if (proEl) {
+    const target = gameState.config?.pro?.masterworkTargetProgress ?? 10;
+    proEl.textContent = `Pro: complete your Masterwork (${target} progress) to win.`;
+  }
+}
+
+/**
  * Render the current gameState into the DOM.
  */
 export function render(gameState) {
@@ -395,6 +459,10 @@ export function render(gameState) {
   const flags = player.flags || {};
   const lines = [];
 
+  if (flags.lastTurnStartedAtTurn !== undefined) {
+    lines.push(`Turn ${flags.lastTurnStartedAtTurn} started.`);
+  }
+
   if (flags.lastHomeCard) {
     lines.push(
       `Home Card: ${flags.lastHomeCard.name} — ${
@@ -463,6 +531,9 @@ export function render(gameState) {
   renderMinorWorksTrack(gameState);
   renderJobMarket(gameState);
   renderMasterworkTrack(gameState);
+
+  // Promotion / advancement rules for each stage
+  renderPromotionRules(gameState);
 
   // --- Debug log (just dump JSON for now) ---
   const debugLogEl = $('#debugLog');
