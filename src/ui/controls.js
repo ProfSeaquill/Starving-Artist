@@ -93,6 +93,23 @@ export function setupControls(dispatch, getState) {
       });
     }
 
+        const attemptLeaveHomeBtn = $('#attemptLeaveHomeBtn');
+    if (!attemptLeaveHomeBtn) {
+      console.warn('[controls] attemptLeaveHomeBtn not found');
+    } else {
+      attemptLeaveHomeBtn.addEventListener('click', () => {
+        const { stage, player } = getPlayerAndStage();
+        console.log(
+          '[controls] Try to Leave Home clicked. stage =',
+          stage,
+          'player =',
+          player && player.name
+        );
+        if (stage !== STAGE_HOME) return;
+        dispatch({ type: ActionTypes.ATTEMPT_LEAVE_HOME });
+      });
+    }
+
   // --- Dreamer ---
   $('#attendSocialBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
