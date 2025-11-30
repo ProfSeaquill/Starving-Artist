@@ -45,6 +45,16 @@ export function homeReducer(gameState, action) {
  * - Store the card in player.flags.lastHomeCard for UI purposes.
  */
 function handleDrawHomeCard(gameState) {
+  // NEW: respect "one Home card per turn"
+  const active = getActivePlayer(gameState);
+  if (!active) return gameState;
+
+  if (active.flags && active.flags.homeCardDrawnThisTurn) {
+    // Already drew a Home card this turn; ignore.
+    console.warn('Home card draw ignored: already drew a Home card this turn.');
+    return gameState;
+  }
+
   let { homeDeck, homeDiscard } = gameState;
 
   // If deck is empty but discard has cards, reshuffle.
@@ -74,7 +84,8 @@ function handleDrawHomeCard(gameState) {
       // Store last drawn Home card in flags for UI rendering.
       const flags = {
         ...(updated.flags || {}),
-        lastHomeCard: card
+        lastHomeCard: card,
+        homeCardDrawnThisTurn: true   // NEW: mark that we've drawn this turn
       };
       updated = { ...updated, flags };
 
@@ -84,6 +95,7 @@ function handleDrawHomeCard(gameState) {
 
   return nextGameState;
 }
+
 
 /**
  * ATTEMPT_LEAVE_HOME:
