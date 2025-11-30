@@ -153,6 +153,96 @@ gameState = {
   proDiscard: []
 };
 
+// --- Stage tutorial content & tracking ---
+// Stages are simple strings set by the engine: 'home', 'dreamer', 'amateur', 'pro'.
+const STAGE_TUTORIALS = {
+  home: {
+    title: 'Home Stage',
+    name: 'Goal & Rules',
+    body:
+      'Goal: Survive early life and get out of the house.\n\n' +
+      'On your Home turns you:\n' +
+      '• Draw a Home card and apply its effects.\n' +
+      '• Try to roll high enough to leave Home.\n' +
+      'If you meet the exit conditions, you can move on to the Dreamer track.'
+  },
+  dreamer: {
+    title: 'Dreamer Stage',
+    name: 'Goal & Rules',
+    body:
+      'Goal: Explore your creative life and qualify for Amateur.\n\n' +
+      'On your Dreamer turns you:\n' +
+      '• Roll for Time.\n' +
+      '• Attend or skip Social Events to adjust Money, Food, Inspiration, and Craft.\n' +
+      '• Once your stats are high enough, you can attempt to advance to Amateur.'
+  },
+  amateur: {
+    title: 'Amateur Stage',
+    name: 'Goal & Rules',
+    body:
+      'Goal: Build a Portfolio of Minor Works.\n\n' +
+      'On your Amateur turns you:\n' +
+      '• Take a job to earn Money / Food / Inspiration / Craft.\n' +
+      '• Spend Time and resources to start and complete Minor Works.\n' +
+      '• When you have enough Minor Works, compile a Portfolio and attempt to advance to Pro.'
+  },
+  pro: {
+    title: 'Pro Stage',
+    name: 'Goal & Rules',
+    body:
+      'Goal: Finish your Masterwork and stay afloat.\n\n' +
+      'On your Pro turns you:\n' +
+      '• Spend Time on your Masterwork to reach the required progress.\n' +
+      '• Draw Pro cards that can help or hinder you.\n' +
+      '• Pass Pro Maintenance checks to avoid being demoted back to Amateur.\n' +
+      'Complete your Masterwork while staying Pro to win.'
+  }
+};
+
+// player.id -> Set of stages they’ve already seen tutorials for.
+const tutorialSeenByPlayerId = new Map();
+
+function hasSeenStageTutorial(player, stage) {
+  const set = tutorialSeenByPlayerId.get(player.id);
+  return !!(set && set.has(stage));
+}
+
+function markStageTutorialSeen(player, stage) {
+  let set = tutorialSeenByPlayerId.get(player.id);
+  if (!set) {
+    set = new Set();
+    tutorialSeenByPlayerId.set(player.id, set);
+  }
+  set.add(stage);
+}
+
+// prevStage is the stage the active player had *before* the action.
+function maybeShowStageTutorial(prevStage) {
+  const player = gameState.players[gameState.activePlayerIndex];
+  if (!player) return;
+
+  const nextStage = player.stage;
+  if (!nextStage || nextStage === prevStage) {
+    return; // no change
+  }
+
+  // Only show each tutorial once per player per stage.
+  if (hasSeenStageTutorial(player, nextStage)) {
+    return;
+  }
+
+  const tutorial = STAGE_TUTORIALS[nextStage];
+  if (!tutorial) {
+    // Stage has no tutorial defined; mark as seen so we don't keep checking.
+    markStageTutorialSeen(player, nextStage);
+    return;
+  }
+
+  showCardOverlay(tutorial.title, tutorial.name, tutorial.body);
+  markStageTutorialSeen(player, nextStage);
+}
+
+
 function showCardOverlay(title, name, bodyText) {
   const overlay = document.getElementById('cardOverlay');
   if (!overlay) return;
@@ -373,6 +463,8 @@ render(gameState);
 // Consider the game ready at Turn 1 with no Time yet.
 // The player explicitly starts their turn by clicking "Roll Time".
 dispatch({ type: ActionTypes.START_TURN });
+// Show Home tutorial once at game start (optional).
+maybeShowStageTutorial(null);
 // (no auto ROLL_TIME here)
 
 // --- Debug panel toggle ---
