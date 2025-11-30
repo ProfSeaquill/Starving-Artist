@@ -396,7 +396,7 @@
   <header>
     <h1>Starving Artist</h1>
     <div class="meta">
-      <div>Turn: <span id="turn">0</span></div>
+      <div>Turn: <span id="turn">1</span></div>
       <div>Art Path: <span id="artPath"></span></div>
     </div>
   </header>
@@ -409,9 +409,7 @@
         <div class="stage-header">
           <div>
             <div class="stage-title">Home</div>
-            <div class="stage-subtitle" id="homePromotion">
-              <!-- Filled by render() -->
-            </div>
+            <div class="stage-subtitle" id="homePromotion"></div>
           </div>
           <div class="stage-players">
             <span class="stage-players-label">Players here:</span>
@@ -436,9 +434,7 @@
         <div class="stage-header">
           <div>
             <div class="stage-title">Dreamer</div>
-            <div class="stage-subtitle" id="dreamerPromotion">
-              <!-- Filled by render() -->
-            </div>
+            <div class="stage-subtitle" id="dreamerPromotion"></div>
           </div>
           <div class="stage-players">
             <span class="stage-players-label">Players here:</span>
@@ -452,7 +448,6 @@
               <div id="minorWorksTrack"></div>
             </div>
             <div>
-              <!-- This button draws/plays a Social card (attendSocialBtn in controls.js) -->
               <button id="attendSocialBtn" type="button">Draw Social Card</button>
             </div>
           </div>
@@ -464,9 +459,7 @@
         <div class="stage-header">
           <div>
             <div class="stage-title">Amateur</div>
-            <div class="stage-subtitle" id="amateurPromotion">
-              <!-- Filled by render() -->
-            </div>
+            <div class="stage-subtitle" id="amateurPromotion"></div>
           </div>
           <div class="stage-players">
             <span class="stage-players-label">Players here:</span>
@@ -480,7 +473,6 @@
               <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
             </div>
             <div>
-              <!-- This button maps to TAKE_PROF_DEV (Prof Dev deck) -->
               <button id="takeProfDevBtn" type="button">Draw Prof Dev Card</button>
             </div>
           </div>
@@ -492,9 +484,7 @@
         <div class="stage-header">
           <div>
             <div class="stage-title">Pro</div>
-            <div class="stage-subtitle" id="proPromotion">
-              <!-- Filled by render() -->
-            </div>
+            <div class="stage-subtitle" id="proPromotion"></div>
           </div>
           <div class="stage-players">
             <span class="stage-players-label">Players here:</span>
@@ -560,7 +550,7 @@
           </div>
         </div>
 
-        <!-- Progress summary (re-using existing spans) -->
+        <!-- Progress summary -->
         <div class="player-progress">
           Minor Works: <span id="minorWorksCount">0</span><br />
           Portfolio: <span id="portfolioStatus">Not yet</span><br />
@@ -574,23 +564,22 @@
           Culture: <span id="cultureInfo">None (not implemented yet)</span>
         </div>
 
-        <!-- Minor works list (per player) -->
+        <!-- Minor works list -->
         <div class="section-title">Minor Works (this player)</div>
         <pre id="minorWorksList">None yet.</pre>
 
-        <!-- Current / recent card info (per player) -->
+        <!-- Current / recent card info -->
         <div class="section-title">Current Card / Recent Rolls</div>
         <pre id="cardInfo">No recent events yet.</pre>
 
-        <!-- Actions: buttons that affect the active player -->
+        <!-- Actions -->
         <div class="section-title">Actions</div>
 
-       <div class="label" style="margin-top:4px;">Turn</div>
-<div class="controls-grid">
-  <button id="rollTimeBtn" type="button">Roll Time</button>
-  <button id="endTurnBtn" type="button">End Turn</button>
-</div>
-
+        <div class="label" style="margin-top:4px;">Turn</div>
+        <div class="controls-grid">
+          <button id="rollTimeBtn" type="button">Roll Time</button>
+          <button id="endTurnBtn" type="button">End Turn</button>
+        </div>
 
         <div class="label" style="margin-top:8px;">Home</div>
         <div class="controls-grid">
@@ -607,7 +596,6 @@
         <div class="controls-grid">
           <select id="jobSelect">
             <option value="">Choose a Job…</option>
-            <!-- JS will populate real jobs from JOBS -->
           </select>
           <button id="chooseJobBtn" type="button">Choose Job</button>
           <button id="goToWorkBtn" type="button">Go To Work</button>
@@ -623,7 +611,7 @@
         </div>
       </section>
 
-      <!-- Debug panel lives under the player panel -->
+      <!-- Debug panel -->
       <section id="debugPanel" class="panel">
         <h2 style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <span>Debug</span>
