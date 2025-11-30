@@ -167,9 +167,10 @@ window._starvingArtistDispatch = dispatch;
 setupControls(dispatch, () => gameState);
 render(gameState);
 
-// Optional: one "auto" step so it feels alive.
-// e.g. automatically START_TURN at load:
+// Auto-start the very first turn with a Time roll.
 dispatch({ type: ActionTypes.START_TURN });
+dispatch({ type: ActionTypes.ROLL_TIME });
+
 
 // --- Debug panel toggle ---
 const toggleBtn = document.getElementById('toggleDebug');
