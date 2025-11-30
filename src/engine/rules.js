@@ -79,26 +79,32 @@ function startTurn(gameState) {
   let next = gameState;
 
   next = updateActivePlayer(next, (player) => {
-    const flags = {
-      ...(player.flags || {}),
-      // For UI: which turn did we start last?
-      lastTurnStartedAtTurn: gameState.turn
-    };
+  // Start from existing flags
+  const baseFlags = {
+    ...(player.flags || {}),
+    // For UI: which turn did we start last?
+    lastTurnStartedAtTurn: gameState.turn
+  };
 
-    if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
-      // No Minor Work income at Home or Dreamer (for now).
-      return {
-        ...player,
-        timeThisTurn: 0,
-        flags
-      };
-    }
+  // Clear per-turn Home draw flag
+  const flags = { ...baseFlags };
+  delete flags.homeCardDrawnThisTurn;
 
-    let updated = {
+  if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
+    // No Minor Work income at Home or Dreamer (for now).
+    return {
       ...player,
       timeThisTurn: 0,
       flags
     };
+  }
+
+  let updated = {
+    ...player,
+    timeThisTurn: 0,
+    flags
+  };
+
 
     if (Array.isArray(updated.minorWorks)) {
       for (const mw of updated.minorWorks) {
@@ -141,11 +147,22 @@ function startTurn(gameState) {
 /**
  * ROLL_TIME:
  * - Roll a d6 and set timeThisTurn for the active player.
- * - Now applies in all stages (Home included) so the roll is always visible.
+ * - Only applies in Dreamer / Amateur / Pro.
+ * - At Home, this is a no-op (Time isn't used there).
  */
 function rollTime(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
+
+  const stage = player.stage;
+  if (
+    stage !== STAGE_DREAMER &&
+    stage !== STAGE_AMATEUR &&
+    stage !== STAGE_PRO
+  ) {
+    // Time does nothing in Home (for now).
+    return gameState;
+  }
 
   const roll = rollD6();
 
@@ -163,6 +180,7 @@ function rollTime(gameState) {
 
   return next;
 }
+
 
 
 /**
