@@ -163,6 +163,10 @@ main.app {
   gap: 8px;
 }
 
+    .stage-actions {
+  margin-top: 4px;
+}
+
 
     .stage-row {
       display: flex;
@@ -633,11 +637,14 @@ button:disabled {
         </div>
 
         <!-- Job / Culture -->
-        <div class="section-title">Job & Culture</div>
-        <div style="font-size:12px;">
-          Job: <span id="jobInfo">No job (or lost job)</span><br />
-          Culture: <span id="cultureInfo">None (not implemented yet)</span>
+        <div class="player-job-section">
+          <div class="section-title">Job & Culture</div>
+          <div style="font-size:12px;">
+            Job: <span id="jobInfo">No job (or lost job)</span><br />
+            Culture: <span id="cultureInfo">None (not implemented yet)</span>
+          </div>
         </div>
+
 
         <!-- Minor works list -->
         <div class="section-title">Minor Works (this player)</div>
@@ -647,43 +654,57 @@ button:disabled {
         <div class="section-title">Current Card / Recent Rolls</div>
         <pre id="cardInfo">No recent events yet.</pre>
 
-        <!-- Actions -->
+                <!-- Actions -->
         <div class="section-title">Actions</div>
 
+        <!-- Turn controls (always visible) -->
         <div class="label" style="margin-top:4px;">Turn</div>
         <div class="controls-grid">
           <button id="rollTimeBtn" type="button">Roll Time</button>
           <button id="endTurnBtn" type="button">End Turn</button>
         </div>
 
-        <div class="label" style="margin-top:8px;">Home</div>
-        <div class="controls-grid">
-          <button id="attemptLeaveHomeBtn" type="button">Try to Leave Home</button>
+        <!-- Home-only actions -->
+        <div class="stage-actions stage-home-only">
+          <div class="label" style="margin-top:8px;">Home</div>
+          <div class="controls-grid">
+            <button id="attemptLeaveHomeBtn" type="button">Try to Leave Home</button>
+          </div>
         </div>
 
-        <div class="label" style="margin-top:8px;">Dreamer</div>
-        <div class="controls-grid">
-          <button id="skipSocialBtn" type="button">Skip Social Event</button>
-          <button id="attemptAdvanceDreamerBtn" type="button">Try to Advance</button>
+        <!-- Dreamer-only actions -->
+        <div class="stage-actions stage-dreamer-only">
+          <div class="label" style="margin-top:8px;">Dreamer</div>
+          <div class="controls-grid">
+            <button id="skipSocialBtn" type="button">Skip Social Event</button>
+            <button id="attemptAdvanceDreamerBtn" type="button">Try to Advance</button>
+          </div>
         </div>
 
-        <div class="label" style="margin-top:8px;">Amateur</div>
-        <div class="controls-grid">
-          <select id="jobSelect">
-            <option value="">Choose a Job…</option>
-          </select>
-          <button id="chooseJobBtn" type="button">Choose Job</button>
-          <button id="goToWorkBtn" type="button">Go To Work</button>
-          <button id="startMinorWorkBtn" type="button">Start Minor Work</button>
-          <button id="compilePortfolioBtn" type="button">Compile Portfolio</button>
-          <button id="attemptAdvanceProBtn" type="button">Try to Go Pro</button>
+        <!-- Amateur-only actions -->
+        <div class="stage-actions stage-amateur-only">
+          <div class="label" style="margin-top:8px;">Amateur</div>
+          <div class="controls-grid">
+            <select id="jobSelect">
+              <option value="">Choose a Job…</option>
+            </select>
+            <button id="chooseJobBtn" type="button">Choose Job</button>
+            <button id="goToWorkBtn" type="button">Go To Work</button>
+            <button id="startMinorWorkBtn" type="button">Start Minor Work</button>
+            <button id="compilePortfolioBtn" type="button">Compile Portfolio</button>
+            <button id="attemptAdvanceProBtn" type="button">Try to Go Pro</button>
+          </div>
         </div>
 
-        <div class="label" style="margin-top:8px;">Pro</div>
-        <div class="controls-grid">
-          <button id="workMasterworkBtn" type="button">Work on Masterwork</button>
-          <button id="proMaintenanceBtn" type="button">Maintenance Check</button>
+        <!-- Pro-only actions -->
+        <div class="stage-actions stage-pro-only">
+          <div class="label" style="margin-top:8px;">Pro</div>
+          <div class="controls-grid">
+            <button id="workMasterworkBtn" type="button">Work on Masterwork</button>
+            <button id="proMaintenanceBtn" type="button">Maintenance Check</button>
+          </div>
         </div>
+
       </section>
 
       <!-- Debug panel -->
