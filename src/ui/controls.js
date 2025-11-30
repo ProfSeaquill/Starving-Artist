@@ -42,10 +42,6 @@ export function setupControls(dispatch, getState) {
   };
 
   // --- Turn buttons ---
-  $('#startTurnBtn')?.addEventListener('click', () => {
-    dispatch({ type: ActionTypes.START_TURN });
-  });
-
   $('#rollTimeBtn')?.addEventListener('click', () => {
     const { player } = getPlayerAndStage();
     if (!player) return;
