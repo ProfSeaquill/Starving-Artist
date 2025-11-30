@@ -18,54 +18,72 @@ const $ = (id) => document.getElementById(id);
  * @param {() => any} getState
  */
 export function setupControls(dispatch, getState) {
-  // --- Populate job select ---
-  const jobSelect = $('#jobSelect');
-  if (jobSelect) {
-    // Clear any existing options beyond the placeholder
-    while (jobSelect.options.length > 1) {
-      jobSelect.remove(1);
+  console.log('[controls] setupControls called');
+
+  try {
+    // --- Populate job select ---
+    const jobSelect = $('#jobSelect');
+    if (jobSelect) {
+      // Clear any existing options beyond the placeholder
+      while (jobSelect.options.length > 1) {
+        jobSelect.remove(1);
+      }
+
+      for (const job of JOBS) {
+        const opt = document.createElement('option');
+        opt.value = job.id;
+        opt.textContent = job.name;
+        jobSelect.appendChild(opt);
+      }
+    } else {
+      console.warn('[controls] jobSelect element not found');
     }
 
-    for (const job of JOBS) {
-      const opt = document.createElement('option');
-      opt.value = job.id;
-      opt.textContent = job.name;
-      jobSelect.appendChild(opt);
+    // Helper: get current player + stage
+    const getPlayerAndStage = () => {
+      const state = getState();
+      console.log('[controls] getPlayerAndStage state:', state);
+      if (!state) return { state: null, player: null, stage: null };
+      const player = state.players[state.activePlayerIndex];
+      return { state, player, stage: player?.stage ?? null };
+    };
+
+    // --- Turn buttons ---
+    const rollBtn = $('#rollTimeBtn');
+    if (!rollBtn) {
+      console.warn('[controls] rollTimeBtn not found');
+    } else {
+      rollBtn.addEventListener('click', () => {
+        console.log('[controls] Roll Time clicked (handler)');
+        const { player } = getPlayerAndStage();
+        console.log('[controls] current player in handler:', player);
+        if (!player) return;
+        dispatch({ type: ActionTypes.ROLL_TIME });
+      });
     }
-  }
 
-  // Helper: get current player + stage
-  const getPlayerAndStage = () => {
-    const state = getState();
-    const player = state.players[state.activePlayerIndex];
-    return { state, player, stage: player.stage };
-  };
+    const endBtn = $('#endTurnBtn');
+    if (!endBtn) {
+      console.warn('[controls] endTurnBtn not found');
+    } else {
+      endBtn.addEventListener('click', () => {
+        console.log('[controls] End Turn clicked (handler)');
+        dispatch({ type: ActionTypes.END_TURN });
+      });
+    }
 
-  // --- Turn buttons ---
-$('#rollTimeBtn')?.addEventListener('click', () => {
-  console.log('[controls] Roll Time clicked');
-  const { player } = getPlayerAndStage();
-  console.log('[controls] current player in handler:', player);
-  if (!player) return;
-  dispatch({ type: ActionTypes.ROLL_TIME });
-});
-
-  $('#endTurnBtn')?.addEventListener('click', () => {
-    dispatch({ type: ActionTypes.END_TURN });
-  });
-
-  // --- Home ---
-  $('#drawHomeBtn')?.addEventListener('click', () => {
-    const { stage } = getPlayerAndStage();
-    if (stage !== STAGE_HOME) return;
-    dispatch({ type: ActionTypes.DRAW_HOME_CARD });
-  });
-
-  $('#attemptLeaveHomeBtn')?.addEventListener('click', () => {
-    const { stage } = getPlayerAndStage();
-    if (stage !== STAGE_HOME) return;
-    dispatch({ type: ActionTypes.ATTEMPT_LEAVE_HOME });
-  });
+    // --- Home ---
+    const drawHomeBtn = $('#drawHomeBtn');
+    if (!drawHomeBtn) {
+      console.warn('[controls] drawHomeBtn not found');
+    } else {
+      drawHomeBtn.addEventListener('click', () => {
+        const { stage } = getPlayerAndStage();
+        console.log('[controls] Draw Home, stage:', stage);
+        if (stage !== STAGE_HOME) return;
+        dispatch({ type: ActionTypes.DRAW_HOME_CARD });
+      });
+    }
 
   // --- Dreamer ---
   $('#attendSocialBtn')?.addEventListener('click', () => {
@@ -174,4 +192,8 @@ $('#rollTimeBtn')?.addEventListener('click', () => {
     if (stage !== STAGE_PRO) return;
     dispatch({ type: ActionTypes.PRO_MAINTENANCE_CHECK });
   });
+    } catch (err) {
+    console.error('[controls] ERROR during setupControls:', err);
+  }
+}
 }
