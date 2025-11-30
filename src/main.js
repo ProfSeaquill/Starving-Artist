@@ -153,11 +153,43 @@ gameState = {
   proDiscard: []
 };
 
-// --- Dispatch wrapper ---
+// --- Dispatch wrapper with diagnostics ---
 function dispatch(action) {
-  gameState = applyAction(gameState, action);
+  console.log('[dispatch] about to apply action:', action);
+  let nextState;
+
+  try {
+    nextState = applyAction(gameState, action);
+  } catch (err) {
+    console.error('[dispatch] ERROR while applying action:', action, err);
+
+    const debugLogEl = document.getElementById('debugLog');
+    if (debugLogEl) {
+      debugLogEl.style.display = 'block';
+      debugLogEl.textContent =
+        'Dispatch error for action:\n' +
+        JSON.stringify(action, null, 2) +
+        '\n\n' +
+        (err && err.stack ? err.stack : String(err));
+    }
+
+    // Don’t mutate gameState if something broke.
+    return;
+  }
+
+  if (!nextState) {
+    console.warn(
+      '[dispatch] applyAction returned a falsy state; leaving gameState unchanged.',
+      action
+    );
+    return;
+  }
+
+  gameState = nextState;
+  console.log('[dispatch] new state:', gameState);
   render(gameState);
 }
+
 
 // For debugging in console if you like:
 window._starvingArtistState = () => gameState;
