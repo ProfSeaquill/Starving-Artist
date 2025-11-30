@@ -390,6 +390,61 @@ function getCardDrawDenyReason(state, action) {
   }
 }
 
+function showDiceRollAnimation(finalValue) {
+  const overlay = document.getElementById('diceOverlay');
+  const face = document.getElementById('diceFace');
+  const okBtn = document.getElementById('diceOkButton');
+  if (!overlay || !face || !okBtn) return;
+
+  let closed = false;
+
+  const close = () => {
+    if (closed) return;
+    closed = true;
+    overlay.classList.remove('visible');
+    face.classList.remove('rolling');
+    overlay.removeEventListener('click', onBackdropClick);
+    okBtn.removeEventListener('click', close);
+  };
+
+  const onBackdropClick = (evt) => {
+    if (evt.target === overlay) {
+      close();
+    }
+  };
+
+  overlay.addEventListener('click', onBackdropClick);
+  okBtn.addEventListener('click', close);
+
+  overlay.classList.add('visible');
+  face.classList.add('rolling');
+
+  let ticks = 15;        // how many “fake” rolls
+  const intervalMs = 40; // speed of rolling
+
+  const timer = setInterval(() => {
+    if (ticks-- <= 0) {
+      clearInterval(timer);
+      face.classList.remove('rolling');
+      face.textContent = String(finalValue);
+      return;
+    }
+    const fake = 1 + Math.floor(Math.random() * 6);
+    face.textContent = String(fake);
+  }, intervalMs);
+}
+
+function maybeShowDiceRoll(state, action) {
+  if (action.type !== ActionTypes.ROLL_TIME) return;
+
+  const player = state.players[state.activePlayerIndex];
+  if (!player || !player.flags) return;
+
+  const roll = player.flags.lastTimeRoll;
+  if (roll === undefined || roll === null) return;
+
+  showDiceRollAnimation(roll);
+}
 
 // --- Dispatch wrapper with diagnostics ---
 function dispatch(action) {
@@ -438,7 +493,7 @@ function dispatch(action) {
     return;
   }
 
-  // 2) Commit new state + render.
+    // 2) Commit new state + render.
   gameState = nextState;
   console.log('[dispatch] new state:', gameState);
   render(gameState);
@@ -446,9 +501,13 @@ function dispatch(action) {
   // 3) Show a card popup if this action drew/resolved a card.
   maybeShowCardPopup(gameState, action);
 
-  // 4) Show stage tutorial if the active player's stage changed.
+  // 4) Show dice animation if we just rolled Time.
+  maybeShowDiceRoll(gameState, action);
+
+  // 5) Show stage tutorial if the active player's stage changed.
   maybeShowStageTutorial(prevStage);
 }
+
 
 
 
