@@ -10,7 +10,7 @@ import {
   JOBS
 } from '../engine/state.js';
 
-
+// Simple helper for DOM lookups by id
 const $ = (selector) => {
   if (!selector) return null;
   const id = selector[0] === '#' ? selector.slice(1) : selector;
@@ -21,6 +21,247 @@ const $ = (selector) => {
   return el;
 };
 
+// Colors for player tokens / markers (up to 6 players)
+const PLAYER_COLORS = [
+  '#e74c3c', // red
+  '#3498db', // blue
+  '#f1c40f', // yellow
+  '#2ecc71', // green
+  '#9b59b6', // purple
+  '#e67e22'  // orange
+];
+
+function getPlayerColor(index) {
+  return PLAYER_COLORS[index % PLAYER_COLORS.length];
+}
+
+// --- Board rendering helpers ---
+
+function renderStagePlayers(gameState, stage, containerId) {
+  const container = $(containerId);
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  gameState.players.forEach((p, idx) => {
+    if (p.stage !== stage) return;
+    const marker = document.createElement('span');
+    marker.className = 'player-marker';
+    marker.style.backgroundColor = getPlayerColor(idx);
+    marker.title = p.name;
+    marker.textContent = String(idx + 1);
+    container.appendChild(marker);
+  });
+}
+
+/**
+ * Home path: 3-step visual per player, showing how many successful rolls
+ * they've made toward leaving Home.
+ */
+function renderHomePathTrack(gameState) {
+  const container = $('#homePathTrack');
+  if (!container) return;
+
+  const steps = gameState.config?.home?.rollSequence?.length ?? 3;
+  container.innerHTML = '';
+
+  gameState.players.forEach((p) => {
+    // If you only want to show players still at Home, uncomment this:
+    // if (p.stage !== STAGE_HOME) return;
+
+    const row = document.createElement('div');
+    row.className = 'track-row';
+
+    const label = document.createElement('div');
+    label.className = 'track-row-label';
+    label.textContent = p.name;
+    row.appendChild(label);
+
+    const cells = document.createElement('div');
+    cells.className = 'track-row-cells';
+
+    const progress = p.homeProgress || 0;
+
+    for (let i = 0; i < steps; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'track-cell';
+      if (i < progress) {
+        cell.classList.add('filled');
+      }
+      cells.appendChild(cell);
+    }
+
+    row.appendChild(cells);
+    container.appendChild(row);
+  });
+}
+
+/**
+ * Minor Works ladder: global track for all players.
+ * Players are placed at the step equal to their minorWorks.length,
+ * clamped to maxMinorWorks from config.
+ */
+function renderMinorWorksTrack(gameState) {
+  const container = $('#minorWorksTrack');
+  if (!container) return;
+
+  const maxSteps = gameState.config?.amateur?.maxMinorWorks ?? 3;
+  container.innerHTML = '';
+
+  const stepsContainer = document.createElement('div');
+  stepsContainer.className = 'track-steps';
+
+  // Create steps 0..maxSteps
+  for (let step = 0; step <= maxSteps; step++) {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'track-step';
+    stepEl.dataset.step = String(step);
+
+    const label = document.createElement('div');
+    label.className = 'track-step-label';
+    label.textContent = String(step);
+
+    const tokens = document.createElement('div');
+    tokens.className = 'track-step-tokens';
+
+    stepEl.appendChild(label);
+    stepEl.appendChild(tokens);
+    stepsContainer.appendChild(stepEl);
+  }
+
+  container.appendChild(stepsContainer);
+
+  // Place player tokens
+  gameState.players.forEach((p, idx) => {
+    const count = Array.isArray(p.minorWorks) ? p.minorWorks.length : 0;
+    const clamped = Math.max(0, Math.min(count, maxSteps));
+    const stepEl = stepsContainer.querySelector(
+      `.track-step[data-step="${clamped}"]`
+    );
+    if (!stepEl) return;
+    const tokensEl = stepEl.querySelector('.track-step-tokens');
+    if (!tokensEl) return;
+
+    const token = document.createElement('span');
+    token.className = 'player-token';
+    token.style.backgroundColor = getPlayerColor(idx);
+    token.title = `${p.name} (${count} minor works)`;
+    tokensEl.appendChild(token);
+  });
+}
+
+/**
+ * Job market: show jobs that haven't been taken by any player yet.
+ */
+function renderJobMarket(gameState) {
+  const container = $('#jobMarket');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  const takenIds = new Set(
+    gameState.players
+      .map((p) => p.jobId)
+      .filter((id) => typeof id === 'string' && id.length > 0)
+  );
+
+  const availableJobs = JOBS.filter((job) => !takenIds.has(job.id));
+
+  if (!availableJobs.length) {
+    const empty = document.createElement('div');
+    empty.className = 'job-card-empty';
+    empty.textContent = 'No jobs available';
+    container.appendChild(empty);
+    return;
+  }
+
+  for (const job of availableJobs) {
+    const card = document.createElement('div');
+    card.className = 'job-card';
+
+    const title = document.createElement('div');
+    title.className = 'job-card-title';
+    title.textContent = job.name;
+    card.appendChild(title);
+
+    const effects = document.createElement('div');
+    effects.className = 'job-card-effects';
+
+    const parts = [];
+    if (job.moneyDelta) {
+      parts.push(`Money ${job.moneyDelta > 0 ? '+' : ''}${job.moneyDelta}`);
+    }
+    if (job.foodDelta) {
+      parts.push(`Food ${job.foodDelta > 0 ? '+' : ''}${job.foodDelta}`);
+    }
+    if (job.inspirationDelta) {
+      parts.push(
+        `Insp ${job.inspirationDelta > 0 ? '+' : ''}${job.inspirationDelta}`
+      );
+    }
+    if (job.timeDelta) {
+      parts.push(`Time ${job.timeDelta > 0 ? '+' : ''}${job.timeDelta}`);
+    }
+
+    effects.textContent = parts.length ? parts.join(', ') : 'No effect';
+    card.appendChild(effects);
+
+    container.appendChild(card);
+  }
+}
+
+/**
+ * Masterwork track: global track for all players, showing progress toward
+ * masterworkTargetProgress.
+ */
+function renderMasterworkTrack(gameState) {
+  const container = $('#masterworkTrack');
+  if (!container) return;
+
+  const target = gameState.config?.pro?.masterworkTargetProgress ?? 10;
+  container.innerHTML = '';
+
+  const stepsContainer = document.createElement('div');
+  stepsContainer.className = 'track-steps';
+
+  // We show 0..target
+  for (let step = 0; step <= target; step++) {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'track-step';
+    stepEl.dataset.step = String(step);
+
+    const label = document.createElement('div');
+    label.className = 'track-step-label';
+    label.textContent = String(step);
+
+    const tokens = document.createElement('div');
+    tokens.className = 'track-step-tokens';
+
+    stepEl.appendChild(label);
+    stepEl.appendChild(tokens);
+    stepsContainer.appendChild(stepEl);
+  }
+
+  container.appendChild(stepsContainer);
+
+  // Place player tokens
+  gameState.players.forEach((p, idx) => {
+    const progress = p.masterworkProgress || 0;
+    const clamped = Math.max(0, Math.min(progress, target));
+    const stepEl = stepsContainer.querySelector(
+      `.track-step[data-step="${clamped}"]`
+    );
+    if (!stepEl) return;
+    const tokensEl = stepEl.querySelector('.track-step-tokens');
+    if (!tokensEl) return;
+
+    const token = document.createElement('span');
+    token.className = 'player-token';
+    token.style.backgroundColor = getPlayerColor(idx);
+    token.title = `${p.name} (progress ${progress}/${target})`;
+    tokensEl.appendChild(token);
+  });
+}
 
 /**
  * Render the current gameState into the DOM.
@@ -31,19 +272,24 @@ export function render(gameState) {
   const player = gameState.players[gameState.activePlayerIndex];
   if (!player) return;
 
-  // --- Basic info ---
+  // --- Basic header info ---
   $('#turn').textContent = String(gameState.turn);
   $('#artPath').textContent = player.artPath;
 
+  // Player name & art path in the player panel
+  $('#playerName').textContent = player.name;
+  $('#playerArtPath').textContent = player.artPath;
+
+  // --- Stats ---
   $('#statMoney').textContent = String(player.money || 0);
   $('#statFood').textContent = String(player.food || 0);
   $('#statInspiration').textContent = String(player.inspiration || 0);
   $('#statCraft').textContent = String(player.craft || 0);
   $('#statTime').textContent = String(player.timeThisTurn || 0);
 
-  $('#minorWorksCount').textContent = String(
-    (player.minorWorks && player.minorWorks.length) || 0
-  );
+  const minorCount =
+    (player.minorWorks && player.minorWorks.length) || 0;
+  $('#minorWorksCount').textContent = String(minorCount);
 
   $('#portfolioStatus').textContent = player.portfolioBuilt
     ? 'Built'
@@ -53,7 +299,7 @@ export function render(gameState) {
     gameState.config.pro.masterworkTargetProgress
   }`;
 
-  // --- Stage display ---
+  // --- Stage display for the active player ---
   const stageNameEl = $('#stageName');
   const stageBadgeEl = $('#stageBadge');
   let stageName = '';
@@ -118,7 +364,7 @@ export function render(gameState) {
     banner.textContent = '';
   }
 
-  // --- Minor works list ---
+  // --- Minor works list (per player) ---
   const minorListEl = $('#minorWorksList');
   minorListEl.textContent = '';
   if (Array.isArray(player.minorWorks) && player.minorWorks.length > 0) {
@@ -127,7 +373,11 @@ export function render(gameState) {
         Array.isArray(mw.effectsPerTurn) && mw.effectsPerTurn.length
           ? mw.effectsPerTurn
               .map((eff) =>
-                eff.type === 'stat' ? `${eff.stat} ${eff.delta >= 0 ? '+' : ''}${eff.delta}` : ''
+                eff.type === 'stat'
+                  ? `${eff.stat} ${
+                      eff.delta >= 0 ? '+' : ''
+                    }${eff.delta}`
+                  : ''
               )
               .filter(Boolean)
               .join(', ')
@@ -140,21 +390,23 @@ export function render(gameState) {
     minorListEl.textContent = 'None yet.';
   }
 
-  // --- Last card / rolls info ---
+  // --- Current / recent card info (per player) ---
   const cardInfoEl = $('#cardInfo');
   const flags = player.flags || {};
   const lines = [];
 
   if (flags.lastHomeCard) {
     lines.push(
-      `Home Card: ${flags.lastHomeCard.name} — ${flags.lastHomeCard.text || ''}`
+      `Home Card: ${flags.lastHomeCard.name} — ${
+        flags.lastHomeCard.text || ''
+      }`
     );
   }
   if (flags.lastHomeRoll !== undefined) {
     lines.push(
-      `Home roll: ${flags.lastHomeRoll} vs >${flags.lastHomeRollRequired} — ${
-        flags.lastHomeRollSuccess ? 'success' : 'fail'
-      }`
+      `Home roll: ${flags.lastHomeRoll} vs >${
+        flags.lastHomeRollRequired
+      } — ${flags.lastHomeRollSuccess ? 'success' : 'fail'}`
     );
   }
   if (flags.lastSocialEventCard) {
@@ -166,7 +418,9 @@ export function render(gameState) {
     lines.push(
       `Dreamer→Amateur roll: ${flags.lastDreamerAdvanceRoll} vs ≥${
         flags.lastDreamerAdvanceTarget
-      } — ${flags.lastDreamerAdvanceSuccess ? 'success' : 'fail'}`
+      } — ${
+        flags.lastDreamerAdvanceSuccess ? 'success' : 'fail'
+      }`
     );
   }
   if (flags.lastJobName) {
@@ -177,12 +431,16 @@ export function render(gameState) {
   }
   if (flags.lastMasterworkTimeSpent !== undefined) {
     lines.push(
-      `Masterwork: spent ${flags.lastMasterworkTimeSpent} Time (progress ${flags.lastMasterworkProgress}/${flags.masterworkTarget})`
+      `Masterwork: spent ${
+        flags.lastMasterworkTimeSpent
+      } Time (progress ${flags.lastMasterworkProgress}/${flags.masterworkTarget})`
     );
   }
   if (flags.lastProMaintenanceRoll !== undefined) {
     lines.push(
-      `Pro maintenance roll: ${flags.lastProMaintenanceRoll} vs ≥${flags.lastProMaintenanceTarget} — ${
+      `Pro maintenance roll: ${
+        flags.lastProMaintenanceRoll
+      } vs ≥${flags.lastProMaintenanceTarget} — ${
         flags.lastProMaintenanceSuccess ? 'stay Pro' : 'demoted to Amateur'
       }`
     );
@@ -191,9 +449,24 @@ export function render(gameState) {
     lines.push(`Time roll: ${flags.lastTimeRoll}`);
   }
 
-  cardInfoEl.textContent = lines.length ? lines.join('\n') : 'No recent events yet.';
+  cardInfoEl.textContent = lines.length
+    ? lines.join('\n')
+    : 'No recent events yet.';
+
+  // --- Board visuals (all players) ---
+  renderStagePlayers(gameState, STAGE_HOME, 'homeStagePlayers');
+  renderStagePlayers(gameState, STAGE_DREAMER, 'dreamerStagePlayers');
+  renderStagePlayers(gameState, STAGE_AMATEUR, 'amateurStagePlayers');
+  renderStagePlayers(gameState, STAGE_PRO, 'proStagePlayers');
+
+  renderHomePathTrack(gameState);
+  renderMinorWorksTrack(gameState);
+  renderJobMarket(gameState);
+  renderMasterworkTrack(gameState);
 
   // --- Debug log (just dump JSON for now) ---
   const debugLogEl = $('#debugLog');
-  debugLogEl.textContent = JSON.stringify(gameState, null, 2);
+  if (debugLogEl) {
+    debugLogEl.textContent = JSON.stringify(gameState, null, 2);
+  }
 }
