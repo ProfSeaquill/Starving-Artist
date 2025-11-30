@@ -141,21 +141,11 @@ function startTurn(gameState) {
 /**
  * ROLL_TIME:
  * - Roll a d6 and set timeThisTurn for the active player.
- * - Only applies in Dreamer, Amateur, or Pro stages.
+ * - Now applies in all stages (Home included) so the roll is always visible.
  */
 function rollTime(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
-
-  const stage = player.stage;
-  if (
-    stage !== STAGE_DREAMER &&
-    stage !== STAGE_AMATEUR &&
-    stage !== STAGE_PRO
-  ) {
-    // Time does nothing in Home (for now).
-    return gameState;
-  }
 
   const roll = rollD6();
 
@@ -174,31 +164,43 @@ function rollTime(gameState) {
   return next;
 }
 
+
 /**
  * END_TURN:
  * - Advance to the next player in turn order (for multiplayer),
  *   or simply increment the turn counter (for single-player).
- * - (Later) Check for loss conditions (starvation, maxTurns).
+ * - Automatically start the next player's turn and roll their Time.
  */
 function endTurn(gameState) {
   const playerCount = gameState.players.length;
   let { activePlayerIndex, turn } = gameState;
 
+  let base;
+
   if (playerCount <= 1) {
     // Single-player: keep activePlayerIndex at 0, just increment turn.
-    return {
+    base = {
       ...gameState,
       turn: turn + 1
     };
+  } else {
+    // Multiplayer hotseat version:
+    const nextIndex = (activePlayerIndex + 1) % playerCount;
+    const wrapped = nextIndex === 0;
+
+    base = {
+      ...gameState,
+      activePlayerIndex: nextIndex,
+      turn: wrapped ? turn + 1 : turn
+    };
   }
 
-  // Multiplayer hotseat version:
-  const nextIndex = (activePlayerIndex + 1) % playerCount;
-  const wrapped = nextIndex === 0;
+  // Auto-start the new active player's turn:
+  // - reset timeThisTurn & apply Minor Work income via startTurn
+  // - then roll Time for that player
+  let next = startTurn(base);
+  next = rollTime(next);
 
-  return {
-    ...gameState,
-    activePlayerIndex: nextIndex,
-    turn: wrapped ? turn + 1 : turn
-  };
+  return next;
 }
+
