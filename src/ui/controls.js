@@ -42,12 +42,13 @@ export function setupControls(dispatch, getState) {
   };
 
   // --- Turn buttons ---
-  $('#rollTimeBtn')?.addEventListener('click', () => {
-    const { player } = getPlayerAndStage();
-    if (!player) return;
-    // Only sensible in Dreamer, Amateur, Pro; reducer will guard anyway.
-    dispatch({ type: ActionTypes.ROLL_TIME });
-  });
+$('#rollTimeBtn')?.addEventListener('click', () => {
+  console.log('[controls] Roll Time clicked');
+  const { player } = getPlayerAndStage();
+  console.log('[controls] current player in handler:', player);
+  if (!player) return;
+  dispatch({ type: ActionTypes.ROLL_TIME });
+});
 
   $('#endTurnBtn')?.addEventListener('click', () => {
     dispatch({ type: ActionTypes.END_TURN });
