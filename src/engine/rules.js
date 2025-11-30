@@ -1,5 +1,3 @@
-// src/engine/rules.js
-
 import { ActionTypes } from './actions.js';
 import {
   getActivePlayer,
@@ -74,23 +72,33 @@ export function applyAction(gameState, action) {
  * START_TURN:
  * - Reset timeThisTurn for the active player.
  * - Apply start-of-turn effects (e.g. Minor Works).
- * - (Later) Rotate culture cards.
+ * - Stamp a flag so the UI can show "Turn N started".
+ * - (Later) culture rotation, loss checks, etc.
  */
 function startTurn(gameState) {
   let next = gameState;
 
-  // Apply Minor Work per-turn effects for Amateur & Pro.
   next = updateActivePlayer(next, (player) => {
+    const flags = {
+      ...(player.flags || {}),
+      // For UI: which turn did we start last?
+      lastTurnStartedAtTurn: gameState.turn
+    };
+
     if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
       // No Minor Work income at Home or Dreamer (for now).
       return {
         ...player,
-        timeThisTurn: 0
+        timeThisTurn: 0,
+        flags
       };
     }
 
-    let updated = { ...player };
-    updated.timeThisTurn = 0;
+    let updated = {
+      ...player,
+      timeThisTurn: 0,
+      flags
+    };
 
     if (Array.isArray(updated.minorWorks)) {
       for (const mw of updated.minorWorks) {
@@ -125,7 +133,7 @@ function startTurn(gameState) {
     return updated;
   });
 
-  // TODO later: culture rotation here.
+  // TODO later: culture rotation, starvation checks, etc.
 
   return next;
 }
