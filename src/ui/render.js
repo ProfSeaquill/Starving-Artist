@@ -395,6 +395,15 @@ export function render(gameState) {
   $('#statCraft').textContent = String(player.craft || 0);
   $('#statTime').textContent = String(player.timeThisTurn || 0);
 
+  // NEW: disable Roll Time when it does nothing (Home stage)
+  const rollTimeBtn = $('#rollTimeBtn');
+  if (rollTimeBtn) {
+    rollTimeBtn.disabled =
+      player.stage !== STAGE_DREAMER &&
+      player.stage !== STAGE_AMATEUR &&
+      player.stage !== STAGE_PRO;
+  }
+  
   const minorCount =
     (player.minorWorks && player.minorWorks.length) || 0;
   $('#minorWorksCount').textContent = String(minorCount);
@@ -406,6 +415,49 @@ export function render(gameState) {
   $('#masterworkProgress').textContent = `${player.masterworkProgress || 0} / ${
     gameState.config.pro.masterworkTargetProgress
   }`;
+
+    // --- Home Path track (board-level) ---
+  const homePathTrackEl = $('#homePathTrack');
+  if (homePathTrackEl) {
+    const cfg = gameState.config || {};
+    const seq =
+      (cfg.home && Array.isArray(cfg.home.rollSequence)
+        ? cfg.home.rollSequence
+        : []);
+    const steps = seq.length || 3;
+
+    const playersAtHome = gameState.players.filter(
+      (p) => p.stage === STAGE_HOME
+    );
+
+    const cellsHtml = [];
+    for (let i = 0; i < steps; i++) {
+      const cellPlayers = playersAtHome.filter((p) => {
+        const raw = p.homeProgress || 0;
+        const idx = Math.min(raw, steps - 1); // clamp just in case
+        return idx === i;
+      });
+
+      const tokensHtml = cellPlayers
+        .map(
+          (p) =>
+            `<div class="player-token" title="${(p.name || '')
+              .replace(/"/g, '&quot;')}"></div>`
+        )
+        .join('');
+
+      cellsHtml.push(`<div class="track-cell">${tokensHtml}</div>`);
+    }
+
+    homePathTrackEl.innerHTML = `
+      <div class="track-row">
+        <div class="track-row-label">Progress</div>
+        <div class="track-row-cells">
+          ${cellsHtml.join('')}
+        </div>
+      </div>
+    `;
+  }
 
   // --- Stage display for the active player ---
   const stageNameEl = $('#stageName');
