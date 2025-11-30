@@ -167,10 +167,10 @@ window._starvingArtistDispatch = dispatch;
 setupControls(dispatch, () => gameState);
 render(gameState);
 
-// Auto-start the very first turn with a Time roll.
+// Consider the game ready at Turn 1 with no Time yet.
+// The player explicitly starts their turn by clicking "Roll Time".
 dispatch({ type: ActionTypes.START_TURN });
-dispatch({ type: ActionTypes.ROLL_TIME });
-
+// (no auto ROLL_TIME here)
 
 // --- Debug panel toggle ---
 const toggleBtn = document.getElementById('toggleDebug');
