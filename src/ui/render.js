@@ -394,15 +394,6 @@ export function render(gameState) {
   $('#statInspiration').textContent = String(player.inspiration || 0);
   $('#statCraft').textContent = String(player.craft || 0);
   $('#statTime').textContent = String(player.timeThisTurn || 0);
-
-  // NEW: disable Roll Time when it does nothing (Home stage)
-  const rollTimeBtn = $('#rollTimeBtn');
-  if (rollTimeBtn) {
-    rollTimeBtn.disabled =
-      player.stage !== STAGE_DREAMER &&
-      player.stage !== STAGE_AMATEUR &&
-      player.stage !== STAGE_PRO;
-  }
   
   const minorCount =
     (player.minorWorks && player.minorWorks.length) || 0;
