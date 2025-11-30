@@ -460,111 +460,130 @@ button:disabled {
   <main class="app">
     <!-- LEFT: BOARD COLUMN -->
     <div class="board-column">
-          <!-- Pro Stage (top of the ladder) -->
-    <section class="stage-band stage-pro">
-      <div class="stage-header">
-        <div>
-          <div class="stage-title">Pro</div>
-          <div class="stage-subtitle" id="proPromotion"></div>
-        </div>
-        <div class="stage-players">
-          <span class="stage-players-label">Players here:</span>
-          <div id="proStagePlayers"></div>
-        </div>
+  <!-- Pro Stage (top of the ladder) -->
+  <section class="stage-band stage-pro">
+    <div class="stage-header">
+      <div>
+        <div class="stage-title">Pro</div>
+        <div class="stage-subtitle" id="proPromotion"></div>
       </div>
-      <div class="stage-body">
-        <div class="stage-row">
-          <div>
-            <div class="label">Masterwork Track</div>
-            <div id="masterworkTrack"></div>
-          </div>
-          <div>
-            <button id="drawProCardBtn" type="button">Draw Pro Card</button>
-          </div>
-        </div>
+      <div class="stage-players">
+        <span class="stage-players-label">Players here:</span>
+        <div id="proStagePlayers"></div>
       </div>
-    </section>
-
-    <!-- Amateur Stage -->
-    <section class="stage-band stage-amateur">
-      <div class="stage-header">
-        <div>
-          <div class="stage-title">Amateur</div>
-          <div class="stage-subtitle" id="amateurPromotion"></div>
-        </div>
-        <div class="stage-players">
-          <span class="stage-players-label">Players here:</span>
-          <div id="amateurStagePlayers"></div>
-        </div>
-      </div>
-      <div class="stage-body">
-        <div class="stage-row">
-          <div class="job-market">
-            <div class="label" style="width:100%;">Available Jobs</div>
-            <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
-          </div>
-          <div>
-            <button id="takeProfDevBtn" type="button">Draw Prof Dev Card</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Dreamer Stage -->
-    <section class="stage-band stage-dreamer">
-      <div class="stage-header">
-        <div>
-          <div class="stage-title">Dreamer</div>
-          <div class="stage-subtitle" id="dreamerPromotion"></div>
-        </div>
-        <div class="stage-players">
-          <span class="stage-players-label">Players here:</span>
-          <div id="dreamerStagePlayers"></div>
-        </div>
-      </div>
-      <div class="stage-body">
-        <div class="stage-row">
-          <div class="minorworks-track">
-            <div class="label">Minor Works Ladder</div>
-            <div id="minorWorksTrack"></div>
-          </div>
-          <div>
-            <button id="attendSocialBtn" type="button">Draw Social Card</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Home Stage (bottom of the ladder) -->
-    <section class="stage-band stage-home">
-      <div class="stage-header">
-        <div>
-          <div class="stage-title">Home</div>
-          <div class="stage-subtitle" id="homePromotion"></div>
-        </div>
-        <div class="stage-players">
-          <span class="stage-players-label">Players here:</span>
-          <div id="homeStagePlayers"></div>
-        </div>
-      </div>
-      <div class="stage-body">
-        <div class="stage-row">
-          <div class="home-track">
-            <div class="label">Home Path (3 successes)</div>
-            <div id="homePathTrack"></div>
-          </div>
-          <div>
-            <button id="drawHomeBtn" type="button">Draw Home Card</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-      <!-- Game over banner (board-level) -->
-      <section id="gameOverPanel" class="panel">
-        <div id="gameOverBanner" class="game-over" style="display:none;"></div>
-      </section>
     </div>
+    <div class="stage-body">
+      <div class="stage-row">
+        <div>
+          <div class="label">Masterwork Track</div>
+          <div id="masterworkTrack"></div>
+        </div>
+        <div>
+          <button id="drawProCardBtn" type="button">Draw Pro Card</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Arrow: Amateur → Pro -->
+  <div class="stage-arrow">
+    <span class="stage-arrow-icon">↑</span>
+    <span class="stage-arrow-label">Advance to Pro</span>
+  </div>
+
+  <!-- Amateur Stage -->
+  <section class="stage-band stage-amateur">
+    <div class="stage-header">
+      <div>
+        <div class="stage-title">Amateur</div>
+        <div class="stage-subtitle" id="amateurPromotion"></div>
+      </div>
+      <div class="stage-players">
+        <span class="stage-players-label">Players here:</span>
+        <div id="amateurStagePlayers"></div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="stage-row">
+        <div class="job-market">
+          <div class="label" style="width:100%;">Available Jobs</div>
+          <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
+        </div>
+        <div>
+          <button id="takeProfDevBtn" type="button">Draw Prof Dev Card</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Arrow: Dreamer → Amateur -->
+  <div class="stage-arrow">
+    <span class="stage-arrow-icon">↑</span>
+    <span class="stage-arrow-label">Advance to Amateur</span>
+  </div>
+
+  <!-- Dreamer Stage -->
+  <section class="stage-band stage-dreamer">
+    <div class="stage-header">
+      <div>
+        <div class="stage-title">Dreamer</div>
+        <div class="stage-subtitle" id="dreamerPromotion"></div>
+      </div>
+      <div class="stage-players">
+        <span class="stage-players-label">Players here:</span>
+        <div id="dreamerStagePlayers"></div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="stage-row">
+        <div class="minorworks-track">
+          <div class="label">Minor Works Ladder</div>
+          <div id="minorWorksTrack"></div>
+        </div>
+        <div>
+          <button id="attendSocialBtn" type="button">Draw Social Card</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Arrow: Home → Dreamer -->
+  <div class="stage-arrow">
+    <span class="stage-arrow-icon">↑</span>
+    <span class="stage-arrow-label">Advance to Dreamer</span>
+  </div>
+
+  <!-- Home Stage (bottom of the ladder) -->
+  <section class="stage-band stage-home">
+    <div class="stage-header">
+      <div>
+        <div class="stage-title">Home</div>
+        <div class="stage-subtitle" id="homePromotion"></div>
+      </div>
+      <div class="stage-players">
+        <span class="stage-players-label">Players here:</span>
+        <div id="homeStagePlayers"></div>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="stage-row">
+        <div class="home-track">
+          <div class="label">Home Path (3 successes)</div>
+          <div id="homePathTrack"></div>
+        </div>
+        <div>
+          <button id="drawHomeBtn" type="button">Draw Home Card</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game over banner (board-level) -->
+  <section id="gameOverPanel" class="panel">
+    <div id="gameOverBanner" class="game-over" style="display:none;"></div>
+  </section>
+</div>
+
 
     <!-- RIGHT: PLAYER COLUMN -->
     <div class="player-column">
