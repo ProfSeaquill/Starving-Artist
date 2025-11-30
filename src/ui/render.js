@@ -632,9 +632,6 @@ if (rollTimeBtn) {
       }`
     );
   }
-  if (flags.lastTimeRoll !== undefined) {
-    lines.push(`Time roll: ${flags.lastTimeRoll}`);
-  }
 
   cardInfoEl.textContent = lines.length
     ? lines.join('\n')
