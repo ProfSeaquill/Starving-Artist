@@ -153,7 +153,7 @@ gameState = {
   proDiscard: []
 };
 
-function maybeShowCardPopup(state, action) {
+function showCardOverlay(title, name, bodyText) {
   const overlay = document.getElementById('cardOverlay');
   if (!overlay) return;
 
@@ -162,90 +162,144 @@ function maybeShowCardPopup(state, action) {
   const bodyEl  = document.getElementById('cardOverlayBody');
   if (!titleEl || !nameEl || !bodyEl) return;
 
+  titleEl.textContent = title || '';
+  nameEl.textContent  = name || '';
+  bodyEl.textContent  = bodyText || '';
+
+  overlay.classList.add('visible');
+}
+
+function maybeShowCardPopup(state, action) {
   const player = state.players[state.activePlayerIndex];
-  if (!player || !player.flags) return;
+  if (!player) return;
+
+  // Ensure flags exists
+  player.flags = player.flags || {};
   const flags = player.flags;
+
+  const currentTurn = state.turn || 1;
 
   let card = null;
   let label = '';
   let bodyText = '';
+  let cardName = '';
 
   switch (action.type) {
     case ActionTypes.DRAW_HOME_CARD: {
       card = flags.lastHomeCard;
+      if (!card) return;
+      flags.lastHomeCardTurn = currentTurn; // remember this turn
       label = 'Home Card';
-      if (card && card.text) {
-        bodyText = card.text;
-      }
+      cardName = card.name || '(Unnamed Home card)';
+      bodyText = card.text || '';
       break;
     }
 
     case ActionTypes.ATTEND_SOCIAL_EVENT:
     case ActionTypes.SKIP_SOCIAL_EVENT: {
       card = flags.lastSocialEventCard;
+      if (!card) return;
+      flags.lastSocialEventTurn = currentTurn; // remember this turn
       label = 'Social Event';
-      if (card) {
-        const attendText = card.attend && card.attend.text;
-        const skipText   = card.skip && card.skip.text;
-        const parts = [];
-        if (attendText) parts.push('Attend: ' + attendText);
-        if (skipText)   parts.push('Skip: '   + skipText);
-        bodyText = parts.join('\n\n');
-      }
+      cardName = card.name || '(Social Event)';
+      const attendText = card.attend && card.attend.text;
+      const skipText   = card.skip && card.skip.text;
+      const parts = [];
+      if (attendText) parts.push('Attend: ' + attendText);
+      if (skipText)   parts.push('Skip: '   + skipText);
+      bodyText = parts.join('\n\n') || '(No rules text yet.)';
       break;
     }
 
     case ActionTypes.DRAW_PRO_CARD: {
       card = flags.lastProCard;
+      if (!card) return;
+      flags.lastProCardTurn = currentTurn; // remember this turn
       label = 'Pro Card';
-      if (card) {
-        const lines = [];
-        if (card.text) lines.push(card.text);
-        if (Array.isArray(card.effects) && card.effects.length) {
-          const effLines = card.effects
-            .map((eff) => {
-              if (eff.type === 'stat') {
-                const sign = eff.delta >= 0 ? '+' : '';
-                return `${eff.stat} ${sign}${eff.delta}`;
-              }
-              if (eff.type === 'masterwork') {
-                const sign = eff.delta >= 0 ? '+' : '';
-                return `Masterwork ${sign}${eff.delta}`;
-              }
-              return '';
-            })
-            .filter(Boolean);
-          if (effLines.length) {
-            lines.push('Effects: ' + effLines.join(', '));
-          }
-        }
-        bodyText = lines.join('\n\n');
+      cardName = card.name || '(Unnamed Pro card)';
+
+      const lines = [];
+      if (card.text) {
+        lines.push(card.text);
       }
+      if (Array.isArray(card.effects) && card.effects.length) {
+        const effLines = card.effects
+          .map((eff) => {
+            if (eff.type === 'stat') {
+              const sign = eff.delta >= 0 ? '+' : '';
+              return `${eff.stat} ${sign}${eff.delta}`;
+            }
+            if (eff.type === 'masterwork') {
+              const sign = eff.delta >= 0 ? '+' : '';
+              return `Masterwork ${sign}${eff.delta}`;
+            }
+            return '';
+          })
+          .filter(Boolean);
+        if (effLines.length) {
+          lines.push('Effects: ' + effLines.join(', '));
+        }
+      }
+      bodyText = lines.join('\n\n') || '(No rules text yet.)';
       break;
     }
 
     case ActionTypes.DRAW_CULTURE_CARD: {
-      // Future-proofing: when Culture cards are wired, just set flags.lastCultureCard
+      // Future-proof: when you wire Culture cards, set flags.lastCultureCard.
       card = flags.lastCultureCard;
+      if (!card) return;
+      flags.lastCultureCardTurn = currentTurn; // remember this turn
       label = 'Culture Card';
-      if (card && card.text) {
-        bodyText = card.text;
-      }
+      cardName = card.name || '(Culture Card)';
+      bodyText = card.text || '';
       break;
     }
 
     default:
-      return; // Not a card-draw action; bail.
+      return;
   }
 
-  if (!card) return;
-
-  titleEl.textContent = label;
-  nameEl.textContent  = card.name || '(Unnamed card)';
-  bodyEl.textContent  = bodyText || '(No rules text yet.)';
-
-  overlay.classList.add('visible');
+  showCardOverlay(label, cardName, bodyText);
 }
+
+function getCardDrawDenyReason(state, action) {
+  const player = state.players[state.activePlayerIndex];
+  if (!player) return null;
+
+  const flags = player.flags || {};
+  const currentTurn = state.turn || 1;
+
+  switch (action.type) {
+    case ActionTypes.DRAW_HOME_CARD:
+      if (flags.lastHomeCardTurn === currentTurn) {
+        return 'You already drew a Home card this turn.';
+      }
+      return null;
+
+    case ActionTypes.ATTEND_SOCIAL_EVENT:
+    case ActionTypes.SKIP_SOCIAL_EVENT:
+      if (flags.lastSocialEventTurn === currentTurn) {
+        return 'You already resolved a Social Event this turn.';
+      }
+      return null;
+
+    case ActionTypes.DRAW_PRO_CARD:
+      if (flags.lastProCardTurn === currentTurn) {
+        return 'You already drew a Pro card this turn.';
+      }
+      return null;
+
+    case ActionTypes.DRAW_CULTURE_CARD:
+      if (flags.lastCultureCardTurn === currentTurn) {
+        return 'You already drew a Culture card this turn.';
+      }
+      return null;
+
+    default:
+      return null;
+  }
+}
+
 
 // --- Dispatch wrapper with diagnostics ---
 function dispatch(action) {
