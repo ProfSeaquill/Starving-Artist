@@ -303,8 +303,23 @@ function getCardDrawDenyReason(state, action) {
 
 // --- Dispatch wrapper with diagnostics ---
 function dispatch(action) {
+  // 0) Card draw guard: block extra draws this turn.
+  const denyReason = getCardDrawDenyReason(gameState, action);
+  if (denyReason) {
+    showCardOverlay('No more cards this turn', '', denyReason);
+    return;
+  }
+
   console.log('[dispatch] about to apply action:', action);
   let nextState;
+
+  // 1) Snapshot active player's stage BEFORE the action (for tutorials).
+  const prevState = gameState;
+  const prevPlayer =
+    prevState && prevState.players
+      ? prevState.players[prevState.activePlayerIndex]
+      : null;
+  const prevStage = prevPlayer ? prevPlayer.stage : null;
 
   try {
     nextState = applyAction(gameState, action);
@@ -333,11 +348,18 @@ function dispatch(action) {
     return;
   }
 
+  // 2) Commit new state + render.
   gameState = nextState;
   console.log('[dispatch] new state:', gameState);
   render(gameState);
+
+  // 3) Show a card popup if this action drew/resolved a card.
   maybeShowCardPopup(gameState, action);
+
+  // 4) Show stage tutorial if the active player's stage changed.
+  maybeShowStageTutorial(prevStage);
 }
+
 
 
 // For debugging in console if you like:
