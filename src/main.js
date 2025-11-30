@@ -6,6 +6,8 @@ import { setupControls } from './ui/controls.js';
 import { render } from './ui/render.js';
 
 import { ActionTypes } from './engine/actions.js';
+import { loadHomeDeckFromCsv } from './engine/cards.js';
+
 
 // --- Sample card data (for testing only) ---
 // You will eventually load this from JSON files.
@@ -124,6 +126,19 @@ const SAMPLE_PRO_CARDS = [
   }
 ];
 
+// --- Load Home deck from CSV (with fallback to SAMPLE_HOME_CARDS) ---
+let HOME_DECK_SOURCE = SAMPLE_HOME_CARDS;
+
+try {
+  HOME_DECK_SOURCE = await loadHomeDeckFromCsv('./data/cards/home_deck.csv');
+  console.log('[cards] Loaded Home deck from CSV:', HOME_DECK_SOURCE.length);
+} catch (err) {
+  console.error(
+    '[cards] Failed to load home_deck.csv; falling back to SAMPLE_HOME_CARDS.',
+    err
+  );
+}
+
 // Small helper for shuffling
 function shuffleArray(arr) {
   const copy = arr.slice();
@@ -143,7 +158,7 @@ let gameState = createInitialGame({
 // Seed decks with sample data
 gameState = {
   ...gameState,
-  homeDeck: shuffleArray(SAMPLE_HOME_CARDS),
+  homeDeck: shuffleArray(HOME_DECK_SOURCE),
   homeDiscard: [],
   socialDeck: shuffleArray(SAMPLE_SOCIAL_CARDS),
   socialDiscard: [],
