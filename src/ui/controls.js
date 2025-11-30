@@ -196,4 +196,3 @@ export function setupControls(dispatch, getState) {
     console.error('[controls] ERROR during setupControls:', err);
   }
 }
-}
