@@ -78,17 +78,21 @@ export function applyAction(gameState, action) {
 function startTurn(gameState) {
   let next = gameState;
 
-  next = updateActivePlayer(next, (player) => {
-  // Start from existing flags
-  const baseFlags = {
-    ...(player.flags || {}),
-    // For UI: which turn did we start last?
-    lastTurnStartedAtTurn: gameState.turn
-  };
+    next = updateActivePlayer(next, (player) => {
+    // Start from existing flags
+    const baseFlags = {
+      ...(player.flags || {}),
+      // For UI: which turn did we start last?
+      lastTurnStartedAtTurn: gameState.turn,
+      // Reset per-turn time roll flags
+      hasRolledTimeThisTurn: false,
+      timeRerollsRemaining: 0
+    };
 
-  // Clear per-turn Home draw flag
-  const flags = { ...baseFlags };
-  delete flags.homeCardDrawnThisTurn;
+    // Clear per-turn Home draw flag
+    const flags = { ...baseFlags };
+    delete flags.homeCardDrawnThisTurn;
+
 
   if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
     // No Minor Work income at Home or Dreamer (for now).
@@ -144,12 +148,6 @@ function startTurn(gameState) {
   return next;
 }
 
-/**
- * ROLL_TIME:
- * - Roll a d6 and set timeThisTurn for the active player.
- * - Only applies in Dreamer / Amateur / Pro.
- * - At Home, this is a no-op (Time isn't used there).
- */
 function rollTime(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
@@ -164,17 +162,40 @@ function rollTime(gameState) {
     return gameState;
   }
 
+  const flags = player.flags || {};
+  const hasRolled = !!flags.hasRolledTimeThisTurn;
+  const rerollsRemaining = flags.timeRerollsRemaining || 0;
+
+  // Already rolled and no rerolls banked: ignore this action.
+  if (hasRolled && rerollsRemaining <= 0) {
+    // Optional probe:
+    // console.log('[rules] rollTime ignored: already rolled this turn, no rerolls left');
+    return gameState;
+  }
+
   const roll = rollD6();
 
   const next = updateActivePlayer(gameState, (p) => {
-    const flags = {
-      ...(p.flags || {}),
-      lastTimeRoll: roll
+    const prevFlags = p.flags || {};
+    const prevHasRolled = !!prevFlags.hasRolledTimeThisTurn;
+    const prevRerolls = prevFlags.timeRerollsRemaining || 0;
+
+    const consumingReroll = prevHasRolled && prevRerolls > 0;
+    const newRerolls = consumingReroll
+      ? Math.max(prevRerolls - 1, 0)
+      : prevRerolls;
+
+    const newFlags = {
+      ...prevFlags,
+      lastTimeRoll: roll,
+      hasRolledTimeThisTurn: true,
+      timeRerollsRemaining: newRerolls
     };
+
     return {
       ...p,
       timeThisTurn: roll,
-      flags
+      flags: newFlags
     };
   });
 
