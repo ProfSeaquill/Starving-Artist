@@ -153,6 +153,100 @@ gameState = {
   proDiscard: []
 };
 
+function maybeShowCardPopup(state, action) {
+  const overlay = document.getElementById('cardOverlay');
+  if (!overlay) return;
+
+  const titleEl = document.getElementById('cardOverlayTitle');
+  const nameEl  = document.getElementById('cardOverlayName');
+  const bodyEl  = document.getElementById('cardOverlayBody');
+  if (!titleEl || !nameEl || !bodyEl) return;
+
+  const player = state.players[state.activePlayerIndex];
+  if (!player || !player.flags) return;
+  const flags = player.flags;
+
+  let card = null;
+  let label = '';
+  let bodyText = '';
+
+  switch (action.type) {
+    case ActionTypes.DRAW_HOME_CARD: {
+      card = flags.lastHomeCard;
+      label = 'Home Card';
+      if (card && card.text) {
+        bodyText = card.text;
+      }
+      break;
+    }
+
+    case ActionTypes.ATTEND_SOCIAL_EVENT:
+    case ActionTypes.SKIP_SOCIAL_EVENT: {
+      card = flags.lastSocialEventCard;
+      label = 'Social Event';
+      if (card) {
+        const attendText = card.attend && card.attend.text;
+        const skipText   = card.skip && card.skip.text;
+        const parts = [];
+        if (attendText) parts.push('Attend: ' + attendText);
+        if (skipText)   parts.push('Skip: '   + skipText);
+        bodyText = parts.join('\n\n');
+      }
+      break;
+    }
+
+    case ActionTypes.DRAW_PRO_CARD: {
+      card = flags.lastProCard;
+      label = 'Pro Card';
+      if (card) {
+        const lines = [];
+        if (card.text) lines.push(card.text);
+        if (Array.isArray(card.effects) && card.effects.length) {
+          const effLines = card.effects
+            .map((eff) => {
+              if (eff.type === 'stat') {
+                const sign = eff.delta >= 0 ? '+' : '';
+                return `${eff.stat} ${sign}${eff.delta}`;
+              }
+              if (eff.type === 'masterwork') {
+                const sign = eff.delta >= 0 ? '+' : '';
+                return `Masterwork ${sign}${eff.delta}`;
+              }
+              return '';
+            })
+            .filter(Boolean);
+          if (effLines.length) {
+            lines.push('Effects: ' + effLines.join(', '));
+          }
+        }
+        bodyText = lines.join('\n\n');
+      }
+      break;
+    }
+
+    case ActionTypes.DRAW_CULTURE_CARD: {
+      // Future-proofing: when Culture cards are wired, just set flags.lastCultureCard
+      card = flags.lastCultureCard;
+      label = 'Culture Card';
+      if (card && card.text) {
+        bodyText = card.text;
+      }
+      break;
+    }
+
+    default:
+      return; // Not a card-draw action; bail.
+  }
+
+  if (!card) return;
+
+  titleEl.textContent = label;
+  nameEl.textContent  = card.name || '(Unnamed card)';
+  bodyEl.textContent  = bodyText || '(No rules text yet.)';
+
+  overlay.classList.add('visible');
+}
+
 // --- Dispatch wrapper with diagnostics ---
 function dispatch(action) {
   console.log('[dispatch] about to apply action:', action);
@@ -188,6 +282,7 @@ function dispatch(action) {
   gameState = nextState;
   console.log('[dispatch] new state:', gameState);
   render(gameState);
+  maybeShowCardPopup(gameState, action);
 }
 
 
@@ -214,4 +309,31 @@ if (toggleBtn && debugLogEl) {
     debugLogEl.style.display = isHidden ? 'block' : 'none';
   });
 }
+
+// --- Card overlay wiring ---
+const cardOverlay = document.getElementById('cardOverlay');
+const cardOverlayClose = document.getElementById('cardOverlayClose');
+
+if (cardOverlay && cardOverlayClose) {
+  const hideOverlay = () => {
+    cardOverlay.classList.remove('visible');
+  };
+
+  cardOverlayClose.addEventListener('click', hideOverlay);
+
+  // Click on the dark backdrop (but not the card itself) to close
+  cardOverlay.addEventListener('click', (evt) => {
+    if (evt.target === cardOverlay) {
+      hideOverlay();
+    }
+  });
+
+  // Escape key also closes the popup
+  document.addEventListener('keydown', (evt) => {
+    if (evt.key === 'Escape' && cardOverlay.classList.contains('visible')) {
+      hideOverlay();
+    }
+  });
+}
+
 
