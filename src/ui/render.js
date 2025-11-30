@@ -389,11 +389,31 @@ export function render(gameState) {
   $('#playerArtPath').textContent = player.artPath;
 
   // --- Stats ---
-  $('#statMoney').textContent = String(player.money || 0);
+    $('#statMoney').textContent = String(player.money || 0);
   $('#statFood').textContent = String(player.food || 0);
   $('#statInspiration').textContent = String(player.inspiration || 0);
   $('#statCraft').textContent = String(player.craft || 0);
-  $('#statTime').textContent = String(player.timeThisTurn || 0);
+
+  const timeValue = player.timeThisTurn || 0;
+
+  // Update numeric Time text
+  const statTimeEl = $('#statTime');
+  if (statTimeEl) {
+    statTimeEl.textContent = String(timeValue);
+  }
+
+  // Update time bar segments
+  const timeBar = $('#timeBar');
+  if (timeBar) {
+    const segments = timeBar.querySelectorAll('.time-segment');
+    const maxSegs = segments.length || 6;
+    const clamped = Math.max(0, Math.min(maxSegs, timeValue));
+
+    segments.forEach((seg, idx) => {
+      seg.classList.toggle('filled', idx < clamped);
+    });
+  }
+
 
   // NEW: disable Roll Time when it does nothing (Home stage)
 const rollTimeBtn = $('#rollTimeBtn');
