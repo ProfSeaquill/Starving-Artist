@@ -9,7 +9,15 @@ import {
   JOBS
 } from '../engine/state.js';
 
-const $ = (id) => document.getElementById(id);
+// Simple DOM helper: accepts "id" or "#id"
+const $ = (selector) => {
+  if (!selector) return null;
+  const id = selector[0] === '#'
+    ? selector.slice(1)
+    : selector;
+  return document.getElementById(id);
+};
+
 
 /**
  * Hook up DOM controls to dispatch actions.
