@@ -450,6 +450,48 @@ button:disabled {
       font-size: 11px;
       white-space: pre-wrap;
     }
+
+        /* Card popup overlay */
+    .card-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 1000;
+    }
+    .card-overlay.visible {
+      display: flex;
+    }
+    .card-modal {
+      background: #181818;
+      border-radius: 10px;
+      border: 1px solid #555;
+      padding: 16px 18px;
+      max-width: 420px;
+      width: calc(100% - 40px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    }
+    .card-modal h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+    .card-modal h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .card-modal pre {
+      margin: 0 0 12px;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+    .card-modal button {
+      width: 100%;
+      margin-top: 4px;
+    }
+
   </style>
 </head>
 <body>
@@ -718,6 +760,16 @@ button:disabled {
     </div>
   </main>
 
+  <!-- Card popup overlay -->
+  <div id="cardOverlay" class="card-overlay">
+    <div class="card-modal">
+      <h2 id="cardOverlayTitle">Card</h2>
+      <h3 id="cardOverlayName"></h3>
+      <pre id="cardOverlayBody"></pre>
+      <button id="cardOverlayClose" type="button">OK</button>
+    </div>
+  </div>
+  
   <!-- keep this at the very end -->
   <script type="module" src="./src/main.js"></script>
 </body>
