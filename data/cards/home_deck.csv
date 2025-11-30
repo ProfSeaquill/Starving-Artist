@@ -1,1 +1,13 @@
-
+id,title,flavor,gain_food,gain_inspiration,gain_craft,gain_money,loss_food,loss_inspiration,loss_craft,loss_money,tags
+H01,Mom Sends Groceries,Your mom drops by with bags of groceries and leftover casseroles.,2,1,0,0,0,0,0,0,"family,windfall,home"
+H02,Rent Is Due,The first of the month hits and your landlord wants every last cent.,0,0,0,0,0,0,0,2,"bills,setback,home"
+H03,Quiet Night Reading,"You curl up with a stack of books, highlighter in hand, and get lost for hours.",0,2,1,0,1,0,0,0,"routine,study,solo"
+H04,Roommate Drama,Your roommate forgets to do dishes again and the argument derails your focus.,0,0,0,0,1,2,0,0,"roommates,stress,setback"
+H05,Side Hustle Payout,You finish a small freelance job and finally get paid for your skills.,0,0,1,2,0,1,0,0,"work,windfall,hustle"
+H06,Streaming Spiral,One episode turns into five and your to-do list just stares back at you.,0,1,0,0,1,0,1,"0,distraction,media,home",
+H07,Big Cook-Up,You meal-prep a giant pot of something cheap and filling for the week.,3,0,0,0,0,0,0,1,"cooking,prep,frugality"
+H08,Used Bookstore Haul,"A dusty shop has a sale and you haul home armfuls of strange, inspiring books.",0,2,1,0,0,0,0,"1,books,inspiration,spending",
+H09,Landlord Won’t Fix It,"A leak, a draft, a weird noise—your landlord shrugs and says “next month.”",0,0,0,0,0,1,1,0,"housing,frustration,setback"
+H10,Neighbor Potluck,"The building hosts a potluck; you leave full, buzzing with stories and ideas.",1,1,0,0,0,0,0,"0,community,food,social",
+H11,Odd Jobs Around Home,"You fix shelves, patch walls, and tinker; the place looks better and so does your skill.",0,0,2,1,0,0,0,0,"projects,craft,home"
+H12,Sick Day in Bed,"You call it, stay under the covers, and let your body and brain reset a little.",0,1,0,0,1,0,0,"1,health,rest,setback",
