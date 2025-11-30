@@ -327,6 +327,50 @@ function renderPromotionRules(gameState) {
   }
 }
 
+function updateStagePanelVisibility(stage) {
+  // Hide all stage-specific action blocks by default
+  const allStageBlocks = document.querySelectorAll('.stage-actions');
+  allStageBlocks.forEach((el) => {
+    el.style.display = 'none';
+  });
+
+  // Show only the block(s) relevant to the current stage
+  let selector = '';
+  switch (stage) {
+    case STAGE_HOME:
+      selector = '.stage-home-only';
+      break;
+    case STAGE_DREAMER:
+      selector = '.stage-dreamer-only';
+      break;
+    case STAGE_AMATEUR:
+      selector = '.stage-amateur-only';
+      break;
+    case STAGE_PRO:
+      selector = '.stage-pro-only';
+      break;
+    default:
+      selector = '';
+  }
+
+  if (selector) {
+    document.querySelectorAll(selector).forEach((el) => {
+      el.style.display = '';
+    });
+  }
+
+  // Job & Culture only matters once you're Amateur or Pro
+  const jobSection = document.querySelector('.player-job-section');
+  if (jobSection) {
+    if (stage === STAGE_AMATEUR || stage === STAGE_PRO) {
+      jobSection.style.display = '';
+    } else {
+      jobSection.style.display = 'none';
+    }
+  }
+}
+
+
 /**
  * Render the current gameState into the DOM.
  */
@@ -394,6 +438,9 @@ export function render(gameState) {
   stageNameEl.textContent = stageName;
   stageBadgeEl.textContent = stageName;
   stageBadgeEl.className = `badge ${badgeClass}`;
+  // Stage-aware player panel UI (show only relevant action groups)
+  updateStagePanelVisibility(player.stage);
+
 
   // --- Job info ---
   const jobInfoEl = $('#jobInfo');
