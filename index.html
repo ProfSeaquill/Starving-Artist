@@ -492,6 +492,68 @@ button:disabled {
       margin-top: 4px;
     }
 
+        /* Time bar (for Time this turn) */
+    .time-bar {
+      display: inline-flex;
+      gap: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .time-segment {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      border: 1px solid #555;
+      background: #222;
+      box-sizing: border-box;
+    }
+    .time-segment.filled {
+      background: #2ecc71;
+      border-color: #2ecc71;
+    }
+
+    /* Dice roll popup */
+    .dice-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 1001;
+    }
+    .dice-overlay.visible {
+      display: flex;
+    }
+    .dice-modal {
+      background: #181818;
+      border-radius: 10px;
+      border: 1px solid #555;
+      padding: 16px 20px;
+      max-width: 260px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    }
+    .dice-modal h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+    .dice-face {
+      font-size: 48px;
+      margin: 12px 0 16px;
+    }
+    .dice-face.rolling {
+      animation: dice-wiggle 0.15s linear infinite;
+    }
+    @keyframes dice-wiggle {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-2px); }
+      50%  { transform: translateX(2px); }
+      75%  { transform: translateX(-1px); }
+      100% { transform: translateX(0); }
+    }
+
   </style>
 </head>
 <body>
@@ -665,9 +727,19 @@ button:disabled {
             <div class="label">Craft</div>
             <div class="value" id="statCraft">0</div>
           </div>
-          <div>
+                    <div>
             <div class="label">Time</div>
-            <div class="value" id="statTime">0</div>
+            <div class="value">
+              <span id="statTime">0</span>
+              <div id="timeBar" class="time-bar">
+                <div class="time-segment"></div>
+                <div class="time-segment"></div>
+                <div class="time-segment"></div>
+                <div class="time-segment"></div>
+                <div class="time-segment"></div>
+                <div class="time-segment"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -760,13 +832,22 @@ button:disabled {
     </div>
   </main>
 
-  <!-- Card popup overlay -->
+    <!-- Card popup overlay -->
   <div id="cardOverlay" class="card-overlay">
     <div class="card-modal">
       <h2 id="cardOverlayTitle">Card</h2>
       <h3 id="cardOverlayName"></h3>
       <pre id="cardOverlayBody"></pre>
       <button id="cardOverlayClose" type="button">OK</button>
+    </div>
+  </div>
+
+  <!-- Dice roll overlay -->
+  <div id="diceOverlay" class="dice-overlay">
+    <div class="dice-modal">
+      <h2>Time Roll</h2>
+      <div id="diceFace" class="dice-face">-</div>
+      <button id="diceOkButton" type="button">OK</button>
     </div>
   </div>
   
