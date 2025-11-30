@@ -4,25 +4,31 @@
   <meta charset="UTF-8" />
   <title>Starving Artist Prototype</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&family=Cinzel:wght@600;700&display=swap">
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #111;
-      color: #eee;
-      margin: 0;
-      padding: 0;
-    }
+  font-family: 'Cardo', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #181116 0, #060608 55%, #020203 100%);
+  color: #eee;
+  margin: 0;
+  padding: 0;
+}
 
     header {
-      padding: 12px 16px;
-      background: #222;
-      border-bottom: 1px solid #333;
-    }
+  padding: 14px 20px;
+  background: linear-gradient(to bottom, #0d0c0f, #151319);
+  border-bottom: 1px solid #272333;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+}
 
-    header h1 {
-      margin: 0 0 4px;
-      font-size: 20px;
-    }
+header h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+  font-family: 'Cinzel', 'Cardo', serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 
     header .meta {
       font-size: 13px;
@@ -31,13 +37,21 @@
       gap: 16px;
     }
 
-    main.app {
-      display: grid;
-      grid-template-columns: 2fr minmax(260px, 1fr);
-      gap: 16px;
-      padding: 16px;
-      box-sizing: border-box;
-    }
+    /* Board container: feels like a physical board on a table */
+main.app {
+  display: grid;
+  grid-template-columns: 2fr minmax(260px, 1fr);
+  gap: 16px;
+  padding: 16px 20px 20px;
+  box-sizing: border-box;
+  max-width: 1100px;
+  margin: 20px auto 32px;
+  background: radial-gradient(circle at top, #2c1b11 0, #1c1410 40%, #141010 100%);
+  border-radius: 16px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.75);
+  border: 1px solid #3b2a18;
+}
+
 
     .panel {
       border: 1px solid #333;
@@ -62,66 +76,65 @@
       gap: 12px;
     }
 
-    /* Stage bands */
-
     .stage-band {
-      border-radius: 8px;
-      padding: 8px 12px;
-      border: 1px solid #333;
-    }
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 8px 14px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
 
-    .stage-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
+.stage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
 
-    .stage-title {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
+.stage-title {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'Cinzel', 'Cardo', serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
 
-    .stage-subtitle {
-      font-size: 12px;
-      color: #ccc;
-      margin-top: 2px;
-    }
+.stage-subtitle {
+  font-size: 12px;
+  color: #d6cbbd;
+  margin-top: 2px;
+}
 
-    .stage-players {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+/* Stage colors – subtle tint so they still feel unified on one board */
+.stage-home {
+  background:
+    linear-gradient(to bottom right, rgba(93, 70, 46, 0.7), rgba(46, 31, 23, 0.9));
+}
 
-    .stage-players-label {
-      font-size: 11px;
-      color: #ccc;
-      margin-right: 4px;
-    }
+.stage-dreamer {
+  background:
+    linear-gradient(to bottom right, rgba(38, 69, 93, 0.7), rgba(18, 37, 54, 0.9));
+}
 
-    .player-marker {
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      display: inline-block;
-      border: 1px solid #000;
-      font-size: 10px;
-      line-height: 14px;
-      text-align: center;
-      color: #000;
-      background: #999;
-    }
+.stage-amateur {
+  background:
+    linear-gradient(to bottom right, rgba(94, 89, 45, 0.7), rgba(49, 43, 22, 0.9));
+}
 
-    .stage-body {
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+.stage-pro {
+  background:
+    linear-gradient(to bottom right, rgba(46, 96, 70, 0.7), rgba(20, 53, 36, 0.9));
+}
+
+.stage-body {
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 
     .stage-row {
       display: flex;
@@ -297,12 +310,12 @@
     .badge.home { border-color: #7f8c8d; color: #bdc3c7; }
 
     .section-title {
-      margin-top: 8px;
-      font-size: 12px;
-      text-transform: uppercase;
-      color: #aaa;
-      letter-spacing: 0.08em;
-    }
+  margin-top: 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #c2b59e;
+  letter-spacing: 0.14em;
+}
 
     .stats-grid {
       display: grid;
@@ -313,16 +326,16 @@
     }
 
     .label {
-      color: #aaa;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
+  color: #a89f90;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
 
     .value {
-      font-weight: 600;
-      font-size: 13px;
-    }
+  font-weight: 600;
+  font-size: 14px;
+}
 
     .player-progress {
       font-size: 12px;
@@ -337,14 +350,29 @@
     }
 
     button {
-      background: #333;
-      color: #eee;
-      border-radius: 6px;
-      border: 1px solid #444;
-      padding: 6px 8px;
-      font-size: 13px;
-      cursor: pointer;
-    }
+  background: radial-gradient(circle at top, #3b3330 0, #262021 60%, #1b1516 100%);
+  color: #f4efe6;
+  border-radius: 10px;
+  border: 1px solid #5b4b46;
+  padding: 6px 9px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  text-transform: none;
+}
+
+button:hover {
+  background: radial-gradient(circle at top, #4b423f 0, #302629 60%, #1f1719 100%);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
 
     button:hover { background: #444; }
 
@@ -404,105 +432,105 @@
   <main class="app">
     <!-- LEFT: BOARD COLUMN -->
     <div class="board-column">
-      <!-- Home Stage -->
-      <section class="stage-band stage-home">
-        <div class="stage-header">
+          <!-- Pro Stage (top of the ladder) -->
+    <section class="stage-band stage-pro">
+      <div class="stage-header">
+        <div>
+          <div class="stage-title">Pro</div>
+          <div class="stage-subtitle" id="proPromotion"></div>
+        </div>
+        <div class="stage-players">
+          <span class="stage-players-label">Players here:</span>
+          <div id="proStagePlayers"></div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-row">
           <div>
-            <div class="stage-title">Home</div>
-            <div class="stage-subtitle" id="homePromotion"></div>
+            <div class="label">Masterwork Track</div>
+            <div id="masterworkTrack"></div>
           </div>
-          <div class="stage-players">
-            <span class="stage-players-label">Players here:</span>
-            <div id="homeStagePlayers"></div>
-          </div>
-        </div>
-        <div class="stage-body">
-          <div class="stage-row">
-            <div class="home-track">
-              <div class="label">Home Path (3 successes)</div>
-              <div id="homePathTrack"></div>
-            </div>
-            <div>
-              <button id="drawHomeBtn" type="button">Draw Home Card</button>
-            </div>
+          <div>
+            <button id="drawProCardBtn" type="button">Draw Pro Card</button>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Dreamer Stage -->
-      <section class="stage-band stage-dreamer">
-        <div class="stage-header">
+    <!-- Amateur Stage -->
+    <section class="stage-band stage-amateur">
+      <div class="stage-header">
+        <div>
+          <div class="stage-title">Amateur</div>
+          <div class="stage-subtitle" id="amateurPromotion"></div>
+        </div>
+        <div class="stage-players">
+          <span class="stage-players-label">Players here:</span>
+          <div id="amateurStagePlayers"></div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-row">
+          <div class="job-market">
+            <div class="label" style="width:100%;">Available Jobs</div>
+            <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
+          </div>
           <div>
-            <div class="stage-title">Dreamer</div>
-            <div class="stage-subtitle" id="dreamerPromotion"></div>
-          </div>
-          <div class="stage-players">
-            <span class="stage-players-label">Players here:</span>
-            <div id="dreamerStagePlayers"></div>
+            <button id="takeProfDevBtn" type="button">Draw Prof Dev Card</button>
           </div>
         </div>
-        <div class="stage-body">
-          <div class="stage-row">
-            <div class="minorworks-track">
-              <div class="label">Minor Works Ladder</div>
-              <div id="minorWorksTrack"></div>
-            </div>
-            <div>
-              <button id="attendSocialBtn" type="button">Draw Social Card</button>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Amateur Stage -->
-      <section class="stage-band stage-amateur">
-        <div class="stage-header">
+    <!-- Dreamer Stage -->
+    <section class="stage-band stage-dreamer">
+      <div class="stage-header">
+        <div>
+          <div class="stage-title">Dreamer</div>
+          <div class="stage-subtitle" id="dreamerPromotion"></div>
+        </div>
+        <div class="stage-players">
+          <span class="stage-players-label">Players here:</span>
+          <div id="dreamerStagePlayers"></div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-row">
+          <div class="minorworks-track">
+            <div class="label">Minor Works Ladder</div>
+            <div id="minorWorksTrack"></div>
+          </div>
           <div>
-            <div class="stage-title">Amateur</div>
-            <div class="stage-subtitle" id="amateurPromotion"></div>
-          </div>
-          <div class="stage-players">
-            <span class="stage-players-label">Players here:</span>
-            <div id="amateurStagePlayers"></div>
+            <button id="attendSocialBtn" type="button">Draw Social Card</button>
           </div>
         </div>
-        <div class="stage-body">
-          <div class="stage-row">
-            <div class="job-market">
-              <div class="label" style="width:100%;">Available Jobs</div>
-              <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
-            </div>
-            <div>
-              <button id="takeProfDevBtn" type="button">Draw Prof Dev Card</button>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Pro Stage -->
-      <section class="stage-band stage-pro">
-        <div class="stage-header">
+    <!-- Home Stage (bottom of the ladder) -->
+    <section class="stage-band stage-home">
+      <div class="stage-header">
+        <div>
+          <div class="stage-title">Home</div>
+          <div class="stage-subtitle" id="homePromotion"></div>
+        </div>
+        <div class="stage-players">
+          <span class="stage-players-label">Players here:</span>
+          <div id="homeStagePlayers"></div>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-row">
+          <div class="home-track">
+            <div class="label">Home Path (3 successes)</div>
+            <div id="homePathTrack"></div>
+          </div>
           <div>
-            <div class="stage-title">Pro</div>
-            <div class="stage-subtitle" id="proPromotion"></div>
-          </div>
-          <div class="stage-players">
-            <span class="stage-players-label">Players here:</span>
-            <div id="proStagePlayers"></div>
+            <button id="drawHomeBtn" type="button">Draw Home Card</button>
           </div>
         </div>
-        <div class="stage-body">
-          <div class="stage-row">
-            <div>
-              <div class="label">Masterwork Track</div>
-              <div id="masterworkTrack"></div>
-            </div>
-            <div>
-              <button id="drawProCardBtn" type="button">Draw Pro Card</button>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
+    </section>
 
       <!-- Game over banner (board-level) -->
       <section id="gameOverPanel" class="panel">
