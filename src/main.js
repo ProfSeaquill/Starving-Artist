@@ -274,6 +274,28 @@ function showCardOverlay(title, name, bodyText) {
   overlay.classList.add('visible');
 }
 
+function formatStatEffects(effects) {
+  if (!Array.isArray(effects)) return '';
+
+  const parts = effects
+    .filter(
+      (eff) =>
+        eff &&
+        eff.type === 'stat' &&
+        typeof eff.delta === 'number' &&
+        eff.delta !== 0
+    )
+    .map((eff) => {
+      const label = eff.stat
+        ? eff.stat.charAt(0).toUpperCase() + eff.stat.slice(1)
+        : 'Stat';
+      const sign = eff.delta >= 0 ? '+' : '';
+      return `${label} ${sign}${eff.delta}`;
+    });
+
+  return parts.join(', ');
+}
+
 function maybeShowCardPopup(state, action) {
   const player = state.players[state.activePlayerIndex];
   if (!player) return;
@@ -290,15 +312,27 @@ function maybeShowCardPopup(state, action) {
   let cardName = '';
 
   switch (action.type) {
-    case ActionTypes.DRAW_HOME_CARD: {
+        case ActionTypes.DRAW_HOME_CARD: {
       card = flags.lastHomeCard;
       if (!card) return;
       flags.lastHomeCardTurn = currentTurn; // remember this turn
       label = 'Home Card';
       cardName = card.name || '(Unnamed Home card)';
-      bodyText = card.text || '';
+
+      const lines = [];
+      if (card.text) {
+        lines.push(card.text);
+      }
+
+      const effText = formatStatEffects(card.effects);
+      if (effText) {
+        lines.push('Effects: ' + effText);
+      }
+
+      bodyText = lines.join('\n\n') || '(No rules text yet.)';
       break;
     }
+
 
     case ActionTypes.ATTEND_SOCIAL_EVENT:
     case ActionTypes.SKIP_SOCIAL_EVENT: {
