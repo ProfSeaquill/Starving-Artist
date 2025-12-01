@@ -12,35 +12,6 @@ import { loadHomeDeckFromCsv } from './engine/cards.js';
 // --- Sample card data (for testing only) ---
 // You will eventually load this from JSON files.
 
-const SAMPLE_HOME_CARDS = [
-  {
-    id: 'home_001',
-    name: 'Gift from Grandma',
-    text: '+2 Money, +1 Food.',
-    effects: [
-      { type: 'stat', stat: 'money', delta: 2 },
-      { type: 'stat', stat: 'food', delta: 1 }
-    ]
-  },
-  {
-    id: 'home_002',
-    name: 'Old Sketchbook',
-    text: '+2 Inspiration.',
-    effects: [
-      { type: 'stat', stat: 'inspiration', delta: 2 }
-    ]
-  },
-  {
-    id: 'home_003',
-    name: 'Supportive Parent',
-    text: '+1 Food, +1 Craft.',
-    effects: [
-      { type: 'stat', stat: 'food', delta: 1 },
-      { type: 'stat', stat: 'craft', delta: 1 }
-    ]
-  }
-];
-
 const SAMPLE_SOCIAL_CARDS = [
   {
     id: 'dreamer_001',
@@ -258,21 +229,49 @@ function maybeShowStageTutorial(prevStage) {
 }
 
 
-function showCardOverlay(title, name, bodyText) {
+let cardOverlayPrimaryAction = null;
+let cardOverlaySecondaryAction = null;
+
+function showCardOverlay(title, name, bodyText, config = {}) {
   const overlay = document.getElementById('cardOverlay');
   if (!overlay) return;
 
   const titleEl = document.getElementById('cardOverlayTitle');
   const nameEl  = document.getElementById('cardOverlayName');
   const bodyEl  = document.getElementById('cardOverlayBody');
+  const primaryBtn = document.getElementById('cardOverlayClose');
+  const secondaryBtn = document.getElementById('cardOverlaySkip');
   if (!titleEl || !nameEl || !bodyEl) return;
 
   titleEl.textContent = title || '';
   nameEl.textContent  = name || '';
   bodyEl.textContent  = bodyText || '';
 
+  const primaryLabel =
+    config && typeof config.primaryLabel === 'string'
+      ? config.primaryLabel
+      : 'OK';
+  if (primaryBtn) {
+    primaryBtn.textContent = primaryLabel;
+  }
+
+  if (secondaryBtn) {
+    if (config && typeof config.secondaryLabel === 'string') {
+      secondaryBtn.textContent = config.secondaryLabel;
+      secondaryBtn.style.display = '';
+    } else {
+      secondaryBtn.style.display = 'none';
+    }
+  }
+
+  cardOverlayPrimaryAction =
+    config && typeof config.onPrimary === 'function' ? config.onPrimary : null;
+  cardOverlaySecondaryAction =
+    config && typeof config.onSecondary === 'function' ? config.onSecondary : null;
+
   overlay.classList.add('visible');
 }
+
 
 function formatStatEffects(effects) {
   if (!Array.isArray(effects)) return '';
@@ -310,6 +309,7 @@ function maybeShowCardPopup(state, action) {
   let label = '';
   let bodyText = '';
   let cardName = '';
+  let overlayConfig = null;
 
   switch (action.type) {
         case ActionTypes.DRAW_HOME_CARD: {
@@ -334,21 +334,32 @@ function maybeShowCardPopup(state, action) {
     }
 
 
-    case ActionTypes.ATTEND_SOCIAL_EVENT:
-    case ActionTypes.SKIP_SOCIAL_EVENT: {
-      card = flags.lastSocialEventCard;
-      if (!card) return;
-      flags.lastSocialEventTurn = currentTurn; // remember this turn
-      label = 'Social Event';
-      cardName = card.name || '(Social Event)';
-      const attendText = card.attend && card.attend.text;
-      const skipText   = card.skip && card.skip.text;
-      const parts = [];
-      if (attendText) parts.push('Attend: ' + attendText);
-      if (skipText)   parts.push('Skip: '   + skipText);
-      bodyText = parts.join('\n\n') || '(No rules text yet.)';
-      break;
+    case ActionTypes.DRAW_SOCIAL_CARD: {
+  card = flags.lastSocialEventCard;
+  if (!card) return;
+  flags.lastSocialEventTurn = currentTurn; // remember this turn
+  label = 'Social Event';
+  cardName = card.name || '(Social Event)';
+  const attendText = card.attend && card.attend.text;
+  const skipText   = card.skip && card.skip.text;
+  const parts = [];
+  if (attendText) parts.push('Attend: ' + attendText);
+  if (skipText)   parts.push('Skip: '   + skipText);
+  bodyText = parts.join('\n\n') || '(No rules text yet.)';
+
+  overlayConfig = {
+    primaryLabel: 'Attend',
+    secondaryLabel: 'Skip',
+    onPrimary: () => {
+      dispatch({ type: ActionTypes.ATTEND_SOCIAL_EVENT });
+    },
+    onSecondary: () => {
+      dispatch({ type: ActionTypes.SKIP_SOCIAL_EVENT });
     }
+  };
+  break;
+}
+
 
     case ActionTypes.DRAW_PRO_CARD: {
       card = flags.lastProCard;
@@ -398,7 +409,7 @@ function maybeShowCardPopup(state, action) {
       return;
   }
 
-  showCardOverlay(label, cardName, bodyText);
+  showCardOverlay(label, cardName, bodyText, overlayConfig || undefined);
 }
 
 function getCardDrawDenyReason(state, action) {
@@ -415,12 +426,12 @@ function getCardDrawDenyReason(state, action) {
       }
       return null;
 
-    case ActionTypes.ATTEND_SOCIAL_EVENT:
-    case ActionTypes.SKIP_SOCIAL_EVENT:
-      if (flags.lastSocialEventTurn === currentTurn) {
-        return 'You already resolved a Social Event this turn.';
-      }
-      return null;
+    case ActionTypes.DRAW_SOCIAL_CARD:
+  if (flags.lastSocialEventTurn === currentTurn) {
+    return 'You already resolved a Social Event this turn.';
+  }
+  return null;
+
 
     case ActionTypes.DRAW_PRO_CARD:
       if (flags.lastProCardTurn === currentTurn) {
@@ -589,27 +600,43 @@ if (toggleBtn && debugLogEl) {
 // --- Card overlay wiring ---
 const cardOverlay = document.getElementById('cardOverlay');
 const cardOverlayClose = document.getElementById('cardOverlayClose');
+const cardOverlaySkip = document.getElementById('cardOverlaySkip');
 
 if (cardOverlay && cardOverlayClose) {
   const hideOverlay = () => {
     cardOverlay.classList.remove('visible');
   };
 
-  cardOverlayClose.addEventListener('click', hideOverlay);
+  cardOverlayClose.addEventListener('click', () => {
+    if (typeof cardOverlayPrimaryAction === 'function') {
+      cardOverlayPrimaryAction();
+    }
+    hideOverlay();
+  });
 
-  // Click on the dark backdrop (but not the card itself) to close
+  if (cardOverlaySkip) {
+    cardOverlaySkip.addEventListener('click', () => {
+      if (typeof cardOverlaySecondaryAction === 'function') {
+        cardOverlaySecondaryAction();
+      }
+      hideOverlay();
+    });
+  }
+
+  // Click on the dark backdrop (but not the card itself) to close (no action)
   cardOverlay.addEventListener('click', (evt) => {
     if (evt.target === cardOverlay) {
       hideOverlay();
     }
   });
 
-  // Escape key also closes the popup
+  // Escape key also closes the popup (no action)
   document.addEventListener('keydown', (evt) => {
     if (evt.key === 'Escape' && cardOverlay.classList.contains('visible')) {
       hideOverlay();
     }
   });
 }
+
 
 
