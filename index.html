@@ -66,11 +66,12 @@ main.app {
 
 
     .panel {
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 12px;
-      background: #181818;
-    }
+  border-radius: 18px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 2px solid #212121;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
 
     h2, h3 {
       margin: 0 0 8px;
@@ -335,43 +336,78 @@ main.app {
     /* Player panel */
 
     .player-panel h2 {
-      margin-bottom: 4px;
-    }
+  margin-bottom: 6px;
+  font-size: 16px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #424242;
+}
+
 
     .player-header {
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
 
     .player-name {
-      font-weight: 600;
-      font-size: 14px;
-    }
+  font-weight: 700;
+  font-size: 16px;
+  color: #212121;
+}
+
 
     .player-artpath {
-      font-size: 12px;
-      color: #bbb;
-    }
+  font-size: 12px;
+  color: #757575;
+}
+
 
     .badge {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 999px;
-      font-size: 11px;
-      border: 1px solid #555;
-      margin-left: 4px;
-    }
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: 2px solid #212121;
+  margin-left: 6px;
+  background: #ffffff;
+  color: #212121;
+}
 
-    .badge.pro { border-color: #f5c842; color: #f5c842; }
-    .badge.amateur { border-color: #42c0f5; color: #42c0f5; }
-    .badge.dreamer { border-color: #9b59b6; color: #d1a6ff; }
-    .badge.home { border-color: #7f8c8d; color: #bdc3c7; }
+/* Stage-specific badge colors, matching the stage bands */
+.badge.home {
+  border-color: #fb8c00;
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.badge.dreamer {
+  border-color: #0288d1;
+  background: #e1f5fe;
+  color: #01579b;
+}
+
+.badge.amateur {
+  border-color: #f9a825;
+  background: #fff9c4;
+  color: #f57f17;
+}
+
+.badge.pro {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
 
     .section-title {
   margin-top: 10px;
   font-size: 11px;
   text-transform: uppercase;
-  color: #c2b59e;
+  color: #757575;
   letter-spacing: 0.14em;
 }
 
@@ -384,21 +420,23 @@ main.app {
     }
 
     .label {
-  color: #a89f90;
+  color: #757575;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 
     .value {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
+  color: #212121;
 }
 
     .player-progress {
-      font-size: 12px;
-      margin-top: 4px;
-    }
+  font-size: 12px;
+  margin-top: 4px;
+  color: #424242;
+}
 
     .controls-grid {
       display: grid;
@@ -408,36 +446,42 @@ main.app {
     }
 
     button {
-  background: radial-gradient(circle at top, #3b3330 0, #262021 60%, #1b1516 100%);
-  color: #f4efe6;
-  border-radius: 10px;
-  border: 1px solid #5b4b46;
-  padding: 6px 9px;
+  /* Candy pill button */
+  background: linear-gradient(135deg, #ff4081, #ffc107);
+  color: #1b1b1b;
+  border-radius: 999px;
+  border: none;
+  padding: 7px 11px;
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
-  box-shadow:
-    0 2px 3px rgba(0, 0, 0, 0.65),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.4);
-  text-transform: none;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease,
+    filter 0.06s ease;
 }
 
-button:hover {
-  background: radial-gradient(circle at top, #4b423f 0, #302629 60%, #1f1719 100%);
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+  filter: brightness(1.05);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: default;
   box-shadow: none;
+  transform: none;
 }
 
-
-    button:hover { background: #444; }
-
-    button:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
 
     select {
       background: #222;
