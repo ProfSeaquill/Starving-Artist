@@ -68,9 +68,10 @@ main.app {
     .panel {
   border-radius: 18px;
   padding: 12px 14px;
-  background: #ffffff;
-  border: 2px solid #212121;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+  background: #141822;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.65);
+  color: #f5f5f5;
 }
 
     h2, h3 {
@@ -177,27 +178,26 @@ main.app {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin: 6px 0 10px;
-  color: #424242;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  opacity: 0.95;
+  margin: -6px 0 -6px; /* overlap slightly with stages above/below */
+  pointer-events: none; /* purely visual */
 }
 
 .stage-arrow-icon {
-  font-size: 18px;
+  font-size: 26px;
   line-height: 1;
+  padding: 4px 14px 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff4081, #ffc107);
+  color: #1b1b1b;
+  border: 3px solid #212121;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.6);
 }
 
+/* Hide the text label entirely */
 .stage-arrow-label {
-  border-radius: 999px;
-  padding: 3px 10px 4px;
-  border: 1px solid rgba(0, 0, 0, 0.14);
-  background: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  display: none;
 }
+
 
 
 .stage-body {
@@ -277,18 +277,18 @@ main.app {
   min-width: 32px;
   border-radius: 10px;
   padding: 3px 4px;
-  border: 1px solid #bdbdbd;
-  background: #ffffff;
+  border: 1px solid #455a64;
+  background: #263238;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .track-step-label {
   font-size: 10px;
-  color: #616161;
+  color: #cfd8dc;
 }
 
 .track-step-tokens {
@@ -302,10 +302,11 @@ main.app {
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  border: 2px solid #ffffff;
+  border: 2px solid #eceff1;
   background: #888;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
+
 
     .job-market {
       display: flex;
@@ -363,7 +364,7 @@ main.app {
 
     .player-artpath {
   font-size: 12px;
-  color: #757575;
+  color: #cfd8dc;
 }
 
 
@@ -411,7 +412,7 @@ main.app {
   margin-top: 10px;
   font-size: 11px;
   text-transform: uppercase;
-  color: #757575;
+  color: #90a4ae;
   letter-spacing: 0.14em;
 }
 
@@ -424,7 +425,7 @@ main.app {
     }
 
     .label {
-  color: #757575;
+  color: #b0bec5;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -433,13 +434,13 @@ main.app {
     .value {
   font-weight: 700;
   font-size: 14px;
-  color: #212121;
+  color: #ffffff;
 }
 
     .player-progress {
   font-size: 12px;
   margin-top: 4px;
-  color: #424242;
+  color: #eceff1;
 }
 
     .controls-grid {
@@ -588,14 +589,15 @@ button:disabled {
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  border: 1px solid #b0bec5;
-  background: #eceff1;
+  border: 1px solid #546e7a;
+  background: #263238;
   box-sizing: border-box;
 }
 .time-segment.filled {
   background: linear-gradient(135deg, #00e676, #00c853);
   border-color: #00c853;
 }
+
 
 
     /* Dice roll popup */
