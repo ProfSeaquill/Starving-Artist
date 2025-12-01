@@ -224,84 +224,88 @@ main.app {
     /* Tracks */
 
     .home-track {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-    .track-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-    .track-row-label {
-      min-width: 70px;
-      font-size: 11px;
-      color: #ddd;
-    }
+.track-row-label {
+  min-width: 70px;
+  font-size: 11px;
+  color: #616161;
+}
 
-    .track-row-cells {
-      display: flex;
-      gap: 4px;
-    }
+.track-row-cells {
+  display: flex;
+  gap: 4px;
+}
 
-    .track-cell {
-      width: 18px;
-      height: 18px;
-      border-radius: 4px;
-      border: 1px solid #555;
-      background: rgba(0, 0, 0, 0.2);
-    }
+.track-cell {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 1px solid #b0bec5;
+  background: #ffffff;
+  box-sizing: border-box;
+}
 
-    .track-cell.filled {
-      background: #f5c842;
-      border-color: #f9e58b;
-    }
+.track-cell.filled {
+  background: linear-gradient(135deg, #ffeb3b, #ffc107);
+  border-color: #f9a825;
+}
+
 
     .minorworks-track {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-    .track-steps {
-      display: flex;
-      gap: 4px;
-      align-items: flex-end;
-    }
+.track-steps {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+}
 
-    .track-step {
-      min-width: 32px;
-      border-radius: 4px;
-      padding: 2px;
-      border: 1px solid #444;
-      background: rgba(0, 0, 0, 0.2);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
+.track-step {
+  min-width: 32px;
+  border-radius: 10px;
+  padding: 3px 4px;
+  border: 1px solid #bdbdbd;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
 
-    .track-step-label {
-      font-size: 10px;
-      color: #ccc;
-    }
+.track-step-label {
+  font-size: 10px;
+  color: #616161;
+}
 
-    .track-step-tokens {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px;
-      justify-content: center;
-    }
+.track-step-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+}
 
-    .player-token {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      border: 1px solid #000;
-      background: #888;
-    }
+.player-token {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  background: #888;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
 
     .job-market {
       display: flex;
@@ -521,108 +525,128 @@ button:disabled {
       white-space: pre-wrap;
     }
 
-        /* Card popup overlay */
-    .card-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.75);
-      z-index: 1000;
-    }
-    .card-overlay.visible {
-      display: flex;
-    }
-    .card-modal {
-      background: #181818;
-      border-radius: 10px;
-      border: 1px solid #555;
-      padding: 16px 18px;
-      max-width: 420px;
-      width: calc(100% - 40px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
-    }
-    .card-modal h2 {
-      margin: 0 0 4px;
-      font-size: 18px;
-    }
-    .card-modal h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-      font-weight: 600;
-    }
-    .card-modal pre {
-      margin: 0 0 12px;
-      font-size: 13px;
-      white-space: pre-wrap;
-    }
-    .card-modal button {
-      width: 100%;
-      margin-top: 4px;
-    }
+       /* Card popup overlay */
+.card-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at top,
+    rgba(63, 81, 181, 0.45),
+    rgba(0, 0, 0, 0.6)
+  );
+  z-index: 1000;
+}
+.card-overlay.visible {
+  display: flex;
+}
+.card-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 3px solid #ff4081;
+  padding: 18px 20px;
+  max-width: 420px;
+  width: calc(100% - 40px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
+  transform: rotate(-2deg);
+}
+.card-modal h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ff4081;
+}
+.card-modal h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #212121;
+}
+.card-modal pre {
+  margin: 0 0 12px;
+  font-size: 13px;
+  white-space: pre-wrap;
+  color: #424242;
+}
+.card-modal button {
+  width: 100%;
+  margin-top: 4px;
+}
+
 
         /* Time bar (for Time this turn) */
-    .time-bar {
-      display: inline-flex;
-      gap: 4px;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-    .time-segment {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-      border: 1px solid #555;
-      background: #222;
-      box-sizing: border-box;
-    }
-    .time-segment.filled {
-      background: #2ecc71;
-      border-color: #2ecc71;
-    }
+.time-bar {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.time-segment {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid #b0bec5;
+  background: #eceff1;
+  box-sizing: border-box;
+}
+.time-segment.filled {
+  background: linear-gradient(135deg, #00e676, #00c853);
+  border-color: #00c853;
+}
+
 
     /* Dice roll popup */
-    .dice-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.75);
-      z-index: 1001;
-    }
-    .dice-overlay.visible {
-      display: flex;
-    }
-    .dice-modal {
-      background: #181818;
-      border-radius: 10px;
-      border: 1px solid #555;
-      padding: 16px 20px;
-      max-width: 260px;
-      width: calc(100% - 40px);
-      text-align: center;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
-    }
-    .dice-modal h2 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-    .dice-face {
-      font-size: 48px;
-      margin: 12px 0 16px;
-    }
-    .dice-face.rolling {
-      animation: dice-wiggle 0.15s linear infinite;
-    }
-    @keyframes dice-wiggle {
-      0%   { transform: translateX(0); }
-      25%  { transform: translateX(-2px); }
-      50%  { transform: translateX(2px); }
-      75%  { transform: translateX(-1px); }
-      100% { transform: translateX(0); }
-    }
+.dice-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at bottom,
+    rgba(64, 196, 255, 0.45),
+    rgba(0, 0, 0, 0.6)
+  );
+  z-index: 1001;
+}
+.dice-overlay.visible {
+  display: flex;
+}
+.dice-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 3px solid #40c4ff;
+  padding: 18px 22px;
+  max-width: 260px;
+  width: calc(100% - 40px);
+  text-align: center;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
+}
+.dice-modal h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0288d1;
+}
+.dice-face {
+  font-size: 56px;
+  margin: 12px 0 16px;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.dice-face.rolling {
+  animation: dice-wiggle 0.15s linear infinite;
+}
+@keyframes dice-wiggle {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-2px); }
+  50%  { transform: translateX(2px); }
+  75%  { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
 
   </style>
 </head>
