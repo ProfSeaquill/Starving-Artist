@@ -112,6 +112,12 @@ export function setupControls(dispatch, getState) {
 
   // --- Dreamer ---
   $('#attendSocialBtn')?.addEventListener('click', () => {
+  const { stage } = getPlayerAndStage();
+  if (stage !== STAGE_DREAMER) return;
+  dispatch({ type: ActionTypes.DRAW_SOCIAL_CARD });
+});
+  
+  $('#attendSocialBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
     if (stage !== STAGE_DREAMER) return;
     dispatch({ type: ActionTypes.ATTEND_SOCIAL_EVENT });
