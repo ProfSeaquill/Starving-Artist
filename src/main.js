@@ -97,18 +97,19 @@ const SAMPLE_PRO_CARDS = [
   }
 ];
 
-// --- Load Home deck from CSV (with fallback to SAMPLE_HOME_CARDS) ---
-let HOME_DECK_SOURCE = SAMPLE_HOME_CARDS;
+// --- Load Home deck from CSV ---
+let HOME_DECK_SOURCE = [];
 
 try {
   HOME_DECK_SOURCE = await loadHomeDeckFromCsv('./data/cards/home_deck.csv');
   console.log('[cards] Loaded Home deck from CSV:', HOME_DECK_SOURCE.length);
 } catch (err) {
   console.error(
-    '[cards] Failed to load home_deck.csv; falling back to SAMPLE_HOME_CARDS.',
+    '[cards] Failed to load home_deck.csv; starting with an empty Home deck.',
     err
   );
 }
+
 
 // Small helper for shuffling
 function shuffleArray(arr) {
