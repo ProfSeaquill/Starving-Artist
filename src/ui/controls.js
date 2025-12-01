@@ -116,18 +116,6 @@ export function setupControls(dispatch, getState) {
   if (stage !== STAGE_DREAMER) return;
   dispatch({ type: ActionTypes.DRAW_SOCIAL_CARD });
 });
-  
-  $('#attendSocialBtn')?.addEventListener('click', () => {
-    const { stage } = getPlayerAndStage();
-    if (stage !== STAGE_DREAMER) return;
-    dispatch({ type: ActionTypes.ATTEND_SOCIAL_EVENT });
-  });
-
-  $('#skipSocialBtn')?.addEventListener('click', () => {
-    const { stage } = getPlayerAndStage();
-    if (stage !== STAGE_DREAMER) return;
-    dispatch({ type: ActionTypes.SKIP_SOCIAL_EVENT });
-  });
 
   $('#attemptAdvanceDreamerBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
