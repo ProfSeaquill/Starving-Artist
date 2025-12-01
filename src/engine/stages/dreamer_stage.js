@@ -12,12 +12,14 @@ import { rollD6 } from '../dice.js';
 /**
  * Dreamer stage reducer.
  * Handles:
- *  - ATTEND_SOCIAL_EVENT
- *  - SKIP_SOCIAL_EVENT
+ *  - DRAW_SOCIAL_CARD (draw + show choice)
+ *  - ATTEND_SOCIAL_EVENT (resolve pending Social as 'attend')
+ *  - SKIP_SOCIAL_EVENT (resolve pending Social as 'skip')
  *  - ATTEMPT_ADVANCE_DREAMER
  *
  * Any other action types simply return state unchanged.
  */
+
 export function dreamerReducer(gameState, action) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
@@ -27,12 +29,15 @@ export function dreamerReducer(gameState, action) {
     return gameState;
   }
 
-  switch (action.type) {
+    switch (action.type) {
+    case 'DRAW_SOCIAL_CARD':
+      return handleDrawSocialCard(gameState);
+
     case 'ATTEND_SOCIAL_EVENT':
-      return handleAttendSocialEvent(gameState);
+      return handleResolveSocialEvent(gameState, 'attend');
 
     case 'SKIP_SOCIAL_EVENT':
-      return handleSkipSocialEvent(gameState);
+      return handleResolveSocialEvent(gameState, 'skip');
 
     case 'ATTEMPT_ADVANCE_DREAMER':
       return handleAttemptAdvanceDreamer(gameState);
@@ -42,20 +47,20 @@ export function dreamerReducer(gameState, action) {
   }
 }
 
+
 /**
- * ATTEND_SOCIAL_EVENT:
- * - Costs Time (card.timeCost, default 1).
+ * DRAW_SOCIAL_CARD:
  * - Draws the top Social card (with reshuffle if needed).
- * - Applies the 'attend' effects to the active player.
- * - Stores card + choice in flags for UI.
+ * - Does NOT immediately apply attend/skip effects.
+ * - Stores the card + time cost in flags as a pending Social event.
+ *   (The UI will then show the popup and let the player choose attend/skip.)
  */
-function handleAttendSocialEvent(gameState) {
+function handleDrawSocialCard(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  // Must have some Time to even try.
+  // Must have some Time available to even consider a Social event.
   if ((player.timeThisTurn || 0) <= 0) {
-    // Not enough Time; do nothing for now.
     return gameState;
   }
 
@@ -67,66 +72,73 @@ function handleAttendSocialEvent(gameState) {
 
   const timeCost = Number.isFinite(card.timeCost) ? card.timeCost : 1;
 
-  // Apply effects + deduct Time.
-  const withEffects = updateActivePlayer(nextState, (p) => {
-    let updated = applySocialChoiceEffects(p, card, 'attend');
-
-    const remainingTime = (updated.timeThisTurn || 0) - timeCost;
-    updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
-
+  return updateActivePlayer(nextState, (p) => {
     const flags = {
-      ...(updated.flags || {}),
+      ...(p.flags || {}),
+      pendingSocialEventCard: card,
+      pendingSocialEventTimeCost: timeCost,
+      // Also mirror into "last" so the debug panel / recent events log
+      // knows which Social card was drawn.
       lastSocialEventCard: card,
-      lastSocialEventChoice: 'attend'
+      lastSocialEventChoice: null
     };
-    updated.flags = flags;
 
-    return updated;
+    return {
+      ...p,
+      flags
+    };
   });
-
-  return withEffects;
 }
 
 /**
- * SKIP_SOCIAL_EVENT:
- * - Also costs Time (same cost as attend; engaging with the event uses up the Time).
- * - Draws a Social card.
- * - Applies the 'skip' effects to the active player.
- * - Stores card + choice in flags for UI.
+ * Resolve the currently pending Social event with the given choice.
+ * choice is either 'attend' or 'skip'.
+ *
+ * This:
+ *  - Applies the chosen branch's effects.
+ *  - Deducts the stored time cost (or falls back to card.timeCost / 1).
+ *  - Clears the pendingSocialEvent* flags.
+ *  - Updates lastSocialEventCard / lastSocialEventChoice so the UI can show
+ *    the result in the "Recent events" panel.
  */
-function handleSkipSocialEvent(gameState) {
+function handleResolveSocialEvent(gameState, choice) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  if ((player.timeThisTurn || 0) <= 0) {
-    return gameState;
-  }
+  const flags = player.flags || {};
+  const card = flags.pendingSocialEventCard;
 
-  const { nextState, card } = drawSocialCard(gameState);
   if (!card) {
+    // No pending Social event – nothing to resolve.
     return gameState;
   }
 
-  const timeCost = Number.isFinite(card.timeCost) ? card.timeCost : 1;
+  const storedCost = flags.pendingSocialEventTimeCost;
+  const timeCost = Number.isFinite(storedCost)
+    ? storedCost
+    : (Number.isFinite(card.timeCost) ? card.timeCost : 1);
 
-  const withEffects = updateActivePlayer(nextState, (p) => {
-    let updated = applySocialChoiceEffects(p, card, 'skip');
+  const nextState = updateActivePlayer(gameState, (p) => {
+    let updated = applySocialChoiceEffects(p, card, choice);
 
     const remainingTime = (updated.timeThisTurn || 0) - timeCost;
     updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
 
-    const flags = {
+    const newFlags = {
       ...(updated.flags || {}),
       lastSocialEventCard: card,
-      lastSocialEventChoice: 'skip'
+      lastSocialEventChoice: choice
     };
-    updated.flags = flags;
+    delete newFlags.pendingSocialEventCard;
+    delete newFlags.pendingSocialEventTimeCost;
 
+    updated.flags = newFlags;
     return updated;
   });
 
-  return withEffects;
+  return nextState;
 }
+
 
 /**
  * ATTEMPT_ADVANCE_DREAMER:
