@@ -41,10 +41,12 @@ export function applyAction(gameState, action) {
       return homeReducer(gameState, action);
 
     // Dreamer
-    case ActionTypes.ATTEND_SOCIAL_EVENT:
-    case ActionTypes.SKIP_SOCIAL_EVENT:
-    case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
-      return dreamerReducer(gameState, action);
+  case ActionTypes.DRAW_SOCIAL_CARD:
+  case ActionTypes.ATTEND_SOCIAL_EVENT:
+  case ActionTypes.SKIP_SOCIAL_EVENT:
+  case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
+    return dreamerReducer(gameState, action);
+
 
     // Amateur
     case ActionTypes.CHOOSE_JOB:
