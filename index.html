@@ -8,7 +8,8 @@
   <style>
     body {
   font-family: 'Cardo', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: radial-gradient(circle at top, #181116 0, #060608 55%, #020203 100%);
+  /* Saturday morning / Saved by the Bell sky */
+  background: radial-gradient(circle at top, #3f51b5 0, #00bcd4 40%, #00acc1 100%);
   color: #eee;
   margin: 0;
   padding: 0;
@@ -16,10 +17,12 @@
 
     header {
   padding: 14px 20px;
-  background: linear-gradient(to bottom, #0d0c0f, #151319);
-  border-bottom: 1px solid #272333;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+  /* Colorful title bar – like a TV show logo strip */
+  background: linear-gradient(90deg, #ff4081, #7c4dff, #40c4ff);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
 }
+
 
 header h1 {
   margin: 0 0 4px;
@@ -46,11 +49,20 @@ main.app {
   box-sizing: border-box;
   max-width: 1100px;
   margin: 20px auto 32px;
-  background: radial-gradient(circle at top, #2c1b11 0, #1c1410 40%, #141010 100%);
-  border-radius: 16px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.75);
-  border: 1px solid #3b2a18;
+  /* Light, playful board surface */
+  background: linear-gradient(
+    135deg,
+    #ffffff 0,
+    #fff3e0 30%,
+    #f3e5f5 65%,
+    #e3f2fd 100%
+  );
+  border-radius: 20px;
+  /* Candy-colored frame around the board */
+  border: 3px solid #ff4081;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7);
 }
+
 
 
     .panel {
@@ -77,13 +89,43 @@ main.app {
     }
 
     .stage-band {
-  border-radius: 12px;
+  border-radius: 18px;
   padding: 10px 12px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.45);
-  box-shadow:
-    0 8px 14px rgba(0, 0, 0, 0.7),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+  border: 2px solid #212121;
+  /* Light card base – the per-stage classes will tint this */
+  background: #ffffff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
+  color: #1b1b1b;
+  position: relative;
+  overflow: hidden;
+}
+
+/* A faint zigzag / stripe pattern overlay for fun */
+.stage-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.8) 0,
+      rgba(255, 255, 255, 0) 45%
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.06) 0,
+      rgba(0, 0, 0, 0.06) 2px,
+      transparent 2px,
+      transparent 6px
+    );
+}
+
+/* Keep content above the pattern overlay */
+.stage-band > * {
+  position: relative;
+  z-index: 1;
 }
 
 .stage-header {
@@ -99,48 +141,48 @@ main.app {
   font-family: 'Cinzel', 'Cardo', serif;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: #212121;
 }
 
 .stage-subtitle {
   font-size: 12px;
-  color: #d6cbbd;
+  color: #424242;
   margin-top: 2px;
 }
 
-/* Stage colors – subtle tint so they still feel unified on one board */
+/* Stage colors – bright Saturday-morning versions of brown, blue, yellow, green */
 .stage-home {
-  background:
-    linear-gradient(to bottom right, rgba(93, 70, 46, 0.7), rgba(46, 31, 23, 0.9));
+  background: linear-gradient(135deg, #ffe0b2 0, #ffcc80 55%, #ffb74d 100%);
+  border-color: #fb8c00;
 }
 
 .stage-dreamer {
-  background:
-    linear-gradient(to bottom right, rgba(38, 69, 93, 0.7), rgba(18, 37, 54, 0.9));
+  background: linear-gradient(135deg, #e1f5fe 0, #81d4fa 55%, #4fc3f7 100%);
+  border-color: #0288d1;
 }
 
 .stage-amateur {
-  background:
-    linear-gradient(to bottom right, rgba(94, 89, 45, 0.7), rgba(49, 43, 22, 0.9));
+  background: linear-gradient(135deg, #fff9c4 0, #ffe082 55%, #ffd54f 100%);
+  border-color: #f9a825;
 }
 
 .stage-pro {
-  background:
-    linear-gradient(to bottom right, rgba(46, 96, 70, 0.7), rgba(20, 53, 36, 0.9));
+  background: linear-gradient(135deg, #e8f5e9 0, #a5d6a7 55%, #81c784 100%);
+  border-color: #2e7d32;
 }
 
     /* Arrows between stages (visual ladder up the board) */
-
 .stage-arrow {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   margin: 6px 0 10px;
-  color: #d6cbbd;
+  color: #424242;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .stage-arrow-icon {
@@ -151,10 +193,11 @@ main.app {
 .stage-arrow-label {
   border-radius: 999px;
   padding: 3px 10px 4px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: radial-gradient(circle at top, #29211c 0, #181310 70%);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
+
 
 .stage-body {
   font-size: 12px;
@@ -176,23 +219,6 @@ main.app {
       flex-wrap: wrap;
     }
 
-    /* Stage colors */
-
-    .stage-home {
-      background: #3b2a1a;
-    }
-
-    .stage-dreamer {
-      background: #193245;
-    }
-
-    .stage-amateur {
-      background: #3b361a;
-    }
-
-    .stage-pro {
-      background: #1c3b2a;
-    }
 
     /* Tracks */
 
