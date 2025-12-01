@@ -234,12 +234,11 @@ function endTurn(gameState) {
     };
   }
 
-  // Auto-start the new active player's turn:
+    // Auto-start the new active player's turn:
   // - reset timeThisTurn & apply Minor Work income via startTurn
-  // - then roll Time for that player
-  let next = startTurn(base);
-  next = rollTime(next);
-
+  // The player must explicitly roll Time via a ROLL_TIME action.
+  const next = startTurn(base);
   return next;
 }
+
 
