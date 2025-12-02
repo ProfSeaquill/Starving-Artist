@@ -6,7 +6,13 @@ import { setupControls } from './ui/controls.js';
 import { render } from './ui/render.js';
 
 import { ActionTypes } from './engine/actions.js';
-import { loadHomeDeckFromCsv } from './engine/cards.js';
+import {
+  loadHomeDeckFromCsv,
+  loadSocialDeckFromCsv,
+  loadProfDevDeckFromCsv,
+  loadProDeckFromCsv
+} from './engine/cards.js';
+
 
 
 // --- Sample card data (for testing only) ---
@@ -97,8 +103,12 @@ const SAMPLE_PRO_CARDS = [
   }
 ];
 
-// --- Load Home deck from CSV ---
+
+// --- Load decks from CSV (with fallback to SAMPLE_* arrays) ---
 let HOME_DECK_SOURCE = [];
+let SOCIAL_DECK_SOURCE    = [];
+let PROF_DEV_DECK_SOURCE  = [];
+let PRO_DECK_SOURCE       = [];
 
 try {
   HOME_DECK_SOURCE = await loadHomeDeckFromCsv('./data/cards/home_deck.csv');
@@ -106,6 +116,36 @@ try {
 } catch (err) {
   console.error(
     '[cards] Failed to load home_deck.csv; starting with an empty Home deck.',
+    err
+  );
+}
+
+try {
+  SOCIAL_DECK_SOURCE = await loadSocialDeckFromCsv('./data/cards/social_deck.csv');
+  console.log('[cards] Loaded Social deck from CSV:', SOCIAL_DECK_SOURCE.length);
+} catch (err) {
+  console.error(
+    '[cards] Failed to load home_deck.csv; starting with an empty Social deck.',
+    err
+  );
+}
+
+try {
+  PROF_DEV_DECK_SOURCE = await loadProfDevDeckFromCsv('./data/cards/prof_dev_deck.csv');
+  console.log('[cards] Loaded Prof Dev deck from CSV:', PROF_DEV_DECK_SOURCE.length);
+} catch (err) {
+  console.error(
+    '[cards] Failed to load home_deck.csv; starting with an empty Prof Dev deck.',
+    err
+  );
+}
+
+try {
+  PRO_DECK_SOURCE = await loadProDeckFromCsv('./data/cards/pro_deck.csv');
+  console.log('[cards] Loaded Pro deck from CSV:', PRO_DECK_SOURCE.length);
+} catch (err) {
+  console.error(
+    '[cards] Failed to load home_deck.csv; starting with an empty Pro deck.',
     err
   );
 }
@@ -127,16 +167,16 @@ let gameState = createInitialGame({
   artPaths: ['author'] // or 'painter', etc.
 });
 
-// Seed decks with sample data
+// Seed decks with CSV data where available (fallback: SAMPLE_* arrays)
 gameState = {
   ...gameState,
   homeDeck: shuffleArray(HOME_DECK_SOURCE),
   homeDiscard: [],
-  socialDeck: shuffleArray(SAMPLE_SOCIAL_CARDS),
+  socialDeck: shuffleArray(SOCIAL_DECK_SOURCE),
   socialDiscard: [],
-  profDevDeck: shuffleArray(SAMPLE_PROF_DEV_CARDS),
+  profDevDeck: shuffleArray(PROF_DEV_DECK_SOURCE),
   profDevDiscard: [],
-  proDeck: shuffleArray(SAMPLE_PRO_CARDS),
+  proDeck: shuffleArray(PRO_DECK_SOURCE),
   proDiscard: []
 };
 
