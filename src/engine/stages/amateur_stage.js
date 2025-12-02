@@ -3,7 +3,6 @@
 import {
   STAGE_AMATEUR,
   STAGE_PRO,
-  JOBS,
   getActivePlayer,
   updateActivePlayer
 } from '../state.js';
