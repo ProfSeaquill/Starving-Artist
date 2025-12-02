@@ -12,15 +12,12 @@ import { rollD6 } from '../dice.js';
 /**
  * Amateur stage reducer.
  * Handles:
- *  - CHOOSE_JOB
- *  - GO_TO_WORK
  *  - TAKE_PROF_DEV
  *  - START_MINOR_WORK
  *  - COMPILE_PORTFOLIO
  *  - ATTEMPT_ADVANCE_PRO
- *
- * Any other action types simply return state unchanged.
  */
+
 export function amateurReducer(gameState, action) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
@@ -29,13 +26,7 @@ export function amateurReducer(gameState, action) {
     return gameState;
   }
 
-  switch (action.type) {
-    case 'CHOOSE_JOB':
-      return handleChooseJob(gameState, action);
-
-    case 'GO_TO_WORK':
-      return handleGoToWork(gameState);
-
+    switch (action.type) {
     case 'TAKE_PROF_DEV':
       return handleTakeProfDev(gameState);
 
@@ -47,101 +38,11 @@ export function amateurReducer(gameState, action) {
 
     case 'ATTEMPT_ADVANCE_PRO':
       return handleAttemptAdvancePro(gameState);
-
+        
     // PROGRESS_MINOR_WORK is left as a future extension for multi-step works.
     default:
       return gameState;
   }
-}
-
-/**
- * CHOOSE_JOB:
- * - Only valid if player.jobId is null.
- * - Only valid if the requested jobId is still in gameState.jobDeck.
- * - Assigns the job to the player and removes it from the jobDeck
- *   so no other player can choose it.
- *
- * action: { type: 'CHOOSE_JOB', jobId: 'job_teacher' }
- */
-function handleChooseJob(gameState, action) {
-  const { jobId } = action;
-  if (!jobId) return gameState;
-
-  const player = getActivePlayer(gameState);
-  if (!player) return gameState;
-
-  // Already has a job: cannot choose again.
-  if (player.jobId) {
-    return gameState;
-  }
-
-  const jobIndex = gameState.jobDeck.indexOf(jobId);
-  if (jobIndex === -1) {
-    // Job not available.
-    return gameState;
-  }
-
-  // Ensure jobId is a known job.
-  const job = JOBS.find(j => j.id === jobId);
-  if (!job) {
-    return gameState;
-  }
-
-  // Remove job from available pool.
-  const newJobDeck = gameState.jobDeck.slice();
-  newJobDeck.splice(jobIndex, 1);
-
-  const nextState = updateActivePlayer(
-    { ...gameState, jobDeck: newJobDeck },
-    (p) => ({
-      ...p,
-      jobId
-    })
-  );
-
-  return nextState;
-}
-
-/**
- * GO_TO_WORK:
- * - Requires player.jobId to be set.
- * - Applies the job's stat/time deltas.
- * - Does NOT increment skippedWorkCount.
- */
-function handleGoToWork(gameState) {
-  const player = getActivePlayer(gameState);
-  if (!player || !player.jobId) {
-    return gameState;
-  }
-
-  const job = JOBS.find(j => j.id === player.jobId);
-  if (!job) {
-    return gameState;
-  }
-
-  const nextState = updateActivePlayer(gameState, (p) => {
-    let updated = { ...p };
-
-    // Apply stat deltas
-    updated.money        = (updated.money || 0)        + (job.moneyDelta        || 0);
-    updated.inspiration  = (updated.inspiration || 0)  + (job.inspirationDelta  || 0);
-    updated.food         = (updated.food || 0)         + (job.foodDelta         || 0);
-
-    // Apply time delta (usually negative, but can be positive, e.g. Student)
-    const remainingTime = (updated.timeThisTurn || 0) + (job.timeDelta || 0);
-    updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
-
-    const flags = {
-      ...(updated.flags || {}),
-      lastJobId: job.id,
-      lastJobName: job.name
-    };
-    updated.flags = flags;
-
-    return updated;
-  });
-
-  return nextState;
 }
 
 /**
