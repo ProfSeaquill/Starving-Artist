@@ -40,22 +40,23 @@ export function applyAction(gameState, action) {
     case ActionTypes.ATTEMPT_LEAVE_HOME:
       return homeReducer(gameState, action);
 
-    // Dreamer
-  case ActionTypes.DRAW_SOCIAL_CARD:
-  case ActionTypes.ATTEND_SOCIAL_EVENT:
-  case ActionTypes.SKIP_SOCIAL_EVENT:
-  case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
-    return dreamerReducer(gameState, action);
-
-
-    // Amateur
+        // Dreamer
+    case ActionTypes.DRAW_SOCIAL_CARD:
+    case ActionTypes.ATTEND_SOCIAL_EVENT:
+    case ActionTypes.SKIP_SOCIAL_EVENT:
     case ActionTypes.CHOOSE_JOB:
     case ActionTypes.GO_TO_WORK:
+    case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
+      return dreamerReducer(gameState, action);
+
+
+        // Amateur
     case ActionTypes.TAKE_PROF_DEV:
     case ActionTypes.START_MINOR_WORK:
     case ActionTypes.COMPILE_PORTFOLIO:
     case ActionTypes.ATTEMPT_ADVANCE_PRO:
       return amateurReducer(gameState, action);
+
 
     // Pro
     case ActionTypes.WORK_ON_MASTERWORK:
