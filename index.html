@@ -700,7 +700,7 @@ button:disabled {
     <span class="stage-arrow-label">Advance to Pro</span>
   </div>
 
-  <!-- Amateur Stage -->
+    <!-- Amateur Stage -->
   <section class="stage-band stage-amateur">
     <div class="stage-header">
       <div>
@@ -714,9 +714,9 @@ button:disabled {
     </div>
     <div class="stage-body">
       <div class="stage-row">
-        <div class="job-market">
-          <div class="label" style="width:100%;">Available Jobs</div>
-          <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
+        <div class="minorworks-track">
+          <div class="label">Minor Works Ladder</div>
+          <div id="minorWorksTrack"></div>
         </div>
         <div>
           <button id="takeProfDevBtn" type="button">Draw Prof Dev Card</button>
@@ -725,13 +725,14 @@ button:disabled {
     </div>
   </section>
 
+
   <!-- Arrow: Dreamer → Amateur -->
   <div class="stage-arrow">
     <span class="stage-arrow-icon">↑</span>
     <span class="stage-arrow-label">Advance to Amateur</span>
   </div>
 
-  <!-- Dreamer Stage -->
+    <!-- Dreamer Stage -->
   <section class="stage-band stage-dreamer">
     <div class="stage-header">
       <div>
@@ -745,9 +746,9 @@ button:disabled {
     </div>
     <div class="stage-body">
       <div class="stage-row">
-        <div class="minorworks-track">
-          <div class="label">Minor Works Ladder</div>
-          <div id="minorWorksTrack"></div>
+        <div class="job-market">
+          <div class="label" style="width:100%;">Available Jobs</div>
+          <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
         </div>
         <div>
           <button id="attendSocialBtn" type="button">Draw Social Card</button>
@@ -755,6 +756,7 @@ button:disabled {
       </div>
     </div>
   </section>
+
 
   <!-- Arrow: Home → Dreamer -->
   <div class="stage-arrow">
@@ -884,28 +886,30 @@ button:disabled {
           </div>
         </div>
 
-        <!-- Dreamer-only actions -->
+                <!-- Dreamer-only actions -->
         <div class="stage-actions stage-dreamer-only">
           <div class="label" style="margin-top:8px;">Dreamer</div>
-          <div class="controls-grid">
-            <button id="attemptAdvanceDreamerBtn" type="button">Try to Advance</button>
-          </div>
-        </div>
-
-        <!-- Amateur-only actions -->
-        <div class="stage-actions stage-amateur-only">
-          <div class="label" style="margin-top:8px;">Amateur</div>
           <div class="controls-grid">
             <select id="jobSelect">
               <option value="">Choose a Job…</option>
             </select>
             <button id="chooseJobBtn" type="button">Choose Job</button>
             <button id="goToWorkBtn" type="button">Go To Work</button>
+            <button id="attemptAdvanceDreamerBtn" type="button">Try to Advance</button>
+          </div>
+        </div>
+
+
+                <!-- Amateur-only actions -->
+        <div class="stage-actions stage-amateur-only">
+          <div class="label" style="margin-top:8px;">Amateur</div>
+          <div class="controls-grid">
             <button id="startMinorWorkBtn" type="button">Start Minor Work</button>
             <button id="compilePortfolioBtn" type="button">Compile Portfolio</button>
             <button id="attemptAdvanceProBtn" type="button">Try to Go Pro</button>
           </div>
         </div>
+
 
         <!-- Pro-only actions -->
         <div class="stage-actions stage-pro-only">
