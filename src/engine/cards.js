@@ -124,6 +124,10 @@ function convertSocialRow(row) {
   const name =
     (row.title || row.name || row.card_name || id).trim();
 
+  // Use flavor / text as the overall description of the event
+  const text =
+    (row.flavor || row.text || '').trim();
+
   const timeCost =
     toNumber(row.time_cost ?? row.timeCost) ?? 1;
 
@@ -133,11 +137,13 @@ function convertSocialRow(row) {
   return {
     id,
     name,
+    text,
     timeCost,
     attend,
     skip
   };
 }
+
 
 /**
  * PROF DEV DECK
