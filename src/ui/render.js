@@ -507,11 +507,18 @@ if (rollTimeBtn) {
       badgeClass = '';
   }
 
-  stageNameEl.textContent = stageName;
-  stageBadgeEl.textContent = stageName;
-  stageBadgeEl.className = `badge ${badgeClass}`;
+    if (stageNameEl) {
+    stageNameEl.textContent = stageName;
+  }
+
+  if (stageBadgeEl) {
+    stageBadgeEl.textContent = stageName;
+    stageBadgeEl.className = `badge ${badgeClass}`;
+  }
+
   // Stage-aware player panel UI (show only relevant action groups)
   updateStagePanelVisibility(player.stage);
+
 
 
   // --- Job info ---
