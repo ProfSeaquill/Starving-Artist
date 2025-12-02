@@ -1,58 +1,36 @@
 // src/engine/cards.js
 
 /**
- * Load the Home deck from a CSV file and convert rows into
- * the card objects your game already expects:
- *
- * {
- *   id: 'home_001',
- *   name: 'Gift from Grandma',
- *   text: '...',
- *   effects: [ { type: 'stat', stat: 'money', delta: 2 }, ... ]
- * }
- *
- * Expected columns in home_deck.csv (case-sensitive):
+ * HOME DECK
+ * =========
+ * Expected columns in home_deck.csv (case-sensitive recommended):
  *   id
  *   title
  *   flavor
  *   gain_money, gain_food, gain_inspiration, gain_craft
  *   loss_money, loss_food, loss_inspiration, loss_craft
  *   tags   (optional, "a; b; c")
+ *
+ * These map to the existing Home card format:
+ * {
+ *   id, name, text,
+ *   effects: [ { type:'stat', stat:'money', delta:2 }, ... ],
+ *   tags?: string[]
+ * }
  */
-export async function loadHomeDeckFromCsv(url = './data/cards/home_deck.csv') {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch Home deck CSV from ${url}: ${res.status} ${res.statusText}`
-    );
-  }
 
-  const csvText = await res.text();
-  const rows = parseCsv(csvText);
+export async function loadHomeDeckFromCsv(
+  url = './data/cards/home_deck.csv'
+) {
+  const rows = await fetchCsvRows(url);
+  if (!rows.length) return [];
 
-  if (!rows.length) {
-    console.warn('[cards] home_deck.csv is empty or invalid.');
-    return [];
-  }
-
-  const [headerRow, ...dataRows] = rows;
-  const headers = headerRow.map((h) => h.trim());
-
+  const [headers, ...data] = rows;
   const cards = [];
 
-  for (const row of dataRows) {
-    // Skip completely empty rows
-    const hasContent = row.some((cell) => cell && cell.trim() !== '');
-    if (!hasContent) continue;
-
-    const obj = {};
-    for (let i = 0; i < headers.length; i++) {
-      const key = headers[i];
-      if (!key) continue;
-      const value = row[i] ?? '';
-      obj[key] = String(value).trim();
-    }
-
+  for (const row of data) {
+    if (row.every((c) => !c || !c.trim())) continue;
+    const obj = rowToObject(headers, row);
     const card = convertHomeRow(obj);
     if (card) cards.push(card);
   }
@@ -60,14 +38,10 @@ export async function loadHomeDeckFromCsv(url = './data/cards/home_deck.csv') {
   return cards;
 }
 
-/**
- * Convert a raw CSV row (as a key/value object) into the
- * internal Home card format.
- */
 function convertHomeRow(row) {
   const rawId = row.id || row.ID || row.Id;
   if (!rawId) {
-    console.warn('[cards] Skipping Home card row without id:', row);
+    console.warn('[cards] Skipping Home row without id:', row);
     return null;
   }
 
@@ -77,33 +51,11 @@ function convertHomeRow(row) {
   const text =
     (row.flavor || row.text || '').trim();
 
-  const effects = [];
-
-  const stats = ['money', 'food', 'inspiration', 'craft'];
-
-  for (const stat of stats) {
-    const gainKey = `gain_${stat}`;
-    const lossKey = `loss_${stat}`;
-
-    if (row[gainKey] && row[gainKey].trim() !== '') {
-      const n = Number(row[gainKey]);
-      if (!Number.isNaN(n) && n !== 0) {
-        effects.push({ type: 'stat', stat, delta: n });
-      }
-    }
-
-    if (row[lossKey] && row[lossKey].trim() !== '') {
-      const n = Number(row[lossKey]);
-      if (!Number.isNaN(n) && n !== 0) {
-        effects.push({ type: 'stat', stat, delta: -n });
-      }
-    }
-  }
+  const effects = buildStatEffects(row, '');
 
   const card = { id, name, text, effects };
 
-  // Optional tags: "zine; indie; print"
-  if (row.tags && row.tags.trim() !== '') {
+  if (row.tags && row.tags.trim()) {
     card.tags = row.tags
       .split(/[;,]/)
       .map((t) => t.trim())
@@ -111,6 +63,343 @@ function convertHomeRow(row) {
   }
 
   return card;
+}
+
+/**
+ * SOCIAL / DREAMER DECK
+ * =====================
+ * Expected CSV: data/cards/social_deck.csv
+ *
+ * Columns (recommended):
+ *   id
+ *   title
+ *   flavor          (used as overall description if you want)
+ *   time_cost
+ *
+ *   attend_text
+ *   attend_gain_money, attend_gain_food, attend_gain_inspiration, attend_gain_craft
+ *   attend_loss_money, attend_loss_food, attend_loss_inspiration, attend_loss_craft
+ *
+ *   skip_text
+ *   skip_gain_money, skip_gain_food, skip_gain_inspiration, skip_gain_craft
+ *   skip_loss_money, skip_loss_food, skip_loss_inspiration, skip_loss_craft
+ *
+ * These map to the shape already used by SAMPLE_SOCIAL_CARDS:
+ * {
+ *   id,
+ *   name,
+ *   timeCost,
+ *   attend: { text, effects: [...] },
+ *   skip:   { text, effects: [...] }
+ * }
+ */
+
+export async function loadSocialDeckFromCsv(
+  url = './data/cards/social_deck.csv'
+) {
+  const rows = await fetchCsvRows(url);
+  if (!rows.length) return [];
+
+  const [headers, ...data] = rows;
+  const cards = [];
+
+  for (const row of data) {
+    if (row.every((c) => !c || !c.trim())) continue;
+    const obj = rowToObject(headers, row);
+    const card = convertSocialRow(obj);
+    if (card) cards.push(card);
+  }
+
+  return cards;
+}
+
+function convertSocialRow(row) {
+  const rawId = row.id || row.ID || row.Id;
+  if (!rawId) {
+    console.warn('[cards] Skipping Social row without id:', row);
+    return null;
+  }
+
+  const id = rawId.trim();
+  const name =
+    (row.title || row.name || row.card_name || id).trim();
+
+  const timeCost =
+    toNumber(row.time_cost ?? row.timeCost) ?? 1;
+
+  const attend = buildChoice(row, 'attend');
+  const skip   = buildChoice(row, 'skip');
+
+  return {
+    id,
+    name,
+    timeCost,
+    attend,
+    skip
+  };
+}
+
+/**
+ * PROF DEV DECK
+ * =============
+ * Expected CSV: data/cards/prof_dev_deck.csv
+ *
+ * Columns (recommended):
+ *   id
+ *   title
+ *   flavor
+ *   time_cost
+ *
+ *   gain_money, gain_food, gain_inspiration, gain_craft
+ *   loss_money, loss_food, loss_inspiration, loss_craft
+ *
+ *   minorWork_id
+ *   minorWork_name
+ *   minorWork_gain_money, minorWork_gain_food, minorWork_gain_inspiration, minorWork_gain_craft
+ *
+ * Maps to SAMPLE_PROF_DEV_CARDS shape:
+ * {
+ *   id,
+ *   name,
+ *   timeCost,
+ *   effects: [...],
+ *   minorWork?: {
+ *     id,
+ *     name,
+ *     effectsPerTurn: [...]
+ *   }
+ * }
+ */
+
+export async function loadProfDevDeckFromCsv(
+  url = './data/cards/prof_dev_deck.csv'
+) {
+  const rows = await fetchCsvRows(url);
+  if (!rows.length) return [];
+
+  const [headers, ...data] = rows;
+  const cards = [];
+
+  for (const row of data) {
+    if (row.every((c) => !c || !c.trim())) continue;
+    const obj = rowToObject(headers, row);
+    const card = convertProfDevRow(obj);
+    if (card) cards.push(card);
+  }
+
+  return cards;
+}
+
+function convertProfDevRow(row) {
+  const rawId = row.id || row.ID || row.Id;
+  if (!rawId) {
+    console.warn('[cards] Skipping ProfDev row without id:', row);
+    return null;
+  }
+
+  const id = rawId.trim();
+  const name =
+    (row.title || row.name || row.card_name || id).trim();
+  const text =
+    (row.flavor || row.text || '').trim();
+
+  const timeCost =
+    toNumber(row.time_cost ?? row.timeCost) ?? 1;
+
+  const effects = buildStatEffects(row, '');
+
+  // Optional Minor Work
+  const mwId =
+    (row.minorWork_id || row.minorwork_id || '').trim();
+  const mwName =
+    (row.minorWork_name || row.minorwork_name || '').trim();
+
+  let minorWork = undefined;
+  if (mwId || mwName) {
+    const mwEffects = buildStatEffects(row, 'minorWork_');
+    minorWork = {
+      id: mwId || `${id}_mw`,
+      name: mwName || 'Minor Work',
+      effectsPerTurn: mwEffects
+    };
+  }
+
+  return {
+    id,
+    name,
+    text,
+    timeCost,
+    effects,
+    ...(minorWork ? { minorWork } : {})
+  };
+}
+
+/**
+ * PRO DECK
+ * ========
+ * Expected CSV: data/cards/pro_deck.csv
+ *
+ * Columns (recommended):
+ *   id
+ *   title
+ *   flavor
+ *   time_cost
+ *
+ *   gain_money, gain_food, gain_inspiration, gain_craft
+ *   loss_money, loss_food, loss_inspiration, loss_craft
+ *
+ *   gain_masterwork, loss_masterwork, masterwork_delta
+ *
+ * Maps to SAMPLE_PRO_CARDS shape:
+ * {
+ *   id,
+ *   name,
+ *   text,
+ *   timeCost,
+ *   effects: [
+ *     { type:'stat', stat:'money', delta:2 },
+ *     { type:'masterwork', delta:2 }
+ *   ]
+ * }
+ */
+
+export async function loadProDeckFromCsv(
+  url = './data/cards/pro_deck.csv'
+) {
+  const rows = await fetchCsvRows(url);
+  if (!rows.length) return [];
+
+  const [headers, ...data] = rows;
+  const cards = [];
+
+  for (const row of data) {
+    if (row.every((c) => !c || !c.trim())) continue;
+    const obj = rowToObject(headers, row);
+    const card = convertProRow(obj);
+    if (card) cards.push(card);
+  }
+
+  return cards;
+}
+
+function convertProRow(row) {
+  const rawId = row.id || row.ID || row.Id;
+  if (!rawId) {
+    console.warn('[cards] Skipping Pro row without id:', row);
+    return null;
+  }
+
+  const id = rawId.trim();
+  const name =
+    (row.title || row.name || row.card_name || id).trim();
+  const text =
+    (row.flavor || row.text || '').trim();
+
+  const timeCost =
+    toNumber(row.time_cost ?? row.timeCost) ?? 3;
+
+  const effects = buildStatEffects(row, '');
+
+  // Masterwork delta can be in several places
+  const mwGain = toNumber(row.gain_masterwork);
+  const mwLoss = toNumber(row.loss_masterwork);
+  const mwDelta =
+    toNumber(row.masterwork_delta) ??
+    (mwGain != null
+      ? mwGain
+      : mwLoss != null
+      ? -mwLoss
+      : null);
+
+  if (mwDelta != null && mwDelta !== 0) {
+    effects.push({
+      type: 'masterwork',
+      delta: mwDelta
+    });
+  }
+
+  return {
+    id,
+    name,
+    text,
+    timeCost,
+    effects
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Shared helpers                                                     */
+/* ------------------------------------------------------------------ */
+
+async function fetchCsvRows(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(
+      `Failed to fetch CSV from ${url}: ${res.status} ${res.statusText}`
+    );
+  }
+  const text = await res.text();
+  return parseCsv(text);
+}
+
+function rowToObject(headers, row) {
+  const obj = {};
+  for (let i = 0; i < headers.length; i++) {
+    const key = headers[i];
+    if (!key) continue;
+    const value = row[i] ?? '';
+    obj[key.trim()] = String(value).trim();
+  }
+  return obj;
+}
+
+/**
+ * Build stat effects from columns like:
+ *   gain_money, loss_money, gain_food, ...
+ *
+ * If you pass a prefix, it expects (e.g. for minorWork_):
+ *   minorWork_gain_money, minorWork_loss_money, ...
+ */
+function buildStatEffects(row, prefix = '') {
+  const stats = ['money', 'food', 'inspiration', 'craft'];
+  const effects = [];
+
+  for (const stat of stats) {
+    const gainKey = `${prefix}gain_${stat}`;
+    const lossKey = `${prefix}loss_${stat}`;
+
+    const gain = toNumber(row[gainKey]);
+    const loss = toNumber(row[lossKey]);
+
+    if (gain != null && gain !== 0) {
+      effects.push({ type: 'stat', stat, delta: gain });
+    }
+    if (loss != null && loss !== 0) {
+      effects.push({ type: 'stat', stat, delta: -loss });
+    }
+  }
+
+  return effects;
+}
+
+function buildChoice(row, prefix) {
+  const text =
+    row[`${prefix}_text`] ||
+    row[`${prefix}Text`] ||
+    '';
+
+  const effects = buildStatEffects(row, `${prefix}_`);
+
+  return {
+    text: text.trim(),
+    effects
+  };
+}
+
+function toNumber(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isNaN(n) ? null : n;
 }
 
 /**
@@ -130,11 +419,9 @@ function parseCsv(text) {
       if (c === '"') {
         const next = text[i + 1];
         if (next === '"') {
-          // Escaped quote ("")
           field += '"';
           i++;
         } else {
-          // End quote
           inQuotes = false;
         }
       } else {
@@ -147,7 +434,6 @@ function parseCsv(text) {
         row.push(field);
         field = '';
       } else if (c === '\r') {
-        // ignore bare CR, handle on \n
         continue;
       } else if (c === '\n') {
         row.push(field);
@@ -160,7 +446,6 @@ function parseCsv(text) {
     }
   }
 
-  // Final field / row if file doesn't end with newline
   if (field !== '' || row.length) {
     row.push(field);
     rows.push(row);
