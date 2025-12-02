@@ -124,9 +124,10 @@ export function setupControls(dispatch, getState) {
   });
 
   // --- Amateur ---
-  $('#chooseJobBtn')?.addEventListener('click', () => {
+    $('#chooseJobBtn')?.addEventListener('click', () => {
     const { stage, player } = getPlayerAndStage();
-    if (stage !== STAGE_AMATEUR) return;
+    // You can only *pick* a job while Dreamer.
+    if (stage !== STAGE_DREAMER) return;
     if (!player || player.jobId) return;
 
     const select = $('#jobSelect');
@@ -137,12 +138,22 @@ export function setupControls(dispatch, getState) {
     dispatch({ type: ActionTypes.CHOOSE_JOB, jobId });
   });
 
-  $('#goToWorkBtn')?.addEventListener('click', () => {
+    $('#goToWorkBtn')?.addEventListener('click', () => {
     const { stage, player } = getPlayerAndStage();
-    if (stage !== STAGE_AMATEUR) return;
-    if (!player.jobId) return;
+    if (!player || !player.jobId) return;
+
+    // Allow working in Dreamer, Amateur, or Pro as long as you have a job.
+    if (
+      stage !== STAGE_DREAMER &&
+      stage !== STAGE_AMATEUR &&
+      stage !== STAGE_PRO
+    ) {
+      return;
+    }
+
     dispatch({ type: ActionTypes.GO_TO_WORK });
   });
+
 
   $('#takeProfDevBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
@@ -151,9 +162,10 @@ export function setupControls(dispatch, getState) {
   });
 
   // Simple test button: start a generic minor work
-  $('#startMinorWorkBtn')?.addEventListener('click', () => {
+    $('#startMinorWorkBtn')?.addEventListener('click', () => {
     const { stage, player } = getPlayerAndStage();
-    if (stage !== STAGE_AMATEUR && stage !== STAGE_PRO) return;
+    // Minor Works can only be *started* while Amateur.
+    if (stage !== STAGE_AMATEUR) return;
     if (!player) return;
 
     const idx = (player.minorWorks?.length || 0) + 1;
