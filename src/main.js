@@ -353,26 +353,42 @@ function maybeShowCardPopup(state, action) {
   let overlayConfig = null;
 
   switch (action.type) {
-        case ActionTypes.DRAW_HOME_CARD: {
-      card = flags.lastHomeCard;
+            case ActionTypes.DRAW_SOCIAL_CARD: {
+      card = flags.lastSocialEventCard;
       if (!card) return;
-      flags.lastHomeCardTurn = currentTurn; // remember this turn
-      label = 'Home Card';
-      cardName = card.name || '(Unnamed Home card)';
+      flags.lastSocialEventTurn = currentTurn; // remember this turn
+      label = 'Social Event';
+      cardName = card.name || '(Social Event)';
 
-      const lines = [];
+      const attendText = card.attend && card.attend.text;
+      const skipText   = card.skip && card.skip.text;
+
+      const parts = [];
+
+      // Overall flavor / description from CSV (flavor column → card.text)
       if (card.text) {
-        lines.push(card.text);
+        parts.push(card.text);
       }
 
-      const effText = formatStatEffects(card.effects);
-      if (effText) {
-        lines.push('Effects: ' + effText);
-      }
+      // Choice texts, if present
+      if (attendText) parts.push('Attend: ' + attendText);
+      if (skipText)   parts.push('Skip: '   + skipText);
 
-      bodyText = lines.join('\n\n') || '(No rules text yet.)';
+      bodyText = parts.join('\n\n') || '(No rules text yet.)';
+
+      overlayConfig = {
+        primaryLabel: 'Attend',
+        secondaryLabel: 'Skip',
+        onPrimary: () => {
+          dispatch({ type: ActionTypes.ATTEND_SOCIAL_EVENT });
+        },
+        onSecondary: () => {
+          dispatch({ type: ActionTypes.SKIP_SOCIAL_EVENT });
+        }
+      };
       break;
     }
+
 
 
     case ActionTypes.DRAW_SOCIAL_CARD: {
