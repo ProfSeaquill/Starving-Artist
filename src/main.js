@@ -353,7 +353,7 @@ function maybeShowCardPopup(state, action) {
   let overlayConfig = null;
 
   switch (action.type) {
-            case ActionTypes.DRAW_SOCIAL_CARD: {
+                case ActionTypes.DRAW_SOCIAL_CARD: {
       card = flags.lastSocialEventCard;
       if (!card) return;
       flags.lastSocialEventTurn = currentTurn; // remember this turn
@@ -363,16 +363,46 @@ function maybeShowCardPopup(state, action) {
       const attendText = card.attend && card.attend.text;
       const skipText   = card.skip && card.skip.text;
 
+      const attendEffText = card.attend
+        ? formatStatEffects(card.attend.effects)
+        : '';
+      const skipEffText = card.skip
+        ? formatStatEffects(card.skip.effects)
+        : '';
+
       const parts = [];
 
-      // Overall flavor / description from CSV (flavor column → card.text)
+      // Optional overall flavor / description (from CSV flavor → card.text)
       if (card.text) {
         parts.push(card.text);
       }
 
-      // Choice texts, if present
-      if (attendText) parts.push('Attend: ' + attendText);
-      if (skipText)   parts.push('Skip: '   + skipText);
+      // Attend line: include rules text and effects
+      if (attendText || attendEffText) {
+        let line = 'Attend';
+        if (attendText) {
+          line += ': ' + attendText;
+        }
+        if (attendEffText) {
+          // add effects in parentheses at the end
+          line += attendText ? ' ' : ': ';
+          line += `(Effects: ${attendEffText})`;
+        }
+        parts.push(line);
+      }
+
+      // Skip line: include rules text and effects
+      if (skipText || skipEffText) {
+        let line = 'Skip';
+        if (skipText) {
+          line += ': ' + skipText;
+        }
+        if (skipEffText) {
+          line += skipText ? ' ' : ': ';
+          line += `(Effects: ${skipEffText})`;
+        }
+        parts.push(line);
+      }
 
       bodyText = parts.join('\n\n') || '(No rules text yet.)';
 
@@ -388,7 +418,6 @@ function maybeShowCardPopup(state, action) {
       };
       break;
     }
-
 
 
     case ActionTypes.DRAW_SOCIAL_CARD: {
