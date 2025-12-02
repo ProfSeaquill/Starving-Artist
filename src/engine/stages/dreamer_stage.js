@@ -16,17 +16,24 @@ import { rollD6 } from '../dice.js';
  *  - DRAW_SOCIAL_CARD (draw + show choice)
  *  - ATTEND_SOCIAL_EVENT (resolve pending Social as 'attend')
  *  - SKIP_SOCIAL_EVENT (resolve pending Social as 'skip')
+ *  - CHOOSE_JOB (pick a day job, Dreamer-only)
+ *  - GO_TO_WORK (apply job effects; allowed on any stage once you have a job)
  *  - ATTEMPT_ADVANCE_DREAMER
  *
  * Any other action types simply return state unchanged.
  */
 
+
 export function dreamerReducer(gameState, action) {
-  const player = getActivePlayer(gameState);
+    const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  // Only respond if the active player is currently in Dreamer.
-  if (player.stage !== STAGE_DREAMER) {
+  const isJobAction =
+    action.type === 'CHOOSE_JOB' ||
+    action.type === 'GO_TO_WORK';
+
+  // Non-job actions only fire while you're actually in Dreamer.
+  if (!isJobAction && player.stage !== STAGE_DREAMER) {
     return gameState;
   }
 
@@ -40,14 +47,116 @@ export function dreamerReducer(gameState, action) {
     case 'SKIP_SOCIAL_EVENT':
       return handleResolveSocialEvent(gameState, 'skip');
 
+    case 'CHOOSE_JOB':
+      return handleChooseJob(gameState, action);
+
+    case 'GO_TO_WORK':
+      return handleGoToWork(gameState);
+
     case 'ATTEMPT_ADVANCE_DREAMER':
       return handleAttemptAdvanceDreamer(gameState);
 
     default:
       return gameState;
   }
+
+
+/**
+ * CHOOSE_JOB:
+ * - Only valid if player.jobId is null.
+ * - Only valid if the requested jobId is still in gameState.jobDeck.
+ * - Only allowed while the player is in the Dreamer stage.
+ * - Assigns the job to the player and removes it from the jobDeck
+ *   so no other player can choose it.
+ *
+ * action: { type: 'CHOOSE_JOB', jobId: 'job_teacher' }
+ */
+function handleChooseJob(gameState, action) {
+  const { jobId } = action;
+  if (!jobId) return gameState;
+
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
+
+  // You can only *pick* a job while Dreamer.
+  if (player.stage !== STAGE_DREAMER) {
+    return gameState;
+  }
+
+  // Already has a job: cannot choose again.
+  if (player.jobId) {
+    return gameState;
+  }
+
+  const jobIndex = gameState.jobDeck.indexOf(jobId);
+  if (jobIndex === -1) {
+    // Job not available.
+    return gameState;
+  }
+
+  // Ensure jobId is a known job.
+  const job = JOBS.find(j => j.id === jobId);
+  if (!job) {
+    return gameState;
+  }
+
+  // Remove job from available pool.
+  const newJobDeck = gameState.jobDeck.slice();
+  newJobDeck.splice(jobIndex, 1);
+
+  const nextState = updateActivePlayer(
+    { ...gameState, jobDeck: newJobDeck },
+    (p) => ({
+      ...p,
+      jobId
+    })
+  );
+
+  return nextState;
 }
 
+/**
+ * GO_TO_WORK:
+ * - Requires player.jobId to be set.
+ * - Applies the job's stat/time deltas.
+ * - Does NOT increment skippedWorkCount.
+ * - May be used in Dreamer, Amateur, or Pro as long as you still have a job.
+ */
+function handleGoToWork(gameState) {
+  const player = getActivePlayer(gameState);
+  if (!player || !player.jobId) {
+    return gameState;
+  }
+
+  const job = JOBS.find(j => j.id === player.jobId);
+  if (!job) {
+    return gameState;
+  }
+
+  const nextState = updateActivePlayer(gameState, (p) => {
+    let updated = { ...p };
+
+    // Apply stat deltas
+    updated.money        = (updated.money || 0)        + (job.moneyDelta        || 0);
+    updated.inspiration  = (updated.inspiration || 0)  + (job.inspirationDelta  || 0);
+    updated.food         = (updated.food || 0)         + (job.foodDelta         || 0);
+
+    // Apply time delta (usually negative, but can be positive, e.g. Student)
+    const remainingTime = (updated.timeThisTurn || 0) + (job.timeDelta || 0);
+    updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
+
+    const flags = {
+      ...(updated.flags || {}),
+      lastJobId: job.id,
+      lastJobName: job.name
+    };
+    updated.flags = flags;
+
+    return updated;
+  });
+
+  return nextState;
+}
 
 /**
  * DRAW_SOCIAL_CARD:
