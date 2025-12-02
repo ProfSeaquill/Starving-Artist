@@ -59,7 +59,7 @@ export function dreamerReducer(gameState, action) {
     default:
       return gameState;
   }
-
+}
 
 /**
  * CHOOSE_JOB:
