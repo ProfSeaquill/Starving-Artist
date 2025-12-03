@@ -941,14 +941,76 @@ button:disabled {
 
       </section>
 
-      <!-- Debug panel -->
+            <!-- Dev / Debug panel -->
       <section id="debugPanel" class="panel">
         <h2 style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span>Debug</span>
-          <button id="toggleDebug" type="button">Toggle Debug</button>
+          <span>Dev Tools</span>
+          <button id="toggleDebug" type="button">Toggle JSON</button>
         </h2>
-        <pre id="debugLog" class="log" style="display:none;">{}</pre>
+
+        <!-- Dev: Stage & Stats -->
+        <div class="section-title">Stage & Stats (Active Player)</div>
+
+        <!-- Jump to stage -->
+        <div class="controls-grid">
+          <select id="devStageSelect">
+            <option value="">Jump to Stage…</option>
+            <option value="home">Home</option>
+            <option value="dreamer">Dreamer</option>
+            <option value="amateur">Amateur</option>
+            <option value="pro">Pro</option>
+          </select>
+          <button id="devSetStageBtn" type="button">Set Stage</button>
+        </div>
+
+        <!-- Stats: Money / Food / Inspiration / Craft -->
+        <div class="controls-grid" style="margin-top:6px;">
+          <select id="devStatSelect">
+            <option value="money">Money</option>
+            <option value="food">Food</option>
+            <option value="inspiration">Inspiration</option>
+            <option value="craft">Craft</option>
+          </select>
+          <input
+            id="devStatValue"
+            type="number"
+            placeholder="Value / Δ"
+            style="max-width:90px;"
+          />
+          <button id="devSetStatBtn" type="button">Set Stat</button>
+          <button id="devAddStatBtn" type="button">Add Stat</button>
+        </div>
+
+        <!-- Time this turn -->
+        <div class="controls-grid" style="margin-top:6px;">
+          <input
+            id="devTimeValue"
+            type="number"
+            min="0"
+            max="12"
+            placeholder="Time"
+            style="max-width:90px;"
+          />
+          <button id="devSetTimeBtn" type="button">Set Time</button>
+          <button id="devClearTimeBtn" type="button">Clear Time</button>
+        </div>
+
+        <!-- Dev: Card draws -->
+        <div class="section-title" style="margin-top:8px;">Draw Cards (uses real rules)</div>
+        <div class="controls-grid">
+          <button id="devDrawHomeBtn" type="button">Home Card</button>
+          <button id="devDrawSocialBtn" type="button">Social Card</button>
+          <button id="devDrawProfDevBtn" type="button">Prof Dev Card</button>
+          <button id="devDrawProBtn" type="button">Pro Card</button>
+        </div>
+
+        <!-- Optional raw state JSON -->
+        <details id="debugRawState" open style="margin-top:8px;">
+          <summary style="cursor:pointer; font-size:11px;">Raw state JSON</summary>
+          <pre id="debugLog" class="log">{}</pre>
+        </details>
       </section>
+
     </div>
   </main>
 
