@@ -148,7 +148,7 @@ function renderMinorWorksTrack(gameState) {
 }
 
 /**
- * Job market: show jobs that haven't been taken by any player yet.
+ * Job market: show all jobs, but grey out ones that are already taken.
  */
 function renderJobMarket(gameState) {
   const container = $('#jobMarket');
@@ -156,29 +156,49 @@ function renderJobMarket(gameState) {
 
   container.innerHTML = '';
 
-  const takenIds = new Set(
-    gameState.players
-      .map((p) => p.jobId)
-      .filter((id) => typeof id === 'string' && id.length > 0)
-  );
+  const players = gameState.players || [];
 
-  const availableJobs = JOBS.filter((job) => !takenIds.has(job.id));
+  // Map jobId -> player who took it
+  const takenByMap = new Map();
+  for (const p of players) {
+    if (p && typeof p.jobId === 'string' && p.jobId.length > 0) {
+      takenByMap.set(p.jobId, p);
+    }
+  }
 
-  if (!availableJobs.length) {
+  if (!JOBS || !JOBS.length) {
     const empty = document.createElement('div');
     empty.className = 'job-card-empty';
-    empty.textContent = 'No jobs available';
+    empty.textContent = 'No jobs configured';
     container.appendChild(empty);
     return;
   }
 
-  for (const job of availableJobs) {
+  const allTaken = JOBS.every((job) => takenByMap.has(job.id));
+  if (allTaken) {
+    const note = document.createElement('div');
+    note.className = 'job-card-empty';
+    note.textContent = 'All jobs taken';
+    container.appendChild(note);
+  }
+
+  for (const job of JOBS) {
+    const takenBy = takenByMap.get(job.id);
+
     const card = document.createElement('div');
     card.className = 'job-card';
+    if (takenBy) {
+      card.classList.add('job-card--taken');
+    }
 
     const title = document.createElement('div');
     title.className = 'job-card-title';
-    title.textContent = job.name;
+
+    let titleText = job.name;
+    if (takenBy) {
+      titleText += ` (taken by ${takenBy.name || 'another player'})`;
+    }
+    title.textContent = titleText;
     card.appendChild(title);
 
     const effects = document.createElement('div');
@@ -206,6 +226,7 @@ function renderJobMarket(gameState) {
     container.appendChild(card);
   }
 }
+
 
 /**
  * Masterwork track: global track for all players, showing progress toward
