@@ -701,12 +701,11 @@ if (rollTimeBtn) {
   renderJobMarket(gameState);
   renderMasterworkTrack(gameState);
 
-  // Promotion / advancement rules for each stage
+    // Promotion / advancement rules for each stage
   renderPromotionRules(gameState);
 
-  // --- Debug log (just dump JSON for now) ---
-  const debugLogEl = $('#debugLog');
-  if (debugLogEl) {
-    debugLogEl.textContent = JSON.stringify(gameState, null, 2);
-  }
+  // Dev note:
+  // We no longer auto-dump the full JSON here; the dev tools
+  // panel will write to #debugLog only when needed so the UI
+  // isn’t a wall of code.
 }
