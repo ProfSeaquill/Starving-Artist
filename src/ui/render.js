@@ -227,6 +227,48 @@ function renderJobMarket(gameState) {
   }
 }
 
+/**
+ * Job select dropdown: only show jobs that are not yet taken.
+ * Also disables the select if the active player already has a job
+ * or is not in Dreamer stage.
+ */
+function renderJobSelect(gameState) {
+  const select = $('#jobSelect');
+  if (!select) return;
+
+  // Preserve placeholder at index 0, blow away everything else.
+  while (select.options.length > 1) {
+    select.remove(1);
+  }
+
+  const players = gameState.players || [];
+  const takenIds = new Set(
+    players
+      .map((p) => p.jobId)
+      .filter((id) => typeof id === 'string' && id.length > 0)
+  );
+
+  // Add one option per available job
+  for (const job of JOBS) {
+    if (takenIds.has(job.id)) continue;
+    const opt = document.createElement('option');
+    opt.value = job.id;
+    opt.textContent = job.name;
+    select.appendChild(opt);
+  }
+
+  const active = players[gameState.activePlayerIndex];
+  const isDreamer = active && active.stage === STAGE_DREAMER;
+
+  if (active && active.jobId) {
+    // Already employed: keep select on placeholder + disabled.
+    select.value = '';
+    select.disabled = true;
+  } else {
+    // Only enable in Dreamer; elsewhere we keep it disabled.
+    select.disabled = !isDreamer;
+  }
+}
 
 /**
  * Masterwork track: global track for all players, showing progress toward
@@ -699,6 +741,7 @@ if (rollTimeBtn) {
   renderHomePathTrack(gameState);
   renderMinorWorksTrack(gameState);
   renderJobMarket(gameState);
+  renderJobSelect(gameState);
   renderMasterworkTrack(gameState);
 
     // Promotion / advancement rules for each stage
