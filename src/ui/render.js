@@ -562,19 +562,6 @@ if (rollTimeBtn) {
     cultureInfoEl.textContent = 'None (not implemented yet)';
   }
 
-  // --- Game over banner ---
-  const banner = $('#gameOverBanner');
-  if (gameState.status === STATUS_WON) {
-    banner.style.display = 'block';
-    banner.textContent = '🎉 You completed your Masterwork! You win.';
-  } else if (gameState.status === STATUS_LOST) {
-    banner.style.display = 'block';
-    banner.textContent = `💀 Game Over: ${gameState.lossReason || 'lost'}`;
-  } else {
-    banner.style.display = 'none';
-    banner.textContent = '';
-  }
-
   // --- Minor works list (per player) ---
   const minorListEl = $('#minorWorksList');
   minorListEl.textContent = '';
