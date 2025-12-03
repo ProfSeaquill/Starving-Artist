@@ -533,6 +533,27 @@ if (rollTimeBtn) {
     jobInfoEl.textContent = 'No job (or lost job)';
   }
 
+    // --- Job select / button UI ---
+  const jobSelectEl = $('#jobSelect');
+  const chooseJobBtnEl = $('#chooseJobBtn');
+
+  if (jobSelectEl && chooseJobBtnEl) {
+    if (player.stage === STAGE_DREAMER) {
+      if (player.jobId) {
+        chooseJobBtnEl.textContent = 'Quit Job';
+        jobSelectEl.disabled = true;
+      } else {
+        chooseJobBtnEl.textContent = 'Choose Job';
+        jobSelectEl.disabled = false;
+      }
+    } else {
+      // Outside Dreamer, keep things in a neutral state
+      chooseJobBtnEl.textContent = 'Choose Job';
+      jobSelectEl.disabled = true;
+    }
+  }
+
+
   // --- Culture info (placeholder) ---
   const cultureInfoEl = $('#cultureInfo');
   if (gameState.currentCultureCard) {
