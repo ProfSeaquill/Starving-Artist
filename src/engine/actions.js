@@ -21,6 +21,7 @@ export const ActionTypes = {
 
   // Amateur
   CHOOSE_JOB: 'CHOOSE_JOB',
+  QUIT_JOB: 'QUIT_JOB',
   GO_TO_WORK: 'GO_TO_WORK',
   TAKE_PROF_DEV: 'TAKE_PROF_DEV', // <- typo! see fix below
   START_MINOR_WORK: 'START_MINOR_WORK',
