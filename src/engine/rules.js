@@ -35,6 +35,11 @@ export function applyAction(gameState, action) {
     case ActionTypes.ROLL_TIME:
       return rollTime(gameState);
 
+    case ActionTypes.DOWNTIME_PRACTICE:
+    case ActionTypes.DOWNTIME_SLEEP:
+    case ActionTypes.DOWNTIME_EAT_AT_HOME:
+      return applyDowntimeAction(gameState, action.type);
+      
     // Home
     case ActionTypes.DRAW_HOME_CARD:
     case ActionTypes.ATTEMPT_LEAVE_HOME:
