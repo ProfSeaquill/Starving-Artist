@@ -123,13 +123,19 @@ export function setupControls(dispatch, getState) {
     dispatch({ type: ActionTypes.ATTEMPT_ADVANCE_DREAMER });
   });
 
-  // --- Amateur ---
     $('#chooseJobBtn')?.addEventListener('click', () => {
     const { stage, player } = getPlayerAndStage();
     // You can only *pick* a job while Dreamer.
     if (stage !== STAGE_DREAMER) return;
     if (!player || player.jobId) return;
 
+    // If we already have a job, this button acts as "Quit Job"
+    if (player.jobId) {
+      dispatch({ type: ActionTypes.QUIT_JOB });
+      return;
+    }
+
+    // Otherwise, it's "Choose Job"
     const select = $('#jobSelect');
     if (!select) return;
     const jobId = select.value;
@@ -138,7 +144,7 @@ export function setupControls(dispatch, getState) {
     dispatch({ type: ActionTypes.CHOOSE_JOB, jobId });
   });
 
-    $('#goToWorkBtn')?.addEventListener('click', () => {
+  $('#goToWorkBtn')?.addEventListener('click', () => {
     const { stage, player } = getPlayerAndStage();
     if (!player || !player.jobId) return;
 
@@ -153,8 +159,7 @@ export function setupControls(dispatch, getState) {
 
     dispatch({ type: ActionTypes.GO_TO_WORK });
   });
-
-
+  // --- Amateur ---
   $('#takeProfDevBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
     if (stage !== STAGE_AMATEUR) return;
