@@ -211,7 +211,49 @@ function rollTime(gameState) {
   return next;
 }
 
+function applyDowntimeAction(gameState, actionType) {
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
 
+  // No time left? You can’t do downtime.
+  if (!player.timeThisTurn || player.timeThisTurn <= 0) {
+    return gameState;
+  }
+
+  let deltaFood = 0;
+  let deltaInspiration = 0;
+  let deltaCraft = 0;
+
+  switch (actionType) {
+    case ActionTypes.DOWNTIME_PRACTICE:
+      // Practice your art → craft
+      deltaCraft = 1;
+      break;
+    case ActionTypes.DOWNTIME_SLEEP:
+      // Rest / Sleep → inspiration
+      deltaInspiration = 1;
+      break;
+    case ActionTypes.DOWNTIME_EAT_AT_HOME:
+      // Cook & eat at home → food
+      deltaFood = 1;
+      break;
+    default:
+      return gameState;
+  }
+
+  return updateActivePlayer(gameState, (p) => {
+    const timeThisTurn = (p.timeThisTurn || 0) - 1;
+
+    return {
+      ...p,
+      food: (p.food || 0) + deltaFood,
+      inspiration: (p.inspiration || 0) + deltaInspiration,
+      craft: (p.craft || 0) + deltaCraft,
+      // Clamp at 0 to match job time handling
+      timeThisTurn: timeThisTurn < 0 ? 0 : timeThisTurn
+    };
+  });
+}
 
 /**
  * END_TURN:
