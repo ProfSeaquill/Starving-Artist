@@ -69,6 +69,40 @@ export function setupControls(dispatch, getState) {
       });
     }
 
+    // --- Downtime buttons (Practice / Sleep / Eat at Home) ---
+    const practiceBtn = $('#practiceBtn');
+    if (!practiceBtn) {
+      console.warn('[controls] practiceBtn not found');
+    } else {
+      practiceBtn.addEventListener('click', () => {
+        const { player } = getPlayerAndStage();
+        if (!player || player.timeThisTurn <= 0) return;
+        dispatch({ type: ActionTypes.DOWNTIME_PRACTICE });
+      });
+    }
+
+    const sleepBtn = $('#sleepBtn');
+    if (!sleepBtn) {
+      console.warn('[controls] sleepBtn not found');
+    } else {
+      sleepBtn.addEventListener('click', () => {
+        const { player } = getPlayerAndStage();
+        if (!player || player.timeThisTurn <= 0) return;
+        dispatch({ type: ActionTypes.DOWNTIME_SLEEP });
+      });
+    }
+
+    const eatAtHomeBtn = $('#eatAtHomeBtn');
+    if (!eatAtHomeBtn) {
+      console.warn('[controls] eatAtHomeBtn not found');
+    } else {
+      eatAtHomeBtn.addEventListener('click', () => {
+        const { player } = getPlayerAndStage();
+        if (!player || player.timeThisTurn <= 0) return;
+        dispatch({ type: ActionTypes.DOWNTIME_EAT_AT_HOME });
+      });
+    }
+    
     // --- Home ---
     const drawHomeBtn = $('#drawHomeBtn');
     if (!drawHomeBtn) {
