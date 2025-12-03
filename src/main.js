@@ -180,6 +180,176 @@ gameState = {
   proDiscard: []
 };
 
+// --- Dev helpers (mutate active player & log) ---
+
+function devLog(message) {
+  const debugLogEl = document.getElementById('debugLog');
+  if (!debugLogEl) return;
+
+  const maxLines = 40;
+  const existing = (debugLogEl.textContent || '').split('\n').filter(Boolean);
+  existing.push(String(message));
+  debugLogEl.textContent = existing.slice(-maxLines).join('\n');
+}
+
+function devUpdateActivePlayer(updater) {
+  if (!gameState || !Array.isArray(gameState.players) || gameState.players.length === 0) {
+    return;
+  }
+
+  const idx = gameState.activePlayerIndex || 0;
+  const players = gameState.players.slice();
+  const current = players[idx];
+  if (!current) return;
+
+  const updated = updater(current) || current;
+  players[idx] = updated;
+
+  gameState = { ...gameState, players };
+  render(gameState);
+}
+
+/**
+ * Wire up the on-page Dev Tools panel.
+ * - All cheats apply to the *active* player.
+ * - Card draws still go through dispatch/applyAction.
+ */
+function setupDevPanel(dispatch) {
+  // --- Stage jump ---
+  const stageSelect = document.getElementById('devStageSelect');
+  const stageBtn = document.getElementById('devSetStageBtn');
+  if (stageSelect && stageBtn) {
+    stageBtn.addEventListener('click', () => {
+      const value = stageSelect.value;
+      if (!value) return;
+
+      devUpdateActivePlayer((p) => ({
+        ...p,
+        stage: value
+      }));
+      devLog(`[dev] Set stage to "${value}".`);
+    });
+  }
+
+  // --- Stats: Money / Food / Inspiration / Craft ---
+  const statSelect = document.getElementById('devStatSelect');
+  const statInput  = document.getElementById('devStatValue');
+  const setStatBtn = document.getElementById('devSetStatBtn');
+  const addStatBtn = document.getElementById('devAddStatBtn');
+
+  const validStats = ['money', 'food', 'inspiration', 'craft'];
+
+  const parseNumber = (inputEl) => {
+    if (!inputEl) return 0;
+    const raw = inputEl.value.trim();
+    if (!raw) return 0;
+    const num = Number.parseInt(raw, 10);
+    return Number.isFinite(num) ? num : 0;
+  };
+
+  if (statSelect && statInput && setStatBtn) {
+    setStatBtn.addEventListener('click', () => {
+      const stat = statSelect.value;
+      if (!validStats.includes(stat)) return;
+      const value = parseNumber(statInput);
+
+      devUpdateActivePlayer((p) => ({
+        ...p,
+        [stat]: value
+      }));
+
+      devLog(`[dev] Set ${stat} = ${value}.`);
+    });
+  }
+
+  if (statSelect && statInput && addStatBtn) {
+    addStatBtn.addEventListener('click', () => {
+      const stat = statSelect.value;
+      if (!validStats.includes(stat)) return;
+      const delta = parseNumber(statInput);
+
+      devUpdateActivePlayer((p) => ({
+        ...p,
+        [stat]: (p[stat] || 0) + delta
+      }));
+
+      devLog(`[dev] Added ${delta} to ${stat}.`);
+    });
+  }
+
+  // --- Time this turn ---
+  const timeInput    = document.getElementById('devTimeValue');
+  const setTimeBtn   = document.getElementById('devSetTimeBtn');
+  const clearTimeBtn = document.getElementById('devClearTimeBtn');
+
+  const parseTime = () => {
+    if (!timeInput) return 0;
+    const raw = timeInput.value.trim();
+    if (!raw) return 0;
+    const num = Number.parseInt(raw, 10);
+    if (!Number.isFinite(num)) return 0;
+    return Math.max(0, num);
+  };
+
+  if (setTimeBtn && timeInput) {
+    setTimeBtn.addEventListener('click', () => {
+      const t = parseTime();
+
+      devUpdateActivePlayer((p) => {
+        const flags = p.flags || {};
+        return {
+          ...p,
+          timeThisTurn: t,
+          flags: {
+            ...flags,
+            lastTimeRoll: t,
+            hasRolledTimeThisTurn: true
+          }
+        };
+      });
+
+      devLog(`[dev] Set timeThisTurn = ${t}.`);
+    });
+  }
+
+  if (clearTimeBtn) {
+    clearTimeBtn.addEventListener('click', () => {
+      devUpdateActivePlayer((p) => {
+        const flags = p.flags || {};
+        const { lastTimeRoll, hasRolledTimeThisTurn, ...rest } = flags;
+        return {
+          ...p,
+          timeThisTurn: 0,
+          flags: {
+            ...rest,
+            hasRolledTimeThisTurn: false
+          }
+        };
+      });
+
+      devLog('[dev] Cleared timeThisTurn.');
+    });
+  }
+
+  // --- Dev card draw buttons (still respect per-turn limits) ---
+  const devDrawButtons = [
+    { id: 'devDrawHomeBtn',    type: ActionTypes.DRAW_HOME_CARD,    label: 'Home' },
+    { id: 'devDrawSocialBtn',  type: ActionTypes.DRAW_SOCIAL_CARD,  label: 'Social' },
+    { id: 'devDrawProfDevBtn', type: ActionTypes.TAKE_PROF_DEV,     label: 'Prof Dev' },
+    { id: 'devDrawProBtn',     type: ActionTypes.DRAW_PRO_CARD,     label: 'Pro' }
+  ];
+
+  for (const { id, type, label } of devDrawButtons) {
+    const btn = document.getElementById(id);
+    if (!btn) continue;
+
+    btn.addEventListener('click', () => {
+      devLog(`[dev] dispatch ${label} card (${type}).`);
+      dispatch({ type });
+    });
+  }
+}
+
 // --- Stage tutorial content & tracking ---
 // Stages are simple strings set by the engine: 'home', 'dreamer', 'amateur', 'pro'.
 const STAGE_TUTORIALS = {
@@ -663,6 +833,7 @@ window._starvingArtistDispatch = dispatch;
 
 // --- Kick off UI ---
 setupControls(dispatch, () => gameState);
+setupDevPanel(dispatch);
 render(gameState);
 
 // Consider the game ready at Turn 1 with no Time yet.
