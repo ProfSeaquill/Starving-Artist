@@ -29,23 +29,12 @@ export function setupControls(dispatch, getState) {
   console.log('[controls] setupControls called');
 
   try {
-    // --- Populate job select ---
+        // --- Job select is now populated by renderJobSelect(gameState) in render.js ---
     const jobSelect = $('#jobSelect');
-    if (jobSelect) {
-      // Clear any existing options beyond the placeholder
-      while (jobSelect.options.length > 1) {
-        jobSelect.remove(1);
-      }
-
-      for (const job of JOBS) {
-        const opt = document.createElement('option');
-        opt.value = job.id;
-        opt.textContent = job.name;
-        jobSelect.appendChild(opt);
-      }
-    } else {
+    if (!jobSelect) {
       console.warn('[controls] jobSelect element not found');
     }
+
 
     // Helper: get current player + stage
     const getPlayerAndStage = () => {
