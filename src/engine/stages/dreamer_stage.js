@@ -17,6 +17,7 @@ import { rollD6 } from '../dice.js';
  *  - ATTEND_SOCIAL_EVENT (resolve pending Social as 'attend')
  *  - SKIP_SOCIAL_EVENT (resolve pending Social as 'skip')
  *  - CHOOSE_JOB (pick a day job, Dreamer-only)
+ *  - QUIT_JOB
  *  - GO_TO_WORK (apply job effects; allowed on any stage once you have a job)
  *  - ATTEMPT_ADVANCE_DREAMER
  *
@@ -49,6 +50,9 @@ export function dreamerReducer(gameState, action) {
 
     case 'CHOOSE_JOB':
       return handleChooseJob(gameState, action);
+
+    case 'QUIT_JOB':
+      return handleQuitJob(gameState);
 
     case 'GO_TO_WORK':
       return handleGoToWork(gameState);
@@ -113,6 +117,38 @@ function handleChooseJob(gameState, action) {
   );
 
   return nextState;
+}
+
+/**
+ * QUIT_JOB:
+ * - Player voluntarily leaves their job.
+ * - Requires player.jobId to be set.
+ * - Returns the job card to the jobDeck so another player can take it.
+ * - Resets skippedWorkCount.
+ *
+ * action: { type: 'QUIT_JOB' }
+ */
+function handleQuitJob(gameState) {
+  const player = getActivePlayer(gameState);
+  if (!player || !player.jobId) return gameState;
+
+  const jobIdToReturn = player.jobId;
+
+  // Put the job back in the market if it somehow isn't there already.
+  const jobDeck = gameState.jobDeck.includes(jobIdToReturn)
+    ? gameState.jobDeck
+    : [...gameState.jobDeck, jobIdToReturn];
+
+  const nextState = {
+    ...gameState,
+    jobDeck
+  };
+
+  return updateActivePlayer(nextState, (p) => ({
+    ...p,
+    jobId: null,
+    skippedWorkCount: 0
+  }));
 }
 
 /**
