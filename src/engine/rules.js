@@ -45,6 +45,7 @@ export function applyAction(gameState, action) {
     case ActionTypes.ATTEND_SOCIAL_EVENT:
     case ActionTypes.SKIP_SOCIAL_EVENT:
     case ActionTypes.CHOOSE_JOB:
+    case ActionTypes.QUIT_JOB:
     case ActionTypes.GO_TO_WORK:
     case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
       return dreamerReducer(gameState, action);
