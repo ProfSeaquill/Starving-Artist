@@ -124,15 +124,28 @@ function convertSocialRow(row) {
   const name =
     (row.title || row.name || row.card_name || id).trim();
 
-  // Use flavor / text as the overall description of the event
+  // Overall flavor / description of the event
   const text =
     (row.flavor || row.text || '').trim();
 
   const timeCost =
     toNumber(row.time_cost ?? row.timeCost) ?? 1;
 
-  const attend = buildChoice(row, 'attend');
-  const skip   = buildChoice(row, 'skip');
+  // --- Map CSV choiceA_* / choiceB_* → attend / skip branches ---
+
+  // Choice A → Attend
+  const attendEffects = buildStatEffects(row, 'choiceA_');
+  const attend = {
+    text: (row.choiceA_label || '').trim(),
+    effects: attendEffects
+  };
+
+  // Choice B → Skip
+  const skipEffects = buildStatEffects(row, 'choiceB_');
+  const skip = {
+    text: (row.choiceB_label || '').trim(),
+    effects: skipEffects
+  };
 
   return {
     id,
@@ -143,6 +156,7 @@ function convertSocialRow(row) {
     skip
   };
 }
+
 
 
 /**
