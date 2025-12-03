@@ -7,6 +7,11 @@ export const ActionTypes = {
   START_TURN: 'START_TURN',
   END_TURN: 'END_TURN',
 
+  // Downtime (available on any stage as long as you have time)
+  DOWNTIME_PRACTICE: 'DOWNTIME_PRACTICE',
+  DOWNTIME_SLEEP: 'DOWNTIME_SLEEP',
+  DOWNTIME_EAT_AT_HOME: 'DOWNTIME_EAT_AT_HOME',
+  
   // Home stage
   DRAW_HOME_CARD: 'DRAW_HOME_CARD',
   ATTEMPT_LEAVE_HOME: 'ATTEMPT_LEAVE_HOME',
