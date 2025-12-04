@@ -88,8 +88,8 @@ function startTurn(gameState) {
   let next = gameState;
 
   next = updateActivePlayer(next, (player) => {
-    // Start from existing flags
-        const baseFlags = {
+    // Start from existing flags and reset per-turn flags
+    const baseFlags = {
       ...(player.flags || {}),
       // For UI: which turn did we start last?
       lastTurnStartedAtTurn: gameState.turn,
@@ -97,8 +97,7 @@ function startTurn(gameState) {
       hasRolledTimeThisTurn: false,
       timeRerollsRemaining: 0,
       // NEW: reset per-turn work flag
-      hasWorkedThisTurn: false
-    };
+      hasWorkedThisTurn: false,
       // Reset per-turn downtime usage
       usedPracticeThisTurn: false,
       usedSleepThisTurn: false,
@@ -109,23 +108,20 @@ function startTurn(gameState) {
     const flags = { ...baseFlags };
     delete flags.homeCardDrawnThisTurn;
 
+    if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
+      // No Minor Work income at Home or Dreamer (for now).
+      return {
+        ...player,
+        timeThisTurn: 0,
+        flags
+      };
+    }
 
-
-  if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
-    // No Minor Work income at Home or Dreamer (for now).
-    return {
+    let updated = {
       ...player,
       timeThisTurn: 0,
       flags
     };
-  }
-
-  let updated = {
-    ...player,
-    timeThisTurn: 0,
-    flags
-  };
-
 
     if (Array.isArray(updated.minorWorks)) {
       for (const mw of updated.minorWorks) {
@@ -161,9 +157,9 @@ function startTurn(gameState) {
   });
 
   // TODO later: culture rotation, starvation checks, etc.
-
   return next;
 }
+
 
 function rollTime(gameState) {
   const player = getActivePlayer(gameState);
