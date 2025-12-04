@@ -89,13 +89,16 @@ function startTurn(gameState) {
 
   next = updateActivePlayer(next, (player) => {
     // Start from existing flags
-    const baseFlags = {
+        const baseFlags = {
       ...(player.flags || {}),
       // For UI: which turn did we start last?
       lastTurnStartedAtTurn: gameState.turn,
       // Reset per-turn time roll flags
       hasRolledTimeThisTurn: false,
       timeRerollsRemaining: 0,
+      // NEW: reset per-turn work flag
+      hasWorkedThisTurn: false
+    };
       // Reset per-turn downtime usage
       usedPracticeThisTurn: false,
       usedSleepThisTurn: false,
