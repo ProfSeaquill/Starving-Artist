@@ -522,6 +522,38 @@ function maybeShowCardPopup(state, action) {
   let cardName = '';
   let overlayConfig = null;
 
+    switch (action.type) {
+    case ActionTypes.DRAW_HOME_CARD: {
+      const card = flags.lastHomeCard;
+      if (!card) return;
+
+      // Remember that we drew a Home card this turn
+      flags.lastHomeCardTurn = currentTurn;
+
+      label = 'Home Card';
+      cardName = card.name || '(Home Card)';
+
+      const parts = [];
+
+      // Main rules / flavor text, if present
+      if (card.text) {
+        parts.push(card.text);
+      }
+
+      // Stat effects like "Money +2, Food -1"
+      const effText = formatStatEffects(card.effects);
+      if (effText) {
+        if (parts.length) parts.push(''); // blank line between text and effects
+        parts.push(`Effects: ${effText}`);
+      }
+
+      bodyText = parts.join('\n') || '(No rules text yet.)';
+
+      // Simple popup: just an OK button (default label)
+      // so we don't need a special overlayConfig.
+      break;
+    }
+
   switch (action.type) {
                 case ActionTypes.DRAW_SOCIAL_CARD: {
       card = flags.lastSocialEventCard;
@@ -588,33 +620,6 @@ function maybeShowCardPopup(state, action) {
       };
       break;
     }
-
-
-    case ActionTypes.DRAW_SOCIAL_CARD: {
-  card = flags.lastSocialEventCard;
-  if (!card) return;
-  flags.lastSocialEventTurn = currentTurn; // remember this turn
-  label = 'Social Event';
-  cardName = card.name || '(Social Event)';
-  const attendText = card.attend && card.attend.text;
-  const skipText   = card.skip && card.skip.text;
-  const parts = [];
-  if (attendText) parts.push('Attend: ' + attendText);
-  if (skipText)   parts.push('Skip: '   + skipText);
-  bodyText = parts.join('\n\n') || '(No rules text yet.)';
-
-  overlayConfig = {
-    primaryLabel: 'Attend',
-    secondaryLabel: 'Skip',
-    onPrimary: () => {
-      dispatch({ type: ActionTypes.ATTEND_SOCIAL_EVENT });
-    },
-    onSecondary: () => {
-      dispatch({ type: ActionTypes.SKIP_SOCIAL_EVENT });
-    }
-  };
-  break;
-}
 
 
     case ActionTypes.DRAW_PRO_CARD: {
