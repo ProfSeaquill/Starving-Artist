@@ -87,7 +87,7 @@ export function applyAction(gameState, action) {
 function startTurn(gameState) {
   let next = gameState;
 
-    next = updateActivePlayer(next, (player) => {
+  next = updateActivePlayer(next, (player) => {
     // Start from existing flags
     const baseFlags = {
       ...(player.flags || {}),
@@ -95,12 +95,17 @@ function startTurn(gameState) {
       lastTurnStartedAtTurn: gameState.turn,
       // Reset per-turn time roll flags
       hasRolledTimeThisTurn: false,
-      timeRerollsRemaining: 0
+      timeRerollsRemaining: 0,
+      // Reset per-turn downtime usage
+      usedPracticeThisTurn: false,
+      usedSleepThisTurn: false,
+      usedEatAtHomeThisTurn: false
     };
 
     // Clear per-turn Home draw flag
     const flags = { ...baseFlags };
     delete flags.homeCardDrawnThisTurn;
+
 
 
   if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
@@ -220,6 +225,8 @@ function applyDowntimeAction(gameState, actionType) {
     return gameState;
   }
 
+  const prevFlags = player.flags || {};
+  let flagKey = null;
   let deltaFood = 0;
   let deltaInspiration = 0;
   let deltaCraft = 0;
@@ -227,18 +234,29 @@ function applyDowntimeAction(gameState, actionType) {
   switch (actionType) {
     case ActionTypes.DOWNTIME_PRACTICE:
       // Practice your art → craft
+      flagKey = 'usedPracticeThisTurn';
       deltaCraft = 1;
       break;
+
     case ActionTypes.DOWNTIME_SLEEP:
       // Rest / Sleep → inspiration
+      flagKey = 'usedSleepThisTurn';
       deltaInspiration = 1;
       break;
+
     case ActionTypes.DOWNTIME_EAT_AT_HOME:
       // Cook & eat at home → food
+      flagKey = 'usedEatAtHomeThisTurn';
       deltaFood = 1;
       break;
+
     default:
       return gameState;
+  }
+
+  // Enforce the 1-per-turn cap for this specific downtime action
+  if (flagKey && prevFlags[flagKey]) {
+    return gameState;
   }
 
   return updateActivePlayer(gameState, (p) => {
@@ -250,10 +268,15 @@ function applyDowntimeAction(gameState, actionType) {
       inspiration: (p.inspiration || 0) + deltaInspiration,
       craft: (p.craft || 0) + deltaCraft,
       // Clamp at 0 to match job time handling
-      timeThisTurn: timeThisTurn < 0 ? 0 : timeThisTurn
+      timeThisTurn: timeThisTurn < 0 ? 0 : timeThisTurn,
+      flags: {
+        ...(p.flags || {}),
+        ...(flagKey ? { [flagKey]: true } : {})
+      }
     };
   });
 }
+
 
 /**
  * END_TURN:
