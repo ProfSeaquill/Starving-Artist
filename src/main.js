@@ -512,6 +512,7 @@ function maybeShowCardPopup(state, action) {
   const player = state.players[state.activePlayerIndex];
   if (!player) return;
 
+  // Ensure flags exists
   player.flags = player.flags || {};
   const flags = player.flags;
 
@@ -525,9 +526,9 @@ function maybeShowCardPopup(state, action) {
   let cardName = '';
   let overlayConfig = null;
 
-    switch (action.type) {
+  switch (action.type) {
     case ActionTypes.DRAW_HOME_CARD: {
-      const card = flags.lastHomeCard;
+      card = flags.lastHomeCard;
       console.log('[popup] DRAW_HOME_CARD: lastHomeCard =', card);
       if (!card) return;
 
@@ -545,21 +546,18 @@ function maybeShowCardPopup(state, action) {
       }
 
       // Stat effects like "Money +2, Food -1"
-      const effText = formatStatEffects(card.effects);
+      const effText = formatStatEffects(card.effects || []);
       if (effText) {
         if (parts.length) parts.push(''); // blank line between text and effects
         parts.push(`Effects: ${effText}`);
       }
 
       bodyText = parts.join('\n') || '(No rules text yet.)';
-
       // Simple popup: just an OK button (default label)
-      // so we don't need a special overlayConfig.
       break;
     }
 
-  switch (action.type) {
-                case ActionTypes.DRAW_SOCIAL_CARD: {
+    case ActionTypes.DRAW_SOCIAL_CARD: {
       card = flags.lastSocialEventCard;
       if (!card) return;
       flags.lastSocialEventTurn = currentTurn; // remember this turn
@@ -625,7 +623,6 @@ function maybeShowCardPopup(state, action) {
       break;
     }
 
-
     case ActionTypes.DRAW_PRO_CARD: {
       card = flags.lastProCard;
       if (!card) return;
@@ -671,11 +668,12 @@ function maybeShowCardPopup(state, action) {
     }
 
     default:
+      // Not a card-draw action we care about
       return;
   }
 
+  console.log('[popup] showing overlay:', { label, cardName, bodyText });
   showCardOverlay(label, cardName, bodyText, overlayConfig || undefined);
-}
 }
 
 function getCardDrawDenyReason(state, action) {
