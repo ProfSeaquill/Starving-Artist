@@ -508,6 +508,41 @@ if (rollTimeBtn) {
       !timeValue || dtFlags.usedEatAtHomeThisTurn;
   }
 
+  // --- Advancement button gating ---
+
+  // Home → Dreamer: only meaningful while on the Home track
+  const attemptLeaveHomeBtn = $('#attemptLeaveHomeBtn');
+  if (attemptLeaveHomeBtn) {
+    attemptLeaveHomeBtn.disabled = player.stage !== STAGE_HOME;
+  }
+
+  // Dreamer → Amateur: require stat thresholds from config.dreamer.advanceThresholds
+  const attemptAdvanceDreamerBtn = $('#attemptAdvanceDreamerBtn');
+  if (attemptAdvanceDreamerBtn) {
+    const thresholds = gameState.config?.dreamer?.advanceThresholds || {};
+    let meetsThresholds = true;
+
+    for (const [stat, required] of Object.entries(thresholds)) {
+      const requiredNum = Number(required);
+      if (!Number.isFinite(requiredNum)) continue; // ignore weird values
+
+      const value = Number(player[stat] ?? 0);
+      if (value < requiredNum) {
+        meetsThresholds = false;
+        break;
+      }
+    }
+
+    attemptAdvanceDreamerBtn.disabled =
+      player.stage !== STAGE_DREAMER || !meetsThresholds;
+  }
+
+  // Amateur → Pro: require Portfolio before attempting to advance
+  const attemptAdvanceProBtn = $('#attemptAdvanceProBtn');
+  if (attemptAdvanceProBtn) {
+    attemptAdvanceProBtn.disabled =
+      player.stage !== STAGE_AMATEUR || !player.portfolioBuilt;
+  }
 
   const minorCount =
     (player.minorWorks && player.minorWorks.length) || 0;
