@@ -45,35 +45,34 @@ export function setupControls(dispatch, getState) {
       return { state, player, stage: player?.stage ?? null };
     };
 
-    // --- Debug panel toggle (show/hide entire dev panel) ---
-    const toggleDebugBtn = $('#toggleDebug');
-    const debugPanel = $('#debugPanel');
+    // --- Dev / Debug panel toggle (reuse the old "Toggle JSON" button) ---
+    const devToggleBtn = $('#toggleDebug');   // <-- existing button in the panel
+    const debugPanel = $('#debugPanel');      // <-- the whole panel section
 
-    if (!toggleDebugBtn) {
-      console.warn('[controls] toggleDebug button #toggleDebug not found');
+    if (!devToggleBtn) {
+      console.warn('[controls] #toggleDebug not found (dev toggle button)');
     }
     if (!debugPanel) {
-      console.warn('[controls] debugPanel #debugPanel not found');
+      console.warn('[controls] #debugPanel not found (dev panel container)');
     }
 
-    if (toggleDebugBtn && debugPanel) {
-      // Optional: if you start hidden via style="display:none" in index.html,
-      // you can also initialize the button label here if you want.
-      toggleDebugBtn.addEventListener('click', () => {
-        const currentlyHidden =
+    if (devToggleBtn && debugPanel) {
+      devToggleBtn.addEventListener('click', () => {
+        const isHidden =
           debugPanel.style.display === 'none' ||
           getComputedStyle(debugPanel).display === 'none';
 
-        debugPanel.style.display = currentlyHidden ? 'block' : 'none';
+        // Toggle the entire panel
+        debugPanel.style.display = isHidden ? 'block' : 'none';
 
-        // Optional: dynamic label so it’s obvious what will happen
-        toggleDebugBtn.textContent = currentlyHidden
+        // Optional: update button label to reflect state
+        devToggleBtn.textContent = isHidden
           ? 'Hide Dev Panel'
           : 'Show Dev Panel';
 
         console.log(
-          '[controls] toggleDebug clicked. debugPanel now',
-          currentlyHidden ? 'visible' : 'hidden'
+          '[controls] Dev panel toggle clicked. Panel now',
+          isHidden ? 'visible' : 'hidden'
         );
       });
     }
