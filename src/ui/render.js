@@ -533,16 +533,14 @@ export function render(gameState) {
     goToWorkBtn.classList.toggle('guided-btn', !!shouldHighlightWork);
   }
 
-  // Draw Home card – 1 per turn, and requires Time > 0
-  const drawHomeBtn = $('#drawHomeBtn');
-  if (drawHomeBtn) {
-    const homeCardDrawn = !!pFlags.homeCardDrawnThisTurn;
-    drawHomeBtn.disabled =
-      player.stage !== STAGE_HOME ||
-      homeCardDrawn ||
-      timeValue <= 0;
-  }
-
+  // Draw Home card – 1 per turn (no Time required while at Home)
+const drawHomeBtn = $('#drawHomeBtn');
+if (drawHomeBtn) {
+  const homeCardDrawn = !!pFlags.homeCardDrawnThisTurn;
+  drawHomeBtn.disabled =
+    player.stage !== STAGE_HOME ||
+    homeCardDrawn;
+}
 
     // NEW: downtime buttons – 1 use per turn & require Time > 0
   const dtFlags = pFlags;
