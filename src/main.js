@@ -507,12 +507,15 @@ function formatStatEffects(effects) {
 }
 
 function maybeShowCardPopup(state, action) {
+  console.log('[popup] called with action:', action.type);
+
   const player = state.players[state.activePlayerIndex];
   if (!player) return;
 
-  // Ensure flags exists
   player.flags = player.flags || {};
   const flags = player.flags;
+
+  console.log('[popup] flags snapshot:', JSON.parse(JSON.stringify(flags)));
 
   const currentTurn = state.turn || 1;
 
