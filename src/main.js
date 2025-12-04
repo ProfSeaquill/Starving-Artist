@@ -851,16 +851,36 @@ dispatch({ type: ActionTypes.START_TURN });
 maybeShowStageTutorial(null);
 // (no auto ROLL_TIME here)
 
-// --- Debug panel toggle ---
-const toggleBtn = document.getElementById('toggleDebug');
-const debugLogEl = document.getElementById('debugLog');
+// --- Dev panel toggle (repurpose the old "Toggle JSON" button) ---
+const devToggleBtn = document.getElementById('toggleDebug');   // same button
+const devPanelEl   = document.getElementById('debugPanel');    // whole panel
+const debugLogEl   = document.getElementById('debugLog');      // optional, for legacy JSON
 
-if (toggleBtn && debugLogEl) {
-  toggleBtn.addEventListener('click', () => {
-    const isHidden = debugLogEl.style.display === 'none';
-    debugLogEl.style.display = isHidden ? 'block' : 'none';
+if (devToggleBtn && devPanelEl) {
+  devToggleBtn.addEventListener('click', () => {
+    const isHidden =
+      devPanelEl.style.display === 'none' ||
+      getComputedStyle(devPanelEl).display === 'none';
+
+    // Show/hide the entire dev panel
+    devPanelEl.style.display = isHidden ? 'block' : 'none';
+
+    // OPTIONAL: if your raw JSON bar lives somewhere *outside* the panel,
+    // you can still hide/show it in lockstep:
+    if (debugLogEl && !devPanelEl.contains(debugLogEl)) {
+      debugLogEl.style.display = isHidden ? 'block' : 'none';
+    }
+
+    // OPTIONAL: update label so it reads like a panel toggle instead of JSON toggle
+    devToggleBtn.textContent = isHidden ? 'Hide Dev Panel' : 'Show Dev Panel';
+
+    console.log(
+      '[main] Dev panel toggle clicked. Panel now',
+      isHidden ? 'visible' : 'hidden'
+    );
   });
 }
+
 
 // --- Card overlay wiring ---
 const cardOverlay = document.getElementById('cardOverlay');
