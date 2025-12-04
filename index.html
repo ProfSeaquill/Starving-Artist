@@ -1025,14 +1025,17 @@ button.guided-btn {
             <button id="proMaintenanceBtn" type="button">Maintenance Check</button>
           </div>
         </div>
-
       </section>
 
                   <!-- Debug panel -->
       <section id="debugPanel" class="panel">
-        <h2 style="margin-bottom:6px;">Debug</h2>
-        <pre id="debugLog" class="log">{}</pre>
-      </section>
+  <h2 style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Debug</span>
+    <button id="toggleDebug" type="button">Toggle JSON</button>
+  </h2>
+  <pre id="debugLog" class="log">{}</pre>
+</section>
+
 
 
         <!-- Dev: Stage & Stats -->
