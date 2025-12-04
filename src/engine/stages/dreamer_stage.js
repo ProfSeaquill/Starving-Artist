@@ -164,6 +164,14 @@ function handleGoToWork(gameState) {
     return gameState;
   }
 
+  // NEW: hard gate – only once per turn
+  const flags = player.flags || {};
+  if (flags.hasWorkedThisTurn) {
+    // Optional probe:
+    // console.log('[dreamer] GO_TO_WORK ignored – already worked this turn');
+    return gameState;
+  }
+
   const job = JOBS.find(j => j.id === player.jobId);
   if (!job) {
     return gameState;
@@ -181,18 +189,21 @@ function handleGoToWork(gameState) {
     const remainingTime = (updated.timeThisTurn || 0) + (job.timeDelta || 0);
     updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
 
-    const flags = {
+    const newFlags = {
       ...(updated.flags || {}),
       lastJobId: job.id,
-      lastJobName: job.name
+      lastJobName: job.name,
+      // NEW: mark that we've worked this turn
+      hasWorkedThisTurn: true
     };
-    updated.flags = flags;
+    updated.flags = newFlags;
 
     return updated;
   });
 
   return nextState;
 }
+
 
 /**
  * DRAW_SOCIAL_CARD:
