@@ -1027,16 +1027,15 @@ button.guided-btn {
         </div>
       </section>
 
-                  <!-- Debug panel -->
+      <!-- Dev / Debug panel (entire block is toggleable) -->
       <section id="debugPanel" class="panel">
-  <h2 style="display:flex; justify-content:space-between; align-items:center;">
-    <span>Debug</span>
-    <button id="toggleDebug" type="button">Toggle JSON</button>
-  </h2>
-  <pre id="debugLog" class="log">{}</pre>
-</section>
+        <h2 style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Debug</span>
+          <button id="toggleDebug" type="button">Toggle Dev Panel</button>
+        </h2>
 
-
+        <!-- Top concise dev log -->
+        <pre id="debugLog" class="log">{}</pre>
 
         <!-- Dev: Stage & Stats -->
         <div class="section-title">Stage & Stats (Active Player)</div>
@@ -1097,9 +1096,11 @@ button.guided-btn {
         <!-- Optional raw state JSON -->
         <details id="debugRawState" open style="margin-top:8px;">
           <summary style="cursor:pointer; font-size:11px;">Raw state JSON</summary>
-          <pre id="debugLog" class="log">{}</pre>
+          <!-- NOTE: different id so we don't duplicate #debugLog -->
+          <pre id="debugLogRaw" class="log">{}</pre>
         </details>
       </section>
+
 
     </div>
   </main>
