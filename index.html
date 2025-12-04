@@ -112,10 +112,13 @@ main.app {
     /* Highlight the stage band the active player is currently on */
 .stage-band.stage-active {
   box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.8),
-    0 0 24px rgba(255, 255, 255, 0.6);
+    0 0 0 3px rgba(0, 0, 0, 1),
+    0 0 24px rgba(0, 0, 0, 0.75);
+  border: 2px solid #000;
+  border-radius: 10px;
   animation: guidedPulse 1.4s ease-in-out infinite alternate;
 }
+
 /* A faint zigzag / stripe pattern overlay for fun */
 .stage-band::before {
   content: "";
