@@ -45,6 +45,39 @@ export function setupControls(dispatch, getState) {
       return { state, player, stage: player?.stage ?? null };
     };
 
+    // --- Debug panel toggle (show/hide entire dev panel) ---
+    const toggleDebugBtn = $('#toggleDebug');
+    const debugPanel = $('#debugPanel');
+
+    if (!toggleDebugBtn) {
+      console.warn('[controls] toggleDebug button #toggleDebug not found');
+    }
+    if (!debugPanel) {
+      console.warn('[controls] debugPanel #debugPanel not found');
+    }
+
+    if (toggleDebugBtn && debugPanel) {
+      // Optional: if you start hidden via style="display:none" in index.html,
+      // you can also initialize the button label here if you want.
+      toggleDebugBtn.addEventListener('click', () => {
+        const currentlyHidden =
+          debugPanel.style.display === 'none' ||
+          getComputedStyle(debugPanel).display === 'none';
+
+        debugPanel.style.display = currentlyHidden ? 'block' : 'none';
+
+        // Optional: dynamic label so it’s obvious what will happen
+        toggleDebugBtn.textContent = currentlyHidden
+          ? 'Hide Dev Panel'
+          : 'Show Dev Panel';
+
+        console.log(
+          '[controls] toggleDebug clicked. debugPanel now',
+          currentlyHidden ? 'visible' : 'hidden'
+        );
+      });
+    }
+    
     // --- Turn buttons ---
     const rollBtn = $('#rollTimeBtn');
     if (!rollBtn) {
