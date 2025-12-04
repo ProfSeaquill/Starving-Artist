@@ -486,7 +486,29 @@ if (rollTimeBtn) {
     player.stage !== STAGE_AMATEUR &&
     player.stage !== STAGE_PRO;
 }
-  
+
+  // NEW: downtime buttons – 1 use per turn & require Time > 0
+  const dtFlags = player.flags || {};
+
+  const practiceBtn = $('#practiceBtn');
+  if (practiceBtn) {
+    practiceBtn.disabled =
+      !timeValue || dtFlags.usedPracticeThisTurn;
+  }
+
+  const sleepBtn = $('#sleepBtn');
+  if (sleepBtn) {
+    sleepBtn.disabled =
+      !timeValue || dtFlags.usedSleepThisTurn;
+  }
+
+  const eatAtHomeBtn = $('#eatAtHomeBtn');
+  if (eatAtHomeBtn) {
+    eatAtHomeBtn.disabled =
+      !timeValue || dtFlags.usedEatAtHomeThisTurn;
+  }
+
+
   const minorCount =
     (player.minorWorks && player.minorWorks.length) || 0;
   $('#minorWorksCount').textContent = String(minorCount);
