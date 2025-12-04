@@ -431,6 +431,39 @@ function updateStagePanelVisibility(stage) {
       jobSection.style.display = 'none';
     }
   }
+
+    // Highlight the stage band the active player is currently on
+  const allStageBands = document.querySelectorAll('.stage-band');
+  allStageBands.forEach((el) => {
+    el.classList.remove('stage-active');
+  });
+
+  let activeSelector = '';
+  switch (stage) {
+    case STAGE_HOME:
+      activeSelector = '.stage-band.stage-home';
+      break;
+    case STAGE_DREAMER:
+      activeSelector = '.stage-band.stage-dreamer';
+      break;
+    case STAGE_AMATEUR:
+      activeSelector = '.stage-band.stage-amateur';
+      break;
+    case STAGE_PRO:
+      activeSelector = '.stage-band.stage-pro';
+      break;
+    default:
+      activeSelector = '';
+  }
+
+  if (activeSelector) {
+    const activeStageEl = document.querySelector(activeSelector);
+    if (activeStageEl) {
+      activeStageEl.classList.add('stage-active');
+    }
+  }
+}
+
 }
 
 
@@ -709,7 +742,7 @@ if (drawHomeBtn) {
     jobInfoEl.textContent = 'No job (or lost job)';
   }
 
-    // --- Job select / button UI ---
+      // --- Job select / button UI ---
   const jobSelectEl = $('#jobSelect');
   const chooseJobBtnEl = $('#chooseJobBtn');
 
@@ -727,6 +760,19 @@ if (drawHomeBtn) {
       chooseJobBtnEl.textContent = 'Choose Job';
       jobSelectEl.disabled = true;
     }
+
+    // Guided highlight for "Choose Job" in Dreamer:
+    // after you've rolled, before you have a job, and before working.
+    const hasRolledThisTurn = !!pFlags.hasRolledTimeThisTurn;
+    const hasWorkedThisTurn = !!pFlags.hasWorkedThisTurn;
+
+    const shouldHighlightChooseJob =
+      player.stage === STAGE_DREAMER &&
+      hasRolledThisTurn &&
+      !hasWorkedThisTurn &&
+      !player.jobId; // only if we *don't* have a job yet
+
+    chooseJobBtnEl.classList.toggle('guided-btn', !!shouldHighlightChooseJob);
   }
 
 
