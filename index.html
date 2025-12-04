@@ -513,6 +513,22 @@ button:disabled {
   transform: none;
 }
 
+/* Guided button highlight */
+button.guided-btn {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 18px rgba(255, 255, 255, 0.5);
+  animation: guidedPulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes guidedPulse {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-1px);
+  }
+}
 
     select {
       background: #222;
