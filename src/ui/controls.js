@@ -45,38 +45,7 @@ export function setupControls(dispatch, getState) {
       return { state, player, stage: player?.stage ?? null };
     };
 
-    // --- Dev / Debug panel toggle (reuse the old "Toggle JSON" button) ---
-    const devToggleBtn = $('#toggleDebug');   // <-- existing button in the panel
-    const debugPanel = $('#debugPanel');      // <-- the whole panel section
-
-    if (!devToggleBtn) {
-      console.warn('[controls] #toggleDebug not found (dev toggle button)');
-    }
-    if (!debugPanel) {
-      console.warn('[controls] #debugPanel not found (dev panel container)');
-    }
-
-    if (devToggleBtn && debugPanel) {
-      devToggleBtn.addEventListener('click', () => {
-        const isHidden =
-          debugPanel.style.display === 'none' ||
-          getComputedStyle(debugPanel).display === 'none';
-
-        // Toggle the entire panel
-        debugPanel.style.display = isHidden ? 'block' : 'none';
-
-        // Optional: update button label to reflect state
-        devToggleBtn.textContent = isHidden
-          ? 'Hide Dev Panel'
-          : 'Show Dev Panel';
-
-        console.log(
-          '[controls] Dev panel toggle clicked. Panel now',
-          isHidden ? 'visible' : 'hidden'
-        );
-      });
-    }
-    
+  
     // --- Turn buttons ---
     const rollBtn = $('#rollTimeBtn');
     if (!rollBtn) {
