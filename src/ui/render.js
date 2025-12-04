@@ -443,6 +443,9 @@ export function render(gameState) {
   const player = gameState.players[gameState.activePlayerIndex];
   if (!player) return;
 
+  // Cache flags once for this render pass
+  const pFlags = player.flags || {};
+
   // --- Basic header info ---
   $('#turn').textContent = String(gameState.turn);
   $('#artPath').textContent = player.artPath;
@@ -478,17 +481,71 @@ export function render(gameState) {
   }
 
 
-  // NEW: disable Roll Time when it does nothing (Home stage)
-const rollTimeBtn = $('#rollTimeBtn');
-if (rollTimeBtn) {
-  rollTimeBtn.disabled =
-    player.stage !== STAGE_DREAMER &&
-    player.stage !== STAGE_AMATEUR &&
-    player.stage !== STAGE_PRO;
-}
+    // --- Guided button highlighting & per-turn disables ---
 
-  // NEW: downtime buttons – 1 use per turn & require Time > 0
-  const dtFlags = player.flags || {};
+  // Roll Time
+  const stageAllowsTimeRoll =
+    player.stage === STAGE_DREAMER ||
+    player.stage === STAGE_AMATEUR ||
+    player.stage === STAGE_PRO;
+
+  const hasRolledThisTurn = !!pFlags.hasRolledTimeThisTurn;
+  const rerollsRemaining = pFlags.timeRerollsRemaining || 0;
+  const canRollTime =
+    stageAllowsTimeRoll &&
+    (!hasRolledThisTurn || rerollsRemaining > 0);
+
+  const rollTimeBtn = $('#rollTimeBtn');
+  if (rollTimeBtn) {
+    rollTimeBtn.disabled = !canRollTime;
+
+    // Highlight at the beginning of each Dreamer turn,
+    // before the first roll.
+    const shouldHighlightRoll =
+      player.stage === STAGE_DREAMER &&
+      !hasRolledThisTurn;
+    rollTimeBtn.classList.toggle('guided-btn', !!shouldHighlightRoll);
+  }
+
+  // Go To Work
+  const stageAllowsWork =
+    player.stage === STAGE_DREAMER ||
+    player.stage === STAGE_AMATEUR ||
+    player.stage === STAGE_PRO;
+
+  const hasWorkedThisTurn = !!pFlags.hasWorkedThisTurn;
+  const canWork =
+    stageAllowsWork &&
+    !!player.jobId &&
+    !hasWorkedThisTurn;
+
+  const goToWorkBtn = $('#goToWorkBtn');
+  if (goToWorkBtn) {
+    goToWorkBtn.disabled = !canWork;
+
+    // Highlight after rolling time, while in Dreamer,
+    // as long as you have a job and haven't worked yet.
+    const shouldHighlightWork =
+      player.stage === STAGE_DREAMER &&
+      hasRolledThisTurn &&
+      !hasWorkedThisTurn &&
+      !!player.jobId;
+    goToWorkBtn.classList.toggle('guided-btn', !!shouldHighlightWork);
+  }
+
+  // Draw Home card – 1 per turn, and requires Time > 0
+  const drawHomeBtn = $('#drawHomeBtn');
+  if (drawHomeBtn) {
+    const homeCardDrawn = !!pFlags.homeCardDrawnThisTurn;
+    drawHomeBtn.disabled =
+      player.stage !== STAGE_HOME ||
+      homeCardDrawn ||
+      timeValue <= 0;
+  }
+
+
+    // NEW: downtime buttons – 1 use per turn & require Time > 0
+  const dtFlags = pFlags;
 
   const practiceBtn = $('#practiceBtn');
   if (practiceBtn) {
@@ -507,6 +564,7 @@ if (rollTimeBtn) {
     eatAtHomeBtn.disabled =
       !timeValue || dtFlags.usedEatAtHomeThisTurn;
   }
+
 
   // --- Advancement button gating ---
 
@@ -710,7 +768,7 @@ if (rollTimeBtn) {
 
   // --- Current / recent card info (per player) ---
   const cardInfoEl = $('#cardInfo');
-  const flags = player.flags || {};
+  const flags = pFlags;
   const lines = [];
 
   if (flags.lastTurnStartedAtTurn !== undefined) {
