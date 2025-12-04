@@ -464,7 +464,6 @@ function updateStagePanelVisibility(stage) {
   }
 }
 
-}
 
 
 /**
