@@ -762,6 +762,9 @@ button.guided-btn {
   <div class="meta">
     <span>Turn: <span id="turn">1</span></span>
     <span>Art Path: <span id="artPath">Author</span></span>
+    <div>
+        <button id="toggleDebug" type="button">Dev Panel</button>
+      </div>
   </div>
 
 </header>
@@ -1028,12 +1031,12 @@ button.guided-btn {
 
       </section>
 
-            <!-- Dev / Debug panel -->
+                  <!-- Debug panel -->
       <section id="debugPanel" class="panel">
-        <h2 style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span>Dev Tools</span>
-          <button id="toggleDebug" type="button">Toggle JSON</button>
-        </h2>
+        <h2 style="margin-bottom:6px;">Debug</h2>
+        <pre id="debugLog" class="log">{}</pre>
+      </section>
+
 
         <!-- Dev: Stage & Stats -->
         <div class="section-title">Stage & Stats (Active Player)</div>
