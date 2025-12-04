@@ -519,6 +519,13 @@ button:disabled {
   transform: none;
 }
 
+/* Any disabled button should look "greyed out" */
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+
 /* Guided button highlight */
 button.guided-btn {
   box-shadow:
