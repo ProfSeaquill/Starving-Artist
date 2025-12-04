@@ -672,6 +672,7 @@ function maybeShowCardPopup(state, action) {
 
   showCardOverlay(label, cardName, bodyText, overlayConfig || undefined);
 }
+}
 
 function getCardDrawDenyReason(state, action) {
   const player = state.players[state.activePlayerIndex];
