@@ -528,6 +528,7 @@ function maybeShowCardPopup(state, action) {
     switch (action.type) {
     case ActionTypes.DRAW_HOME_CARD: {
       const card = flags.lastHomeCard;
+      console.log('[popup] DRAW_HOME_CARD: lastHomeCard =', card);
       if (!card) return;
 
       // Remember that we drew a Home card this turn
