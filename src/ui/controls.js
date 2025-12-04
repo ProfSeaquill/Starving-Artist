@@ -150,7 +150,7 @@ export function setupControls(dispatch, getState) {
     const { stage, player } = getPlayerAndStage();
     // You can only *pick* a job while Dreamer.
     if (stage !== STAGE_DREAMER) return;
-    if (!player || player.jobId) return;
+    if (!player) return;
 
     // If we already have a job, this button acts as "Quit Job"
     if (player.jobId) {
