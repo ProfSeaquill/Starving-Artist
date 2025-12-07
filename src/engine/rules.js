@@ -279,20 +279,63 @@ function applyDowntimeAction(gameState, actionType) {
 
 /**
  * END_TURN:
+ * - If you have a job and did not work this turn, increment skippedWorkCount.
+ *   When skippedWorkCount reaches config.amateur.jobLossSkipCount, you are fired.
  * - Advance to the next player in turn order (for multiplayer),
  *   or simply increment the turn counter (for single-player).
- * - Automatically start the next player's turn and roll their Time.
+ * - Automatically start the next player's turn (Minor Work income, flags reset, etc.).
  */
 function endTurn(gameState) {
-  const playerCount = gameState.players.length;
-  let { activePlayerIndex, turn } = gameState;
+  if (!gameState) return gameState;
+
+  let state = gameState;
+
+  // --- Work skip / firing logic for the active player ---
+  const activePlayer = getActivePlayer(state);
+
+  if (activePlayer && activePlayer.jobId) {
+    const flags = activePlayer.flags || {};
+    const hasWorkedThisTurn = !!flags.hasWorkedThisTurn;
+
+    const cfg = state.config && state.config.amateur;
+    const jobLossSkipCount =
+      (cfg && typeof cfg.jobLossSkipCount === 'number'
+        ? cfg.jobLossSkipCount
+        : 3);
+
+    if (!hasWorkedThisTurn && jobLossSkipCount > 0) {
+      const currentSkipped = activePlayer.skippedWorkCount || 0;
+      const newSkipped = currentSkipped + 1;
+
+      state = updateActivePlayer(state, (p) => {
+        const updated = { ...p };
+
+        updated.skippedWorkCount = newSkipped;
+
+        // Lose job permanently once you hit the skip limit.
+        if (newSkipped >= jobLossSkipCount && updated.jobId) {
+          updated.jobId = null;
+          // You can leave skippedWorkCount as-is for "lifetime" tracking,
+          // or reset to 0 here if you prefer:
+          // updated.skippedWorkCount = 0;
+        }
+
+        return updated;
+      });
+    }
+  }
+
+  // --- Normal turn-rotation logic (unchanged, but now uses `state`) ---
+
+  const playerCount = state.players.length;
+  let { activePlayerIndex, turn } = state;
 
   let base;
 
   if (playerCount <= 1) {
     // Single-player: keep activePlayerIndex at 0, just increment turn.
     base = {
-      ...gameState,
+      ...state,
       turn: turn + 1
     };
   } else {
@@ -301,13 +344,13 @@ function endTurn(gameState) {
     const wrapped = nextIndex === 0;
 
     base = {
-      ...gameState,
+      ...state,
       activePlayerIndex: nextIndex,
       turn: wrapped ? turn + 1 : turn
     };
   }
 
-    // Auto-start the new active player's turn:
+  // Auto-start the new active player's turn:
   // - reset timeThisTurn & apply Minor Work income via startTurn
   // The player must explicitly roll Time via a ROLL_TIME action.
   const next = startTurn(base);
