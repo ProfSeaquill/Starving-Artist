@@ -60,15 +60,62 @@ export function setupControls(dispatch, getState) {
       });
     }
 
-    const endBtn = $('#endTurnBtn');
+        const endBtn = $('#endTurnBtn');
     if (!endBtn) {
       console.warn('[controls] endTurnBtn not found');
     } else {
       endBtn.addEventListener('click', () => {
         console.log('[controls] End Turn clicked (handler)');
+
+        const { state, player } = getPlayerAndStage();
+        if (state && player && player.jobId) {
+          const flags = player.flags || {};
+          const hasWorkedThisTurn = !!flags.hasWorkedThisTurn;
+
+          // Only warn if they have a job and did NOT work this turn.
+          if (!hasWorkedThisTurn) {
+            const cfg = state.config && state.config.amateur;
+            const jobLossSkipCount =
+              (cfg && typeof cfg.jobLossSkipCount === 'number'
+                ? cfg.jobLossSkipCount
+                : 3);
+
+            const currentSkipped = player.skippedWorkCount || 0;
+            const remaining = Math.max(jobLossSkipCount - currentSkipped, 0);
+
+            let message;
+            if (remaining > 1) {
+              const timesText = remaining === 1 ? 'time' : 'times';
+              message =
+                `You didn't go to work this turn.\n\n` +
+                `If you skip work ${remaining} more ${timesText}, ` +
+                `you'll be fired.\n\n` +
+                `End your turn anyway?`;
+            } else if (remaining === 1) {
+              message =
+                `You didn't go to work this turn.\n\n` +
+                `If you skip work 1 more time, you'll be fired.\n\n` +
+                `End your turn anyway?`;
+            } else {
+              // Just in case config changes mid-game and you're already over the limit.
+              message =
+                `You didn't go to work this turn.\n\n` +
+                `If you end your turn without working, you'll be fired from your job.\n\n` +
+                `End your turn anyway?`;
+            }
+
+            const confirmed = window.confirm(message);
+            if (!confirmed) {
+              // Player cancelled: let them go back and choose to work instead.
+              return;
+            }
+          }
+        }
+
         dispatch({ type: ActionTypes.END_TURN });
       });
     }
+
 
     // --- Downtime buttons (Practice / Sleep / Eat at Home) ---
     const practiceBtn = $('#practiceBtn');
