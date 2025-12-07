@@ -223,6 +223,106 @@ main.app {
     }
 
 
+/* Slim “bridge” between stages */
+.stage-arrow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin: -10px 0;      /* overlap both stages a bit */
+  pointer-events: none; /* purely decorative */
+  position: relative;
+  z-index: 3;           /* sit above the stage bands */
+}
+
+/* We’ll draw the bar + head via pseudo-elements */
+.stage-arrow-icon {
+  position: relative;
+  width: 0;
+  height: 40px;         /* overall height of the connector */
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-size: 0;         /* hide the literal "↑" */
+  line-height: 0;
+}
+
+/* Thin bar rising up from the lower stage */
+.stage-arrow-icon::before {
+  content: "";
+  position: absolute;
+  bottom: -8px;         /* dip slightly into the lower band */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;           /* thickness of the bar */
+  height: 40px;         /* spans the gap + a bit into upper band */
+  border-radius: 999px;
+}
+
+/* Arrowhead sitting on top of the bar */
+.stage-arrow-icon::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 10px solid #000; /* fallback; overridden per stage */
+}
+
+    .stage-arrow-label {
+  display: none;
+}
+
+
+/* Arrow: Amateur → Pro (emerges from Amateur) */
+  <div class="stage-arrow stage-arrow-amateur">
+    <span class="stage-arrow-icon">↑</span>
+    <span class="stage-arrow-label">Advance to Pro</span>
+  </div>
+
+  /* Arrow: Dreamer → Amateur (emerges from Dreamer) */
+  <div class="stage-arrow stage-arrow-dreamer">
+    <span class="stage-arrow-icon">↑</span>
+    <span class="stage-arrow-label">Advance to Amateur</span>
+  </div>
+
+  /* Arrow: Home → Dreamer (emerges from Home) */
+  <div class="stage-arrow stage-arrow-home">
+    <span class="stage-arrow-icon">↑</span>
+    <span class="stage-arrow-label">Advance to Dreamer</span>
+  </div>
+    
+/* Arrow emerging from HOME (into Dreamer) */
+.stage-arrow-home .stage-arrow-icon::before {
+  background: linear-gradient(180deg, #ffe0b2, #ffb74d);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+}
+.stage-arrow-home .stage-arrow-icon::after {
+  border-bottom-color: #ffb74d;
+}
+
+/* Arrow emerging from DREAMER (into Amateur) */
+.stage-arrow-dreamer .stage-arrow-icon::before {
+  background: linear-gradient(180deg, #e1f5fe, #4fc3f7);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+}
+.stage-arrow-dreamer .stage-arrow-icon::after {
+  border-bottom-color: #4fc3f7;
+}
+
+/* Arrow emerging from AMATEUR (into Pro) */
+.stage-arrow-amateur .stage-arrow-icon::before {
+  background: linear-gradient(180deg, #fff9c4, #ffd54f);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+}
+.stage-arrow-amateur .stage-arrow-icon::after {
+  border-bottom-color: #ffd54f;
+}
+
     /* Tracks */
 
     .home-track {
