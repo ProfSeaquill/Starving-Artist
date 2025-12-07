@@ -838,6 +838,8 @@ function dispatch(action) {
 // For debugging in console if you like:
 window._starvingArtistState = () => gameState;
 window._starvingArtistDispatch = dispatch;
+window._starvingArtistShowCardOverlay = showCardOverlay;
+
 
 // --- Kick off UI ---
 setupControls(dispatch, () => gameState);
