@@ -196,57 +196,6 @@ main.app {
   border-color: #2e7d32;
 }
 
-    /* Slim connector between stages */
-.stage-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: -4px 0 -4px;
-  pointer-events: none;
-}
-
-/* Replace the chunky pill with a thin bar + small arrow */
-.stage-arrow-icon {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  font-size: 0;          /* hide the "↑" text itself */
-  line-height: 0;
-}
-
-/* Thin vertical bar */
-.stage-arrow-icon::before {
-  content: "";
-  width: 4px;            /* thickness of the bar */
-  height: 32px;          /* length between stages */
-  border-radius: 999px;
-  background: linear-gradient(180deg, #ff4081, #ffc107);
-}
-
-/* Small arrowhead at the top */
-.stage-arrow-icon::after {
-  content: "";
-  margin-top: -2px;      /* tuck arrowhead onto bar */
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 8px solid #ffc107;  /* arrow color */
-}
-
-
-/* Hide the text label entirely */
-.stage-arrow-label {
-  display: none;
-}
-
-
 
 .stage-body {
   font-size: 12px;
