@@ -69,6 +69,12 @@ function handleTakeProfDev(gameState) {
   const timeCost = Number.isFinite(card.timeCost) ? card.timeCost : defaultTimeCost;
 
   const withEffects = updateActivePlayer(nextState, (p) => {
+    console.log(
+  '[profDev] before skip =', p.skippedWorkCount,
+  'after skip =', updated.skippedWorkCount,
+  'jobId =', updated.jobId
+);
+
     let updated = applyProfDevEffectsToPlayer(p, card, config);
 
     // Deduct Time
