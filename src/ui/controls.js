@@ -60,7 +60,7 @@ export function setupControls(dispatch, getState) {
       });
     }
 
-            const endBtn = $('#endTurnBtn');
+                const endBtn = $('#endTurnBtn');
     if (!endBtn) {
       console.warn('[controls] endTurnBtn not found');
     } else {
@@ -82,6 +82,7 @@ export function setupControls(dispatch, getState) {
 
             const currentSkipped = player.skippedWorkCount || 0;
             const remaining = Math.max(jobLossSkipCount - currentSkipped, 0);
+            const isFinalSkip = remaining === 1;
 
             // Optional: show job name in the popup subtitle
             const job = JOBS.find(j => j.id === player.jobId);
@@ -117,7 +118,26 @@ export function setupControls(dispatch, getState) {
                   primaryLabel: 'End Turn',
                   secondaryLabel: 'Go Back',
                   onPrimary: () => {
+                    // Actually end the turn
                     dispatch({ type: ActionTypes.END_TURN });
+
+                    // If this was the final allowed skip, show a "You're fired!" popup.
+                    if (isFinalSkip) {
+                      const showOverlay2 = window._starvingArtistShowCardOverlay;
+                      if (typeof showOverlay2 === 'function') {
+                        showOverlay2(
+                          "You're fired!",
+                          jobName || 'Lost Job',
+                          `You skipped work too many times and lost your job.`,
+                          {
+                            primaryLabel: 'Ouch',
+                            onPrimary: () => {
+                              // No-op; just close the popup.
+                            }
+                          }
+                        );
+                      }
+                    }
                   },
                   onSecondary: () => {
                     // Do nothing; player returns to their turn.
@@ -134,13 +154,32 @@ export function setupControls(dispatch, getState) {
               // Player cancelled: let them go back and choose to work instead.
               return;
             }
+
+            // Native confirm path: also show "You're fired!" if this was the final skip.
+            dispatch({ type: ActionTypes.END_TURN });
+            if (isFinalSkip) {
+              const showOverlay2 = window._starvingArtistShowCardOverlay;
+              if (typeof showOverlay2 === 'function') {
+                showOverlay2(
+                  "You're fired!",
+                  jobName || 'Lost Job',
+                  `You skipped work too many times and lost your job.`,
+                  {
+                    primaryLabel: 'Ouch',
+                    onPrimary: () => {}
+                  }
+                );
+              }
+            }
+            return;
           }
         }
 
-        // Default path: no warning needed, or user confirmed via popup.
+        // Default path: no warning needed, or user already confirmed & handled firing.
         dispatch({ type: ActionTypes.END_TURN });
       });
     }
+
 
 
 
