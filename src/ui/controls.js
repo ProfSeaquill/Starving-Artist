@@ -68,6 +68,10 @@ export function setupControls(dispatch, getState) {
         console.log('[controls] End Turn clicked (handler)');
 
         const { state, player } = getPlayerAndStage();
+        console.log('[endTurn] jobId =', player?.jobId);
+console.log('[endTurn] skippedWorkCount =', player?.skippedWorkCount);
+console.log('[endTurn] flags.hasWorkedThisTurn =', (player?.flags || {}).hasWorkedThisTurn);
+
         if (state && player && player.jobId) {
           const flags = player.flags || {};
           const hasWorkedThisTurn = !!flags.hasWorkedThisTurn;
