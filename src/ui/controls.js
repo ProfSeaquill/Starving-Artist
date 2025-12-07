@@ -60,7 +60,7 @@ export function setupControls(dispatch, getState) {
       });
     }
 
-        const endBtn = $('#endTurnBtn');
+            const endBtn = $('#endTurnBtn');
     if (!endBtn) {
       console.warn('[controls] endTurnBtn not found');
     } else {
@@ -83,28 +83,53 @@ export function setupControls(dispatch, getState) {
             const currentSkipped = player.skippedWorkCount || 0;
             const remaining = Math.max(jobLossSkipCount - currentSkipped, 0);
 
-            let message;
+            // Optional: show job name in the popup subtitle
+            const job = JOBS.find(j => j.id === player.jobId);
+            const jobName = job ? job.name : '';
+
+            let countdownLine;
             if (remaining > 1) {
-              const timesText = remaining === 1 ? 'time' : 'times';
-              message =
-                `You didn't go to work this turn.\n\n` +
-                `If you skip work ${remaining} more ${timesText}, ` +
-                `you'll be fired.\n\n` +
-                `End your turn anyway?`;
+              countdownLine =
+                `If you skip work [${remaining}] more times, you'll be fired!`;
             } else if (remaining === 1) {
-              message =
-                `You didn't go to work this turn.\n\n` +
-                `If you skip work 1 more time, you'll be fired.\n\n` +
-                `End your turn anyway?`;
+              countdownLine =
+                `If you skip work [1] more time, you'll be fired!`;
             } else {
               // Just in case config changes mid-game and you're already over the limit.
-              message =
-                `You didn't go to work this turn.\n\n` +
-                `If you end your turn without working, you'll be fired from your job.\n\n` +
-                `End your turn anyway?`;
+              countdownLine =
+                `If you end your turn without working, you'll be fired from your job.`;
             }
 
-            const confirmed = window.confirm(message);
+            const bodyText =
+              `You didn't go to work this turn.\n\n` +
+              countdownLine +
+              `\n\nEnd your turn anyway?`;
+
+            const showOverlay = window._starvingArtistShowCardOverlay;
+
+            if (typeof showOverlay === 'function') {
+              // Use the same card overlay format as other popups
+              showOverlay(
+                'Skip Work Warning',
+                jobName || 'End Turn',
+                bodyText,
+                {
+                  primaryLabel: 'End Turn',
+                  secondaryLabel: 'Go Back',
+                  onPrimary: () => {
+                    dispatch({ type: ActionTypes.END_TURN });
+                  },
+                  onSecondary: () => {
+                    // Do nothing; player returns to their turn.
+                  }
+                }
+              );
+              // IMPORTANT: don't end the turn immediately; wait for overlay choice.
+              return;
+            }
+
+            // Fallback (in case overlay isn't wired up for some reason)
+            const confirmed = window.confirm(bodyText.replace(/\n\n/g, '\n'));
             if (!confirmed) {
               // Player cancelled: let them go back and choose to work instead.
               return;
@@ -112,9 +137,11 @@ export function setupControls(dispatch, getState) {
           }
         }
 
+        // Default path: no warning needed, or user confirmed via popup.
         dispatch({ type: ActionTypes.END_TURN });
       });
     }
+
 
 
     // --- Downtime buttons (Practice / Sleep / Eat at Home) ---
