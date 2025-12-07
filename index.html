@@ -16,13 +16,14 @@
   padding: 0;
 }
 
-    header {
-  padding: 14px 20px;
+  header {
+  padding: 8px 20px; /* was 14px 20px */
   /* Colorful title bar – like a TV show logo strip */
   background: linear-gradient(90deg, #ff4081, #7c4dff, #40c4ff);
   border-bottom: 2px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
 }
+
 
 
 header h1 {
@@ -42,7 +43,7 @@ header h1 {
     }
 
     .game-logo {
-  height: 70px;
+  height: 50px;
   max-width: 100%;
   display: block;
 }
@@ -117,6 +118,11 @@ main.app {
   border: 2px solid #000;
   border-radius: 10px;
   animation: guidedPulse 1.4s ease-in-out infinite alternate;
+}
+
+    .stage-right-actions {
+  flex: 0 0 auto;
+  text-align: right;
 }
 
 /* A faint zigzag / stripe pattern overlay for fun */
@@ -331,10 +337,18 @@ main.app {
 
 
     .job-market {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 60%; /* claim the left side of the row */
+}
+
+    #jobMarket {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
+  gap: 6px;
+}
+
 
     .job-card {
       border-radius: 6px;
@@ -721,49 +735,36 @@ button.guided-btn {
 </head>
 <body>
   <header>
-  <!-- STARVING ARTIST inline SVG logo -->
-  <svg
-    class="game-logo"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 420 80"
-    role="img"
-    aria-labelledby="logoTitle logoDesc"
-  >
-    <title id="logoTitle">Starving Artist</title>
-    <desc id="logoDesc">Simple wordmark logo for the Starving Artist game.</desc>
-
-    <!-- STARVING (top line) -->
-    <text
-      x="10"
-      y="30"
-      font-family="Cinzel, 'Cardo', serif"
-      font-size="24"
-      letter-spacing="6"
-      fill="#ffffff"
+  <!-- STARVING ARTIST inline SVG logo (single-line wordmark) -->
+    <svg
+      class="game-logo"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 420 60"
+      role="img"
+      aria-labelledby="logoTitle logoDesc"
     >
-      STARVING
-    </text>
+      <title id="logoTitle">Starving Artist</title>
+      <desc id="logoDesc">Wordmark logo for the Starving Artist game.</desc>
 
-    <!-- ARTIST (bottom line, a bit bigger and warmer) -->
-    <text
-      x="10"
-      y="65"
-      font-family="Cinzel, 'Cardo', serif"
-      font-size="36"
-      font-weight="700"
-      letter-spacing="8"
-      fill="#ffe082"
-    >
-      ARTIST
-    </text>
-  </svg>
+      <text
+        x="10"
+        y="38"
+        font-family="Cinzel, 'Cardo', serif"
+        font-size="30"
+        letter-spacing="5"
+        fill="#ffffff"
+      >
+        STARVING
+        <tspan dx="18" fill="#ffe082" font-weight="700">
+          ARTIST
+        </tspan>
+      </text>
+    </svg>
 
-
-  <div class="meta">
-    <span>Turn: <span id="turn">1</span></span>
-    <span>Art Path: <span id="artPath">Author</span></span>
-  </div>
-
+    <div class="meta">
+      <span>Turn: <span id="turn">1</span></span>
+      <span>Art Path: <span id="artPath">Author</span></span>
+    </div>
 </header>
 
 
@@ -833,7 +834,7 @@ button.guided-btn {
     <span class="stage-arrow-label">Advance to Amateur</span>
   </div>
 
-    <!-- Dreamer Stage -->
+     <!-- Dreamer Stage -->
   <section class="stage-band stage-dreamer">
     <div class="stage-header">
       <div>
@@ -849,14 +850,16 @@ button.guided-btn {
       <div class="stage-row">
         <div class="job-market">
           <div class="label" style="width:100%;">Available Jobs</div>
-          <div id="jobMarket" style="width:100%; display:flex; flex-wrap:wrap; gap:6px;"></div>
+          <!-- NOTE: inline style removed so CSS can control layout -->
+          <div id="jobMarket"></div>
         </div>
-        <div>
+        <div class="stage-right-actions">
           <button id="attendSocialBtn" type="button">Draw Social Card</button>
         </div>
       </div>
     </div>
   </section>
+
 
 
   <!-- Arrow: Home → Dreamer -->
