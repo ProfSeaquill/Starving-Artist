@@ -47,12 +47,16 @@ export function amateurReducer(gameState, action) {
 
 /**
  * TAKE_PROF_DEV:
- * - Represents skipping work this turn.
+ * - Spend time on professional development instead of other actions.
  * - Costs Time (card.timeCost, default 2).
  * - Draws a Professional Dev card, applies its effects, and may create a Minor Work.
- * - Increments skippedWorkCount; if it reaches config.amateur.jobLossSkipCount,
- *   the player loses their job permanently (jobId set to null).
+ *
+ * NOTE:
+ * - The punishment for skipping work (incrementing skippedWorkCount and firing)
+ *   is handled globally in END_TURN whenever you finish a turn without
+ *   having gone to work.
  */
+
 function handleTakeProfDev(gameState) {
   const { config } = gameState;
   const player = getActivePlayer(gameState);
@@ -71,16 +75,6 @@ function handleTakeProfDev(gameState) {
     const remainingTime = (updated.timeThisTurn || 0) - timeCost;
     updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
 
-    // Increment skipped work count
-    const maxSkips = (config && config.amateur && config.amateur.jobLossSkipCount) || 3;
-    updated.skippedWorkCount = (updated.skippedWorkCount || 0) + 1;
-
-    // Lose job permanently if we hit the skip limit
-    if (updated.skippedWorkCount >= maxSkips && updated.jobId) {
-      updated.jobId = null;
-      // We do NOT put the job back in jobDeck; it's gone.
-    }
-
     const flags = {
       ...(updated.flags || {}),
       lastProfDevCard: card
@@ -92,6 +86,7 @@ function handleTakeProfDev(gameState) {
 
   return withEffects;
 }
+
 
 /**
  * START_MINOR_WORK:
