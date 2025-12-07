@@ -281,13 +281,14 @@ main.app {
 
 
 /* Arrow emerging from HOME (into Dreamer)
-   Uses HOME orange, stronger opacity near the top so it pops in Dreamer */
+   Uses HOME orange, stronger toward the top, fully invisible at very bottom */
 .stage-arrow-home .stage-arrow-icon::before {
   background: linear-gradient(
     180deg,
-    rgba(255, 183, 77, 0.95) 0%,   /* Home mid-orange, strong at top */
+    rgba(255, 183, 77, 0.95) 0%,    /* bright near upper band */
     rgba(255, 183, 77, 0.60) 50%,
-    rgba(255, 183, 77, 0.10) 100%  /* very faint where it sits in Home */
+    rgba(255, 183, 77, 0.10) 90%,   /* almost gone just above the base */
+    rgba(255, 183, 77, 0.00) 100%   /* completely invisible in bottom 5–10% */
   );
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
@@ -296,13 +297,14 @@ main.app {
 }
 
 /* Arrow emerging from DREAMER (into Amateur)
-   Uses DREAMER blue, but still more visible in the upper band */
+   Uses DREAMER blue; same fade pattern */
 .stage-arrow-dreamer .stage-arrow-icon::before {
   background: linear-gradient(
     180deg,
-    rgba(79, 195, 247, 0.95) 0%,   /* Dreamer blue */
+    rgba(79, 195, 247, 0.95) 0%,
     rgba(79, 195, 247, 0.60) 50%,
-    rgba(79, 195, 247, 0.10) 100%
+    rgba(79, 195, 247, 0.10) 90%,
+    rgba(79, 195, 247, 0.00) 100%
   );
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
@@ -311,13 +313,14 @@ main.app {
 }
 
 /* Arrow emerging from AMATEUR (into Pro)
-   Uses AMATEUR yellow */
+   Uses AMATEUR yellow; same fade pattern */
 .stage-arrow-amateur .stage-arrow-icon::before {
   background: linear-gradient(
     180deg,
-    rgba(255, 213, 79, 0.95) 0%,   /* Amateur yellow */
+    rgba(255, 213, 79, 0.95) 0%,
     rgba(255, 213, 79, 0.60) 50%,
-    rgba(255, 213, 79, 0.10) 100%
+    rgba(255, 213, 79, 0.10) 90%,
+    rgba(255, 213, 79, 0.00) 100%
   );
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
