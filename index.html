@@ -252,11 +252,11 @@ main.app {
 .stage-arrow-icon::before {
   content: "";
   position: absolute;
-  bottom: -12px;                /* dip deeper into the lower stage */
+  bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 25px;                  /* <-- wider bar */
-  height: 40px;                 /* tall enough to cross the gap */
+  width: 25px;
+  height: 44px;            /* was 40px – extend a bit so it rises higher */
   border-radius: 999px;
 }
 
@@ -264,14 +264,14 @@ main.app {
 .stage-arrow-icon::after {
   content: "";
   position: absolute;
-  top: -8px;
+  top: -4px;               /* was -8px – move the head *down* to overlap */
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
   border-left: 9px solid transparent;
   border-right: 9px solid transparent;
-  border-bottom: 12px solid #000; /* fallback; overridden per stage */
+  border-bottom: 12px solid #000; /* overridden per stage */
 }
 
     .stage-arrow-label {
