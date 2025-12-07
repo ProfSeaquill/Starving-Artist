@@ -113,6 +113,8 @@ function handleChooseJob(gameState, action) {
     (p) => ({
       ...p,
       jobId
+      // NEW: when you take a (new) job, your strike count resets.
+    skippedWorkCount: 0
     })
   );
 
