@@ -465,6 +465,100 @@ function updateStagePanelVisibility(stage) {
 }
 
 
+// Update labels on stage + downtime buttons to show Time cost and buffs.
+function updateActionButtonLabels(gameState, player) {
+  if (!gameState || !player) return;
+
+  // --- Stage draw-card buttons (non-Home) ---
+
+  // These match the default design:
+  //  - Social: costs 1 Time
+  //  - Prof Dev: costs 2 Time
+  //  - Pro Card: costs 3 Time
+  const drawSocialBtn = $('#drawSocialBtn'); // Dreamer track button
+  if (drawSocialBtn) {
+    drawSocialBtn.textContent = 'Draw Social Card (-1 Time)';
+  }
+
+  const drawProfDevBtn = $('#drawProfDevBtn'); // Amateur track button
+  if (drawProfDevBtn) {
+    drawProfDevBtn.textContent = 'Draw Prof Dev Card (-2 Time)';
+  }
+
+  const drawProCardBtn = $('#drawProCardBtn'); // Pro track button
+  if (drawProCardBtn) {
+    drawProCardBtn.textContent = 'Draw Pro Card (-3 Time)';
+  }
+
+  // Home's Draw Home Card intentionally keeps its simpler label.
+
+  // --- Go To Work: derive from the actual job stats ---
+
+  const goToWorkBtn = $('#goToWorkBtn');
+  if (goToWorkBtn) {
+    const job = JOBS.find((j) => j.id === player.jobId);
+    if (!job) {
+      goToWorkBtn.textContent = 'Go To Work';
+    } else {
+      const parts = [];
+
+      if (job.moneyDelta) {
+        parts.push(`Money ${job.moneyDelta > 0 ? '+' : ''}${job.moneyDelta}`);
+      }
+      if (job.foodDelta) {
+        parts.push(`Food ${job.foodDelta > 0 ? '+' : ''}${job.foodDelta}`);
+      }
+      if (job.inspirationDelta) {
+        parts.push(
+          `Insp ${job.inspirationDelta > 0 ? '+' : ''}${job.inspirationDelta}`
+        );
+      }
+      if (job.timeDelta) {
+        parts.push(`Time ${job.timeDelta > 0 ? '+' : ''}${job.timeDelta}`);
+      }
+
+      const effectsText = parts.length ? parts.join(', ') : 'No effect';
+      goToWorkBtn.textContent = `Go To Work (${effectsText})`;
+    }
+  }
+
+  // --- Masterwork button: show how much progress you'll gain ---
+
+  const workMasterBtn = $('#workMasterworkBtn');
+  if (workMasterBtn) {
+    const timeAvailable = player.timeThisTurn || 0;
+    if (timeAvailable > 0) {
+      workMasterBtn.textContent =
+        `Work on Masterwork (Spend ${timeAvailable} Time → ` +
+        `+${timeAvailable} progress)`;
+    } else {
+      workMasterBtn.textContent = 'Work on Masterwork';
+    }
+  }
+
+  // --- Downtime buttons (Home-style) ---
+
+  // NOTE: The exact numbers here should match your rules.js / home_stage.js.
+  // If your effects differ, just tweak the text strings.
+
+  const practiceBtn = $('#practiceBtn');
+  if (practiceBtn) {
+    // Example: Practice = -1 Time, +1 Craft
+    practiceBtn.textContent = 'Practice (Craft +1, Time -1)';
+  }
+
+  const sleepBtn = $('#sleepBtn');
+  if (sleepBtn) {
+    // Example: Sleep = +2 Time, -1 Food
+    sleepBtn.textContent = 'Sleep (Time +2, Food -1)';
+  }
+
+  const eatAtHomeBtn = $('#eatAtHomeBtn');
+  if (eatAtHomeBtn) {
+    // Example: Eat at Home = Food +2, Time -1, Money -1
+    eatAtHomeBtn.textContent = 'Eat at Home (Food +2, Time -1, Money -1)';
+  }
+}
 
 /**
  * Render the current gameState into the DOM.
@@ -594,6 +688,9 @@ if (drawHomeBtn) {
     eatAtHomeBtn.disabled =
       !timeValue || dtFlags.usedEatAtHomeThisTurn;
   }
+
+    // After all enable/disable logic, update button labels to show costs/buffs.
+  updateActionButtonLabels(gameState, player);
 
 
   // --- Advancement button gating ---
