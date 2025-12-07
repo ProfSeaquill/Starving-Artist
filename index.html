@@ -280,50 +280,51 @@ main.app {
 
 
 
-/* Arrow emerging from HOME → into DREAMER
-   Uses Dreamer blue, strong at top, fading toward bottom */
+/* Arrow emerging from HOME (into Dreamer)
+   Uses HOME orange, stronger opacity near the top so it pops in Dreamer */
 .stage-arrow-home .stage-arrow-icon::before {
   background: linear-gradient(
     180deg,
-    rgba(79, 195, 247, 0.95) 0%,   /* near upper (Dreamer) band */
-    rgba(79, 195, 247, 0.60) 50%,
-    rgba(79, 195, 247, 0.10) 100%  /* almost invisible in Home band */
+    rgba(255, 183, 77, 0.95) 0%,   /* Home mid-orange, strong at top */
+    rgba(255, 183, 77, 0.60) 50%,
+    rgba(255, 183, 77, 0.10) 100%  /* very faint where it sits in Home */
   );
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 .stage-arrow-home .stage-arrow-icon::after {
-  border-bottom-color: rgba(79, 195, 247, 0.95);
+  border-bottom-color: rgba(255, 183, 77, 0.95);
 }
 
-/* Arrow emerging from DREAMER → into AMATEUR
-   Uses Amateur yellow, strong at top, fading down */
+/* Arrow emerging from DREAMER (into Amateur)
+   Uses DREAMER blue, but still more visible in the upper band */
 .stage-arrow-dreamer .stage-arrow-icon::before {
   background: linear-gradient(
     180deg,
-    rgba(255, 224, 130, 0.95) 0%,  /* upper (Amateur) band */
-    rgba(255, 224, 130, 0.60) 50%,
-    rgba(255, 224, 130, 0.10) 100%
+    rgba(79, 195, 247, 0.95) 0%,   /* Dreamer blue */
+    rgba(79, 195, 247, 0.60) 50%,
+    rgba(79, 195, 247, 0.10) 100%
   );
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 .stage-arrow-dreamer .stage-arrow-icon::after {
-  border-bottom-color: rgba(255, 224, 130, 0.95);
+  border-bottom-color: rgba(79, 195, 247, 0.95);
 }
 
-/* Arrow emerging from AMATEUR → into PRO
-   Uses Pro green, strong at top, fading down */
+/* Arrow emerging from AMATEUR (into Pro)
+   Uses AMATEUR yellow */
 .stage-arrow-amateur .stage-arrow-icon::before {
   background: linear-gradient(
     180deg,
-    rgba(129, 199, 132, 0.95) 0%,  /* upper (Pro) band */
-    rgba(129, 199, 132, 0.60) 50%,
-    rgba(129, 199, 132, 0.10) 100%
+    rgba(255, 213, 79, 0.95) 0%,   /* Amateur yellow */
+    rgba(255, 213, 79, 0.60) 50%,
+    rgba(255, 213, 79, 0.10) 100%
   );
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 .stage-arrow-amateur .stage-arrow-icon::after {
-  border-bottom-color: rgba(129, 199, 132, 0.95);
+  border-bottom-color: rgba(255, 213, 79, 0.95);
 }
+
 
 
     /* Tracks */
