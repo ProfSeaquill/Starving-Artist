@@ -304,26 +304,42 @@ function endTurn(gameState) {
         : 3);
 
     if (!hasWorkedThisTurn && jobLossSkipCount > 0) {
-      const currentSkipped = activePlayer.skippedWorkCount || 0;
-      const newSkipped = currentSkipped + 1;
+  const currentSkipped = activePlayer.skippedWorkCount || 0;
+  const newSkipped = currentSkipped + 1;
 
-      state = updateActivePlayer(state, (p) => {
-        const updated = { ...p };
+  state = updateActivePlayer(state, (p) => {
+    const updated = { ...p };
 
-        updated.skippedWorkCount = newSkipped;
+    updated.skippedWorkCount = newSkipped;
 
-        // Lose job permanently once you hit the skip limit.
-        if (newSkipped >= jobLossSkipCount && updated.jobId) {
-          updated.jobId = null;
-          // You can leave skippedWorkCount as-is for "lifetime" tracking,
-          // or reset to 0 here if you prefer:
-          // updated.skippedWorkCount = 0;
-        }
+    // Lose job permanently once you hit the skip limit.
+    if (newSkipped >= jobLossSkipCount && updated.jobId) {
+      const firedJobId = updated.jobId;
 
-        return updated;
-      });
+      // Clear the job
+      updated.jobId = null;
+
+      // Record this job in firedJobs
+      const prevFired = Array.isArray(updated.firedJobs)
+        ? updated.firedJobs
+        : [];
+
+      // Avoid duplicates if somehow fired twice from same job
+      if (!prevFired.includes(firedJobId)) {
+        updated.firedJobs = prevFired.concat(firedJobId);
+      } else {
+        updated.firedJobs = prevFired;
+      }
+
+      // (Optionally, you could also reset skippedWorkCount here,
+      //  but since you now reset it in CHOOSE_JOB, it's fine to
+      //  leave it as a lifetime tally.)
     }
-  }
+
+    return updated;
+  });
+}
+}
 
   // --- Normal turn-rotation logic (unchanged, but now uses `state`) ---
 
