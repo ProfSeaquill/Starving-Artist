@@ -85,8 +85,14 @@ console.log('[endTurn] flags.hasWorkedThisTurn =', (player?.flags || {}).hasWork
                 : 3);
 
             const currentSkipped = player.skippedWorkCount || 0;
-            const remaining = Math.max(jobLossSkipCount - currentSkipped, 0);
-            const isFinalSkip = remaining === 1;
+    const remaining = Math.max(jobLossSkipCount - currentSkipped, 0);
+
+    // This specific END_TURN will increment skippedWorkCount by 1.
+    // If that pushes you to or past the limit, you’ll be fired *now*.
+    const willBeFiredByThisEndTurn =
+      jobLossSkipCount > 0 &&
+      currentSkipped + 1 >= jobLossSkipCount;
+
 
             // Optional: show job name in the popup subtitle
             const job = JOBS.find(j => j.id === player.jobId);
@@ -125,23 +131,23 @@ console.log('[endTurn] flags.hasWorkedThisTurn =', (player?.flags || {}).hasWork
                     // Actually end the turn
                     dispatch({ type: ActionTypes.END_TURN });
 
-                    // If this was the final allowed skip, show a "You're fired!" popup.
-                    if (isFinalSkip) {
-                      const showOverlay2 = window._starvingArtistShowCardOverlay;
-                      if (typeof showOverlay2 === 'function') {
-                        showOverlay2(
-                          "You're fired!",
-                          jobName || 'Lost Job',
-                          `You skipped work too many times and lost your job.`,
-                          {
-                            primaryLabel: 'Ouch',
-                            onPrimary: () => {
-                              // No-op; just close the popup.
-                            }
-                          }
-                        );
-                      }
-                    }
+                    // If THIS end-turn pushes you over the limit, show a "You're fired!" popup.
+if (willBeFiredByThisEndTurn) {
+  const showOverlay2 = window._starvingArtistShowCardOverlay;
+  if (typeof showOverlay2 === 'function') {
+    showOverlay2(
+      "You're fired!",
+      jobName || 'Lost Job',
+      `You skipped work too many times and lost your job.`,
+      {
+        primaryLabel: 'Ouch',
+        onPrimary: () => {
+          // No-op; just close the popup.
+        }
+      }
+    );
+  }
+}
                   },
                   onSecondary: () => {
                     // Do nothing; player returns to their turn.
@@ -161,7 +167,7 @@ console.log('[endTurn] flags.hasWorkedThisTurn =', (player?.flags || {}).hasWork
 
             // Native confirm path: also show "You're fired!" if this was the final skip.
             dispatch({ type: ActionTypes.END_TURN });
-            if (isFinalSkip) {
+            if (willBeFiredByThisEndTurn) {
               const showOverlay2 = window._starvingArtistShowCardOverlay;
               if (typeof showOverlay2 === 'function') {
                 showOverlay2(
