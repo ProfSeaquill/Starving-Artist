@@ -140,6 +140,9 @@ export function createPlayer(name, artPath) {
     jobId: null,           // one of JOB_IDS
     skippedWorkCount: 0,
 
+    // NEW: remember which jobs this player has been fired from
+    firedJobs: [],
+    
     // For future: burnout flags, conditions, etc.
     flags: {}
   };
