@@ -239,7 +239,7 @@ main.app {
 .stage-arrow-icon {
   position: relative;
   width: 0;
-  height: 40px;                 /* box for the pseudo-elements */
+  height: 48px;                 /* box for the pseudo-elements */
   padding: 0;
   background: transparent;
   border: none;
@@ -256,7 +256,7 @@ main.app {
   left: 50%;
   transform: translateX(-50%);
   width: 25px;
-  height: 44px;            /* was 40px – extend a bit so it rises higher */
+  height: 50px;            /* was 40px – extend a bit so it rises higher */
   border-radius: 999px;
 }
 
@@ -264,14 +264,14 @@ main.app {
 .stage-arrow-icon::after {
   content: "";
   position: absolute;
-  top: -4px;               /* was -8px – move the head *down* to overlap */
+  top: -2px;               /* was -8px – move the head *down* to overlap */
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-bottom: 12px solid #000; /* overridden per stage */
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 16px solid #000; /* overridden per stage */
 }
 
     .stage-arrow-label {
