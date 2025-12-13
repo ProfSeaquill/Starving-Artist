@@ -282,6 +282,55 @@ console.log('[endTurn] flags.hasWorkedThisTurn =', (player?.flags || {}).hasWork
     const jobId = select.value;
     if (!jobId) return;
 
+    // Is this job still in the global jobDeck?
+    const inDeck =
+      Array.isArray(state.jobDeck) && state.jobDeck.includes(jobId);
+
+    // Has THIS player been fired from this job before?
+    const firedJobs = Array.isArray(player.firedJobs)
+      ? player.firedJobs
+      : [];
+    const wasFiredFromThisJob = firedJobs.includes(jobId);
+
+    if (!inDeck) {
+      // The game state says this job is no longer available.
+      const showOverlay = window._starvingArtistShowCardOverlay;
+      const job = JOBS.find((j) => j.id === jobId);
+      const jobName = job ? job.name : 'This job';
+
+      let bodyText;
+      if (wasFiredFromThisJob) {
+        bodyText =
+          `You were fired from ${jobName} earlier.\n\n` +
+          `In this prototype, once you're fired from a job,\n` +
+          `you can't be hired there again.`;
+      } else {
+        // Fallback: job is gone, but not specifically tied to this player.
+        bodyText =
+          `${jobName} is no longer available in the job market.\n\n` +
+          `Someone was fired from this job, so the position closed.`;
+      }
+
+      if (typeof showOverlay === 'function') {
+        showOverlay(
+          'Job Unavailable',
+          jobName,
+          bodyText,
+          {
+            primaryLabel: 'Got it',
+            onPrimary: () => {
+              // no-op, just close
+            }
+          }
+        );
+      } else {
+        // Safety fallback if overlay isn't wired
+        window.alert(bodyText.replace(/\n/g, '\n'));
+      }
+
+      return; // don’t dispatch CHOOSE_JOB
+    }
+
     dispatch({ type: ActionTypes.CHOOSE_JOB, jobId });
   });
 
