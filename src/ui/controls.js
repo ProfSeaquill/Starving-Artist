@@ -264,11 +264,12 @@ console.log('[endTurn] flags.hasWorkedThisTurn =', (player?.flags || {}).hasWork
     dispatch({ type: ActionTypes.ATTEMPT_ADVANCE_DREAMER });
   });
 
-    $('#chooseJobBtn')?.addEventListener('click', () => {
-    const { stage, player } = getPlayerAndStage();
+      $('#chooseJobBtn')?.addEventListener('click', () => {
+    const { state, stage, player } = getPlayerAndStage();
+    if (!state || !player) return;
+
     // You can only *pick* a job while Dreamer.
     if (stage !== STAGE_DREAMER) return;
-    if (!player) return;
 
     // If we already have a job, this button acts as "Quit Job"
     if (player.jobId) {
@@ -333,6 +334,7 @@ console.log('[endTurn] flags.hasWorkedThisTurn =', (player?.flags || {}).hasWork
 
     dispatch({ type: ActionTypes.CHOOSE_JOB, jobId });
   });
+
 
   $('#goToWorkBtn')?.addEventListener('click', () => {
     const { stage, player } = getPlayerAndStage();
