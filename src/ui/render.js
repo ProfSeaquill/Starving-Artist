@@ -560,6 +560,115 @@ function updateActionButtonLabels(gameState, player) {
   }
 }
 
+// Helper: set a two-line label on a button, with smaller cost/effect text.
+function setButtonLabelWithCost(btn, mainLabel, costText) {
+  if (!btn) return;
+
+  if (costText) {
+    btn.innerHTML = `
+      <span class="btn-main-label">${mainLabel}</span>
+      <span class="btn-sub-label">${costText}</span>
+    `;
+  } else {
+    // No cost/effect line — just show the main label.
+    btn.textContent = mainLabel;
+  }
+}
+
+// Update labels on stage + downtime buttons to show Time cost and buffs.
+function updateActionButtonLabels(gameState, player) {
+  if (!gameState || !player) return;
+
+  // --- Stage draw-card buttons (non-Home) ---
+
+  // IDs taken directly from index.html:
+  //   - <button id="drawProCardBtn">Draw Pro Card</button>
+  //   - <button id="takeProfDevBtn">Draw Prof Dev Card</button>
+  //   - <button id="attendSocialBtn">Draw Social Card</button>
+
+  const proBtn = $('#drawProCardBtn');
+  setButtonLabelWithCost(proBtn, 'Draw Pro Card', '-3 Time');
+
+  const profDevBtn = $('#takeProfDevBtn');
+  setButtonLabelWithCost(profDevBtn, 'Draw Prof Dev Card', '-2 Time');
+
+  const socialBtn = $('#attendSocialBtn');
+  setButtonLabelWithCost(socialBtn, 'Draw Social Card', '-1 Time');
+
+  // Home's Draw Home Card intentionally keeps its simple single-line label.
+
+  // --- Go To Work: derive from the actual job stats ---
+
+  const goToWorkBtn = $('#goToWorkBtn');
+  if (goToWorkBtn) {
+    const job = JOBS.find((j) => j.id === player.jobId);
+
+    if (!job) {
+      setButtonLabelWithCost(goToWorkBtn, 'Go To Work', '');
+    } else {
+      const parts = [];
+
+      if (job.moneyDelta) {
+        parts.push(`Money ${job.moneyDelta > 0 ? '+' : ''}${job.moneyDelta}`);
+      }
+      if (job.foodDelta) {
+        parts.push(`Food ${job.foodDelta > 0 ? '+' : ''}${job.foodDelta}`);
+      }
+      if (job.inspirationDelta) {
+        parts.push(
+          `Insp ${job.inspirationDelta > 0 ? '+' : ''}${job.inspirationDelta}`
+        );
+      }
+      if (job.timeDelta) {
+        parts.push(`Time ${job.timeDelta > 0 ? '+' : ''}${job.timeDelta}`);
+      }
+
+      const effectsText = parts.length ? parts.join(', ') : 'No effect';
+      setButtonLabelWithCost(goToWorkBtn, 'Go To Work', effectsText);
+    }
+  }
+
+  // --- Work on Masterwork: show how much progress you'll gain ---
+
+  const workMasterBtn = $('#workMasterworkBtn');
+  if (workMasterBtn) {
+    const timeAvailable = player.timeThisTurn || 0;
+
+    if (timeAvailable > 0) {
+      const costLine = `Spend ${timeAvailable} Time → +${timeAvailable} progress`;
+      setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', costLine);
+    } else {
+      setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', '');
+    }
+  }
+
+  // --- Downtime buttons (Practice / Sleep / Eat at Home) ---
+
+  // NOTE: adjust these lines to match your actual rules in home_stage.js.
+
+  const practiceBtn = $('#practiceBtn');
+  if (practiceBtn) {
+    // Example: Practice = Craft +1, Time -1
+    setButtonLabelWithCost(practiceBtn, 'Practice', 'Craft +1, Time -1');
+  }
+
+  const sleepBtn = $('#sleepBtn');
+  if (sleepBtn) {
+    // Example: Sleep = Time +2, Food -1
+    setButtonLabelWithCost(sleepBtn, 'Sleep', 'Time +2, Food -1');
+  }
+
+  const eatAtHomeBtn = $('#eatAtHomeBtn');
+  if (eatAtHomeBtn) {
+    // Example: Eat at Home = Food +2, Time -1, Money -1
+    setButtonLabelWithCost(
+      eatAtHomeBtn,
+      'Eat at Home',
+      'Food +2, Time -1, Money -1'
+    );
+  }
+}
+
 /**
  * Render the current gameState into the DOM.
  */
