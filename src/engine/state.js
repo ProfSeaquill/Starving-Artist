@@ -240,11 +240,24 @@ export function updateActivePlayer(gameState, updater) {
   if (!current) return gameState;
 
   const updated = updater(current);
+
+  // Global stat floor: these stats can never go below 0.
+  // (Money is intentionally not clamped; debt is allowed.)
+  const clamp0 = (v) => (Number.isFinite(v) ? Math.max(0, v) : 0);
+
+  // Only clamp if the property exists on the updated object
+  // (avoids accidentally creating/overwriting fields).
+  const fixed = { ...updated };
+  if ('food' in fixed) fixed.food = clamp0(fixed.food);
+  if ('inspiration' in fixed) fixed.inspiration = clamp0(fixed.inspiration);
+  if ('craft' in fixed) fixed.craft = clamp0(fixed.craft);
+
   const players = gameState.players.slice();
-  players[idx] = updated;
+  players[idx] = fixed;
 
   return { ...gameState, players };
 }
+
 
 /**
  * Simple helper to check if the game is over.
