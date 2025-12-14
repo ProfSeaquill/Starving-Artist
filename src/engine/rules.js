@@ -104,9 +104,10 @@ function startTurn(gameState) {
       usedEatAtHomeThisTurn: false
     };
 
-    // Clear per-turn Home draw flag
+    // Clear per-turn Home flags
     const flags = { ...baseFlags };
     delete flags.homeCardDrawnThisTurn;
+    delete flags.leaveHomeAttemptedThisTurn; // NEW
 
     if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
       // No Minor Work income at Home or Dreamer (for now).
