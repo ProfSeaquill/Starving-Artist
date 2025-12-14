@@ -678,6 +678,11 @@ if (drawHomeBtn) {
   drawHomeBtn.disabled =
     player.stage !== STAGE_HOME ||
     homeCardDrawn;
+
+  // NEW: Guided highlight at Home: draw your card first
+  const shouldHighlightHomeDraw =
+    player.stage === STAGE_HOME && !homeCardDrawn;
+  drawHomeBtn.classList.toggle('guided-btn', !!shouldHighlightHomeDraw);
 }
 
     // NEW: downtime buttons – 1 use per turn & require Time > 0
@@ -709,9 +714,20 @@ if (drawHomeBtn) {
 
   // Home → Dreamer: only meaningful while on the Home track
   const attemptLeaveHomeBtn = $('#attemptLeaveHomeBtn');
-  if (attemptLeaveHomeBtn) {
-    attemptLeaveHomeBtn.disabled = player.stage !== STAGE_HOME;
-  }
+if (attemptLeaveHomeBtn) {
+  const homeCardDrawn = !!pFlags.homeCardDrawnThisTurn;
+  const leaveAttempted = !!pFlags.leaveHomeAttemptedThisTurn;
+
+  attemptLeaveHomeBtn.disabled =
+    player.stage !== STAGE_HOME ||
+    leaveAttempted;
+
+  // NEW: Guided highlight at Home: after drawing, try to leave (once)
+  const shouldHighlightLeave =
+    player.stage === STAGE_HOME && homeCardDrawn && !leaveAttempted;
+  attemptLeaveHomeBtn.classList.toggle('guided-btn', !!shouldHighlightLeave);
+}
+
 
   // Dreamer → Amateur: require stat thresholds from config.dreamer.advanceThresholds
   const attemptAdvanceDreamerBtn = $('#attemptAdvanceDreamerBtn');
