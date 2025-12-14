@@ -560,7 +560,7 @@ function updateActionButtonLabels(gameState, player) {
   const sleepBtn = $('#sleepBtn');
   if (sleepBtn) {
     // Example: Sleep = Time +2, Food -1
-    setButtonLabelWithCost(sleepBtn, 'Sleep', 'Time +2, Food -1');
+    setButtonLabelWithCost(sleepBtn, 'Sleep', 'Inspiration +1, Time -1');
   }
 
   const eatAtHomeBtn = $('#eatAtHomeBtn');
@@ -568,9 +568,7 @@ function updateActionButtonLabels(gameState, player) {
     // Example: Eat at Home = Food +2, Time -1, Money -1
     setButtonLabelWithCost(
       eatAtHomeBtn,
-      'Eat at Home',
-      'Food +2, Time -1, Money -1'
-    );
+      'Eat at Home', 'Food +1, Time -1' );
   }
 }
 
