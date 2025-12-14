@@ -110,6 +110,12 @@ function handleAttemptLeaveHome(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
+  // NEW: only 1 Leave Home attempt per turn
+  if (player.flags && player.flags.leaveHomeAttemptedThisTurn) {
+    console.warn('Leave Home ignored: already attempted this turn.');
+    return gameState;
+  }
+
   const seq = config.home.rollSequence || [];
   const step = player.homeProgress || 0;
 
@@ -133,7 +139,8 @@ function handleAttemptLeaveHome(gameState) {
       ...(next.flags || {}),
       lastHomeRoll: roll,
       lastHomeRollRequired: required,
-      lastHomeRollSuccess: success
+      lastHomeRollSuccess: success,
+      leaveHomeAttemptedThisTurn: true
     };
     next.flags = flags;
 
