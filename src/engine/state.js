@@ -251,7 +251,8 @@ export function updateActivePlayer(gameState, updater) {
   if ('food' in fixed) fixed.food = clamp0(fixed.food);
   if ('inspiration' in fixed) fixed.inspiration = clamp0(fixed.inspiration);
   if ('craft' in fixed) fixed.craft = clamp0(fixed.craft);
-
+  if ('time' in fixed) fixed.time = clamp0(fixed.time);
+  
   const players = gameState.players.slice();
   players[idx] = fixed;
 
