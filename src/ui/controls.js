@@ -367,19 +367,16 @@ if (!endBtn) {
       let bodyText;
       if (wasFiredFromThisJob) {
         bodyText =
-          `You were fired from ${jobName} earlier.\n\n` +
-          `In this prototype, once you're fired from a job,\n` +
-          `you can't be hired there again.`;
+          `Your old manager recognizes you and laughs at your job application until you leave.were fired from this job earlier.`; 
       } else {
         // Fallback: job is gone, but not specifically tied to this player.
         bodyText =
-          `${jobName} is no longer available in the job market.\n\n` +
-          `Someone was fired from this job, so the position closed.`;
+          `This job is not accepting applications. Sorry!`;
       }
 
       if (typeof showOverlay === 'function') {
         showOverlay(
-          'Job Unavailable',
+          'How Embarrassing',
           jobName,
           bodyText,
           {
