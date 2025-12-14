@@ -75,126 +75,175 @@ if (!endBtn) {
       (player?.flags || {}).hasWorkedThisTurn
     );
 
-    if (state && player && player.jobId) {
-      const flags = player.flags || {};
-      const hasWorkedThisTurn = !!flags.hasWorkedThisTurn;
-
-      // Only warn if they have a job and did NOT work this turn.
-      if (!hasWorkedThisTurn) {
-        const cfg = state.config && state.config.amateur;
-        const jobLossSkipCount =
-          (cfg && typeof cfg.jobLossSkipCount === 'number'
-            ? cfg.jobLossSkipCount
-            : 3);
-
-        const currentSkipped = player.skippedWorkCount || 0;
-        const remaining = Math.max(jobLossSkipCount - currentSkipped, 0);
-
-        // 🔑 This specific END_TURN will increment skippedWorkCount by 1.
-        // If that pushes you to or past the limit, you’ll be fired *now*.
-        const willBeFiredByThisEndTurn =
-          jobLossSkipCount > 0 && currentSkipped + 1 >= jobLossSkipCount;
-
-        console.log(
-          '[endTurn] jobLossSkipCount =', jobLossSkipCount,
-          'remaining =', remaining,
-          'willBeFiredByThisEndTurn =', willBeFiredByThisEndTurn
-        );
-
-        // Optional: show job name in the popup subtitle
-        const job = JOBS.find((j) => j.id === player.jobId);
-        const jobName = job ? job.name : '';
-
-        let countdownLine;
-        if (remaining > 1) {
-          countdownLine =
-            `If you skip work [${remaining}] more times, you'll be fired!`;
-        } else if (remaining === 1) {
-          countdownLine =
-            `If you skip work [1] more time, you'll be fired!`;
-        } else {
-          // Just in case config changes mid-game and you're already over the limit.
-          countdownLine =
-            `If you end your turn without working, you'll be fired from your job.`;
-        }
-
-        const bodyText =
-          `You didn't go to work this turn.\n\n` +
-          countdownLine +
-          `\n\nEnd your turn anyway?`;
-
-        const showOverlay = window._starvingArtistShowCardOverlay;
-
-        if (typeof showOverlay === 'function') {
-          // Use the same card overlay format as other popups
-          showOverlay(
-            'Skip Work Warning',
-            jobName || 'End Turn',
-            bodyText,
-            {
-              primaryLabel: 'End Turn',
-              secondaryLabel: 'Go Back',
-              onPrimary: () => {
-                console.log('[endTurn] popup primary clicked; dispatching END_TURN');
-                // Actually end the turn (this will increment skippedWorkCount & fire if needed)
-                dispatch({ type: ActionTypes.END_TURN });
-
-                // If THIS END_TURN crosses the threshold, show a "You're fired!" popup.
-                if (willBeFiredByThisEndTurn) {
-                  const showOverlay2 = window._starvingArtistShowCardOverlay;
-                  if (typeof showOverlay2 === 'function') {
-                    showOverlay2(
-                      "You're fired!",
-                      jobName || 'Lost Job',
-                      `You skipped work too many times and lost your job.`,
-                      {
-                        primaryLabel: 'Ouch',
-                        onPrimary: () => {
-                          // No-op; just close the popup.
-                        }
-                      }
-                    );
-                  }
-                }
-              },
-              onSecondary: () => {
-                console.log('[endTurn] popup secondary clicked; cancelling END_TURN');
-                // Do nothing; player returns to their turn.
-              }
-            }
-          );
-          // IMPORTANT: don't end the turn immediately; wait for overlay choice.
-          return;
-        }
-
-        // Fallback (in case overlay isn't wired up for some reason)
-        const confirmed = window.confirm(bodyText.replace(/\n\n/g, '\n'));
-        if (!confirmed) {
-          // Player cancelled: let them go back and choose to work instead.
-          return;
-        }
-
-        // Native confirm path: also show "You're fired!" if this was the final skip.
-        dispatch({ type: ActionTypes.END_TURN });
-        if (willBeFiredByThisEndTurn) {
-          const showOverlay2 = window._starvingArtistShowCardOverlay;
-          if (typeof showOverlay2 === 'function') {
-            showOverlay2(
-              "You're fired!",
-              jobName || 'Lost Job',
-              `You skipped work too many times and lost your job.`,
-              {
-                primaryLabel: 'Ouch',
-                onPrimary: () => {}
-              }
-            );
-          }
-        }
-        return;
-      }
+    // If no state, no player, or no job → just end the turn normally.
+    if (!state || !player || !player.jobId) {
+      dispatch({ type: ActionTypes.END_TURN });
+      return;
     }
 
-    // Default path: no warning needed, or user already confirmed & handled firing.
+    const flags = player.flags || {};
+    const hasWorkedThisTurn = !!flags.hasWorkedThisTurn;
+
+    // Only warn if they have a job and did NOT work this turn.
+    if (!hasWorkedThisTurn) {
+      const cfg = state.config && state.config.amateur;
+      const jobLossSkipCount =
+        (cfg && typeof cfg.jobLossSkipCount === 'number'
+          ? cfg.jobLossSkipCount
+          : 3);
+
+      const currentSkipped = player.skippedWorkCount || 0;
+
+      // How many skips will they have AFTER confirming this "End Turn"?
+      const newSkippedIfTheyConfirm = currentSkipped + 1;
+
+      // Will this END_TURN actually fire them according to the rules?
+      const willBeFiredByThisEndTurn =
+        jobLossSkipCount > 0 &&
+        newSkippedIfTheyConfirm >= jobLossSkipCount;
+
+      // How many extra future skips do they have AFTER this turn resolves?
+      const remainingAfterThisTurn =
+        jobLossSkipCount > 0
+          ? Math.max(jobLossSkipCount - newSkippedIfTheyConfirm, 0)
+          : 0;
+
+      // For flavor text: which job is this?
+      const job = JOBS.find(j => j.id === player.jobId);
+      const jobName = job ? job.name : '';
+
+      let countdownLine;
+      if (willBeFiredByThisEndTurn) {
+        // This click will immediately push them over the limit.
+        countdownLine =
+          `If you end your turn without working, you'll be fired from your job **right now**.`;
+      } else if (remainingAfterThisTurn === 1) {
+        countdownLine =
+          `After this, you can skip work 1 more time before you're fired.`;
+      } else {
+        countdownLine =
+          `After this, you can skip work ${remainingAfterThisTurn} more times before you're fired.`;
+      }
+
+      const bodyText =
+        `You didn't go to work this turn.\n\n` +
+        countdownLine +
+        `\n\nEnd your turn anyway?`;
+
+      const showOverlay = window._starvingArtistShowCardOverlay;
+
+      // Capture which player & job we’re talking about so we can compare after dispatch.
+      const playerIndex = state.activePlayerIndex;
+      const previousJobId = player.jobId;
+
+      if (typeof showOverlay === 'function') {
+        // Fancy card-style popup path
+        showOverlay(
+          'Skip Work Warning',
+          jobName || 'End Turn',
+          bodyText,
+          {
+            primaryLabel: 'End Turn',
+            secondaryLabel: 'Go Back',
+            onPrimary: () => {
+              // Actually end the turn
+              dispatch({ type: ActionTypes.END_TURN });
+
+              // After END_TURN runs, check if THIS player just lost their job.
+              const afterState = getState && getState();
+              if (!afterState || previousJobId == null) {
+                return;
+              }
+
+              const players = afterState.players || [];
+              const affectedPlayer = players[playerIndex];
+
+              const justLostJob =
+                affectedPlayer &&
+                previousJobId &&
+                !affectedPlayer.jobId;
+
+              if (justLostJob) {
+                const showOverlay2 = window._starvingArtistShowCardOverlay;
+                if (typeof showOverlay2 === 'function') {
+                  const firedJob = JOBS.find(j => j.id === previousJobId);
+                  const firedJobName =
+                    firedJob ? firedJob.name : 'Lost Job';
+
+                  showOverlay2(
+                    "You're fired!",
+                    firedJobName,
+                    `You skipped work too many times and lost your job.`,
+                    {
+                      primaryLabel: 'Ouch',
+                      onPrimary: () => {
+                        // no-op; just close
+                      }
+                    }
+                  );
+                }
+              }
+            },
+            onSecondary: () => {
+              // Do nothing; player returns to their turn.
+            }
+          }
+        );
+
+        // IMPORTANT: don’t fall through to default dispatch; wait for overlay choice.
+        return;
+      }
+
+      // Fallback: native confirm if overlay somehow isn’t wired up
+      const confirmed = window.confirm(bodyText.replace(/\n\n/g, '\n'));
+      if (!confirmed) {
+        return; // Player cancelled, so they can still go work this turn.
+      }
+
+      // Native confirm path: end the turn, then check if they were fired.
+      dispatch({ type: ActionTypes.END_TURN });
+
+      const afterState = getState && getState();
+      if (!afterState || previousJobId == null) {
+        return;
+      }
+      const players = afterState.players || [];
+      const affectedPlayer = players[playerIndex];
+
+      const justLostJob =
+        affectedPlayer &&
+        previousJobId &&
+        !affectedPlayer.jobId;
+
+      if (justLostJob) {
+        const showOverlay2 = window._starvingArtistShowCardOverlay;
+        if (typeof showOverlay2 === 'function') {
+          const firedJob = JOBS.find(j => j.id === previousJobId);
+          const firedJobName =
+            firedJob ? firedJob.name : 'Lost Job';
+
+          showOverlay2(
+            "You're fired!",
+            firedJobName,
+            `You skipped work too many times and lost your job.`,
+            {
+              primaryLabel: 'Ouch',
+              onPrimary: () => {}
+            }
+          );
+        } else {
+          // Last-ditch fallback
+          window.alert(
+            'You skipped work too many times and lost your job.'
+          );
+        }
+      }
+
+      return; // do not fall through to default END_TURN
+    }
+
+    // If they *did* work this turn, or no job-loss logic applies,
+    // just end the turn normally.
     dispatch({ type: ActionTypes.END_TURN });
   });
 }
