@@ -206,6 +206,25 @@ function handleGoToWork(gameState) {
   return nextState;
 }
 
+function normalizeArtPath(p) {
+  return String(p || '').trim().toLowerCase();
+}
+
+function isSocialCardEligibleForArtPath(card, artPath) {
+  const p = normalizeArtPath(artPath);
+  if (!p) return true;
+
+  const allowed = Array.isArray(card?.allowedPaths)
+    ? card.allowedPaths.map(normalizeArtPath).filter(Boolean)
+    : [];
+  const blocked = Array.isArray(card?.blockedPaths)
+    ? card.blockedPaths.map(normalizeArtPath).filter(Boolean)
+    : [];
+
+  if (allowed.length) return allowed.includes(p);
+  if (blocked.length) return !blocked.includes(p);
+  return true;
+}
 
 /**
  * DRAW_SOCIAL_CARD:
@@ -223,7 +242,7 @@ function handleDrawSocialCard(gameState) {
     return gameState;
   }
 
-  const { nextState, card } = drawSocialCard(gameState);
+  const { nextState, card } = drawSocialCard(gameState, player.artPath);
   if (!card) {
     // No card available; nothing happens.
     return gameState;
@@ -369,31 +388,52 @@ function meetsDreamerThresholds(player, thresholds) {
  * Draw the top Social card, reshuffling the discard if needed.
  * Returns { nextState, card }.
  */
-function drawSocialCard(gameState) {
+function drawSocialCard(gameState, artPath) {
   let { socialDeck, socialDiscard } = gameState;
 
-  if (socialDeck.length === 0 && socialDiscard.length > 0) {
-    socialDeck = shuffleArray(socialDiscard);
-    socialDiscard = [];
-  }
-
-  if (socialDeck.length === 0) {
-    console.warn('No Social cards available to draw.');
-    return { nextState: gameState, card: null };
-  }
-
-  const card = socialDeck[socialDeck.length - 1];
-  const newDeck = socialDeck.slice(0, -1);
-  const newDiscard = socialDiscard.concat(card);
-
-  const nextState = {
-    ...gameState,
-    socialDeck: newDeck,
-    socialDiscard: newDiscard
+  const pickEligibleFromDeck = () => {
+    // We treat the end of the array as the "top" of the deck.
+    for (let i = socialDeck.length - 1; i >= 0; i--) {
+      const candidate = socialDeck[i];
+      if (isSocialCardEligibleForArtPath(candidate, artPath)) {
+        const card = candidate;
+        const newDeck = socialDeck.slice();
+        newDeck.splice(i, 1);
+        const newDiscard = socialDiscard.concat(card);
+        return { socialDeck: newDeck, socialDiscard: newDiscard, card };
+      }
+    }
+    return null;
   };
 
-  return { nextState, card };
+  // 1) Try to draw from the current deck.
+  let picked = pickEligibleFromDeck();
+
+  // 2) If nothing eligible is in the deck, reshuffle everything once and try again.
+  if (!picked && (socialDiscard.length > 0 || socialDeck.length > 0)) {
+    socialDeck = shuffleArray(socialDeck.concat(socialDiscard));
+    socialDiscard = [];
+    picked = pickEligibleFromDeck();
+  }
+
+  if (!picked) {
+    console.warn(`[dreamer] No eligible Social cards for artPath="${artPath}".`);
+    return {
+      nextState: { ...gameState, socialDeck, socialDiscard },
+      card: null
+    };
+  }
+
+  return {
+    nextState: {
+      ...gameState,
+      socialDeck: picked.socialDeck,
+      socialDiscard: picked.socialDiscard
+    },
+    card: picked.card
+  };
 }
+
 
 /**
  * Apply either the 'attend' or 'skip' branch of a Social card to the player.
@@ -404,6 +444,12 @@ function applySocialChoiceEffects(player, card, choice) {
   if (!branch || !Array.isArray(branch.effects)) {
     return player;
   }
+
+  if (eff.type === 'time') {
+  const delta = eff.delta || 0;
+  const nextTime = (next.timeThisTurn || 0) + delta;
+  next.timeThisTurn = nextTime < 0 ? 0 : nextTime;
+}
 
   let next = { ...player };
 
