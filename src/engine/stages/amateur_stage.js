@@ -398,27 +398,49 @@ function applyProfDevEffectsToPlayer(player, card, config) {
     }
   }
 
-  // Optional Minor Work creation
-  if (card.minorWork) {
-    const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
-    const works = Array.isArray(next.minorWorks) ? next.minorWorks.slice() : [];
+    // Optional Minor Work progress boost (never completes)
+  if (card.minorWork && card.minorWork.id) {
+    const bump = Number.isFinite(card.minorWork.progressDelta) ? card.minorWork.progressDelta : 1;
 
-    if (works.length < maxMinor) {
-      const mw = card.minorWork;
-      works.push({
-        id: mw.id,
-        name: mw.name,
-        effectsPerTurn: Array.isArray(mw.effectsPerTurn)
-          ? mw.effectsPerTurn.slice()
-          : [],
-        meta: mw.meta || {}
-      });
-      next.minorWorks = works;
+    // If there’s already a work in progress, boost that.
+    // Otherwise, start the card’s work and boost it.
+    const desiredId = card.minorWork.id;
+    const workId = next.minorWorkInProgressId || desiredId;
+
+    // If we’re about to start a new one, respect maxMinor
+    if (!next.minorWorkInProgressId) {
+      const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
+      const completedCount = Array.isArray(next.minorWorks) ? next.minorWorks.length : 0;
+      if (completedCount < maxMinor) {
+        // Only start if template exists
+        const t = findTemplateForWorkId(next.artPath, workId);
+        if (t) next.minorWorkInProgressId = workId;
+      }
+    }
+
+    if (next.minorWorkInProgressId) {
+      const t = findTemplateForWorkId(next.artPath, next.minorWorkInProgressId);
+      if (t) {
+        const target = Number.isFinite(t.progressTarget) ? t.progressTarget : 1;
+        const cap = Math.max(0, target - 1);
+
+        const progressById = { ...(next.minorWorkProgressById || {}) };
+        const cur = Number.isFinite(progressById[workId]) ? progressById[workId] : 0;
+        const boosted = Math.min(cur + bump, cap);
+
+        progressById[workId] = boosted;
+        next.minorWorkProgressById = progressById;
+
+        next.flags = {
+          ...(next.flags || {}),
+          lastProfDevMinorWorkBoostId: workId,
+          lastProfDevMinorWorkBoostTo: boosted,
+          lastProfDevMinorWorkBoostCap: cap
+        };
+      }
     }
   }
 
-  return next;
-}
 
 /**
  * Check if player can pay a cost object like:
