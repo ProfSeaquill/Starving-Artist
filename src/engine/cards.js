@@ -131,6 +131,11 @@ function convertSocialRow(row) {
   const timeCost =
     toNumber(row.time_cost ?? row.timeCost) ?? 1;
 
+  // - blocked_paths: these art paths may NOT draw the card
+  const blockedPaths = splitList(
+    row.blocked_paths ?? row.blockedPaths ?? row.paths_blocked ?? row.pathsBlocked
+  );
+
   // --- Map CSV choiceA_* / choiceB_* → attend / skip branches ---
 
   // Choice A → Attend
@@ -147,14 +152,12 @@ function convertSocialRow(row) {
     effects: skipEffects
   };
 
-  return {
-    id,
-    name,
-    text,
-    timeCost,
-    attend,
-    skip
-  };
+  const card = { id, name, text, timeCost, attend, skip };
+
+  if (allowedPaths && allowedPaths.length) card.allowedPaths = allowedPaths;
+  if (blockedPaths && blockedPaths.length) card.blockedPaths = blockedPaths;
+
+  return card;
 }
 
 
@@ -373,6 +376,16 @@ function rowToObject(headers, row) {
   return obj;
 }
 
+function splitList(value) {
+  if (value == null) return null;
+  const s = String(value).trim();
+  if (!s) return null;
+  return s
+    .split(/[;,]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
 /**
  * Build stat effects from columns like:
  *   gain_money, loss_money, gain_food, ...
@@ -398,6 +411,18 @@ function buildStatEffects(row, prefix = '') {
       effects.push({ type: 'stat', stat, delta: -loss });
     }
   }
+
+    // Optional time deltas (used by Social choiceA_*/choiceB_* columns)
+  const gainTime = toNumber(row[`${prefix}gain_time`]);
+  const lossTime = toNumber(row[`${prefix}loss_time`]);
+
+  if (gainTime != null && gainTime !== 0) {
+    effects.push({ type: 'time', delta: gainTime });
+  }
+  if (lossTime != null && lossTime !== 0) {
+    effects.push({ type: 'time', delta: -lossTime });
+  }
+
 
   return effects;
 }
