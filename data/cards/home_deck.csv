@@ -1,13 +1,24 @@
-id,title,flavor,gain_food,gain_inspiration,gain_craft,gain_money,loss_food,loss_inspiration,loss_craft,loss_money,tags
-H01,Mom Sends Groceries,Your mom drops by with bags of groceries and leftover casseroles.,2,1,0,0,0,0,0,0,"family,windfall,home"
-H02,Rent Is Due,The first of the month hits and your landlord wants every last cent.,0,0,0,0,0,0,0,2,"bills,setback,home"
-H03,Quiet Night Reading,"You curl up with a stack of books, highlighter in hand, and get lost for hours.",0,2,1,0,1,0,0,0,"routine,study,solo"
-H04,Roommate Drama,Your roommate forgets to do dishes again and the argument derails your focus.,0,0,0,0,1,2,0,0,"roommates,stress,setback"
-H05,Side Hustle Payout,You finish a small freelance job and finally get paid for your skills.,0,0,1,2,0,1,0,0,"work,windfall,hustle"
-H06,Streaming Spiral,One episode turns into five and your to-do list just stares back at you.,0,1,0,0,1,0,1,"0,distraction,media,home",
-H07,Big Cook-Up,You meal-prep a giant pot of something cheap and filling for the week.,3,0,0,0,0,0,0,1,"cooking,prep,frugality"
-H08,Used Bookstore Haul,"A dusty shop has a sale and you haul home armfuls of strange, inspiring books.",0,2,1,0,0,0,0,"1,books,inspiration,spending",
-H09,Landlord Won’t Fix It,"A leak, a draft, a weird noise—your landlord shrugs and says “next month.”",0,0,0,0,0,1,1,0,"housing,frustration,setback"
-H10,Neighbor Potluck,"The building hosts a potluck; you leave full, buzzing with stories and ideas.",1,1,0,0,0,0,0,"0,community,food,social",
-H11,Odd Jobs Around Home,"You fix shelves, patch walls, and tinker; the place looks better and so does your skill.",0,0,2,1,0,0,0,0,"projects,craft,home"
-H12,Sick Day in Bed,"You call it, stay under the covers, and let your body and brain reset a little.",0,1,0,0,1,0,0,"1,health,rest,setback",
+H01,Mom Sends Groceries (Again),A box shows up labeled “emotional support noodles.” You do not ask questions. You salute.,2,0,0,0,0,0,0,0,family; windfall; comfort
+H02,Thrift Store Artifact,You find a blazer that makes you look like a respected genius (or a magician). Either way: confidence.,0,1,0,1,0,0,0,0,thrift; style; confidence
+H03,"Quiet Night, Loud Brain","At 1:07am, your brain goes full fireworks. The muse arrives late, but brings snacks.",0,1,1,0,0,0,0,0,muse; late-night; solo
+H04,Meal Prep: The Big Pot,You cook one enormous thing and live off it like a raccoon with a meal plan.,2,0,0,0,0,0,0,0,food; frugal; home
+H05,Free Couch Quest,You help carry a couch up three flights. In exchange: pizza and a story you’ll tell forever.,1,1,0,1,0,0,0,0,neighbors; pizza; karma
+H06,You Fix the Wobbly Chair,You become a DIY legend for exactly nine minutes.,0,1,1,0,0,0,0,0,diy; craft; small-win
+H07,Library Card Glow-Up,The librarian recognizes you. Your power level doubles. Quietly.,0,1,0,0,0,0,0,0,library; study; habit
+H08,Group Chat Hype Squad,Your friends gas you up with unearned confidence and 37 messages in a row.,0,2,0,0,0,0,0,0,friends; confidence; memes
+H09,Forgotten Cash in a Jacket,You find $12 and instantly become a financial genius.,0,0,0,2,0,0,0,0,windfall; found-money; luck
+H10,Hot Tea and Hardcore Focus,A mug of tea and Wi-Fi password turn you into a disciplined monk.,0,0,2,0,0,0,0,0,routine; focus; tea
+H11,Costco Run,You visit every Costco within a hundred square miles and take free samples until they cut you off.,2,0,0,1,0,0,0,0,snacks; frugal; errands
+H12,All I Do Is Win,"You do laundry, reply to one email, and go out to hang with friends. All in one day.",1,1,1,1,0,0,0,0,adulting; momentum; home
+H13,To Grandmother's House!,Granny tells you you’re brilliant and also that you look tired. At least one of those is true.,1,2,0,0,0,0,0,0,family; wholesome; pep-talk
+H14,Notebook of Bad Ideas,You find your old notebook. Past-you was secretly hilarious. Future-you is grateful.,0,2,1,0,0,0,0,0,ideas; notebook; rediscovery
+H15,Perfect Playlist,All your favorite productivity songs back to back for hours.,0,1,1,0,0,0,0,0,music; ritual; mood
+H16,Roommate Buys Fancy Spices,Suddenly everything tastes like a cooking show. You are the host now.,1,1,0,0,0,0,0,0,roommates; food; upgrade
+H17,Networking at the Laundromat,You meet someone cool between Spin Cycle #3 and the sock abyss.,0,1,0,1,0,0,0,0,networking; serendipity; adulting
+H18,Coupon Wizardry,You stack coupons like a sorcerer. The cashier bows.,1,0,0,2,0,0,0,0,savings; coupons; frugal
+H19,Sunlight Hits Your Desk Just Right,For ten glorious minutes your workspace looks like an indie film poster.,0,1,0,0,0,0,0,0,mood; workspace; magic
+H20,One Good Stretch,Your back cracks like a drum fill. Your brain immediately forgives you.,0,1,0,0,0,0,0,0,health; reset; home
+H21,Mystery Smell in the Fridge,You open the fridge and something opens its eyes back. You lose your appetite — and your peace.,0,0,0,0,1,0,0,0,setback; food; chaos
+H22,Rent Reminder Jumpscare,Your landlord texts “Hey :)” and your soul leaves your body.,0,0,0,0,0,1,0,2,bills; setback; home
+H23,Surprise Leftovers from a Friend,A friend drops off leftovers like a benevolent food fairy.,2,0,0,0,0,0,0,0,friends; food; windfall
+H24,Clear-the-Table Ceremony,"You clean your space, light a candle, and declare your living room a sacred studio.",0,1,1,0,0,0,0,0,studio; cleaning; focus
