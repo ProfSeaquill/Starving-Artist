@@ -132,11 +132,6 @@ function handleStartMinorWork(gameState, action) {
   const completedCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
   if (completedCount >= maxMinor) return gameState;
 
-  // Don’t start something already completed
-  if (Array.isArray(player.minorWorks) && player.minorWorks.some(mw => mw && mw.id === workId)) {
-    return gameState;
-  }
-
   const template = findTemplateForWorkId(player.artPath, workId);
   if (!template) return gameState;
 
