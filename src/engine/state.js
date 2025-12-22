@@ -132,7 +132,19 @@ export function createPlayer(name, artPath) {
 
     // Stage-specific progress
     homeProgress: 0,       // 0..rollSequence.length
-    minorWorks: [],        // array of MinorWorkState (we'll define shape later)
+    // Completed Minor Works (used for the ladder + per-turn passives)
+// Each entry is:
+// { id, name, effectsPerTurn: StatEffect[], meta: { kind, isPlatform } }
+minorWorks: [],
+
+// NEW (v0.2): In-progress Minor Work tracking (one at a time)
+minorWorkInProgressId: null,
+minorWorkProgressById: {},
+
+// Platform bonus (from completing a platform Quick Win)
+platformBonusReady: false,
+platformBonusAmount: 0,
+
     portfolioBuilt: false,
     masterworkProgress: 0,
 
