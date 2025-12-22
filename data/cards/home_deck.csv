@@ -1,3 +1,4 @@
+id,title,flavor,gain_food,gain_inspiration,gain_craft,gain_money,loss_food,loss_inspiration,loss_craft,loss_money,tags
 H01,Mom Sends Groceries (Again),A box shows up labeled “emotional support noodles.” This night you will sleep with a full belly. Thanks mom!,2,0,0,0,0,0,0,0,family; windfall; comfort
 H02,Thrift Store Artifact,You find a blazer that makes you look like a respected genius (or a magician). Either way: confidence.,0,1,0,1,0,0,0,0,thrift; style; confidence
 H03,"Quiet Night, Loud Brain","At 1:07am, your brain goes full fireworks. The muse arrives late, but brings snacks.",0,1,1,0,0,0,0,0,muse; late-night; solo
@@ -22,4 +23,5 @@ H21,Mystery Smell in the Fridge,You open the fridge and something opens its eyes
 H22,Rent Reminder Jumpscare,Your landlord texts “Hey :)” and your soul leaves your body.,0,0,0,0,0,1,0,2,bills; setback; home
 H23,Surprise Leftovers from a Friend,A friend drops off leftovers like a benevolent food fairy.,2,0,0,0,0,0,0,0,friends; food; windfall
 H24,Clear-the-Table Ceremony,"You clean your space, light a candle, and declare your living room a sacred studio.",0,1,1,0,0,0,0,0,studio; cleaning; focus
+
 
