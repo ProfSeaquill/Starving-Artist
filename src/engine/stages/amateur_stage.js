@@ -122,33 +122,27 @@ function handleStartMinorWork(gameState, action) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  // New system: START_MINOR_WORK chooses a canonical template by workId
   const workId = action.workId;
   if (!workId) return gameState;
 
   // Only one in progress at a time
   if (player.minorWorkInProgressId) return gameState;
 
-  // Don’t allow starting more if you already completed maxMinorWorks
   const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
   const completedCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
   if (completedCount >= maxMinor) return gameState;
 
-  // Don’t allow starting a work you already completed
-  const alreadyCompleted =
-    Array.isArray(player.minorWorks) && player.minorWorks.some(mw => mw && mw.id === workId);
-  if (alreadyCompleted) return gameState;
+  // Don’t start something already completed
+  if (Array.isArray(player.minorWorks) && player.minorWorks.some(mw => mw && mw.id === workId)) {
+    return gameState;
+  }
 
   const template = findTemplateForWorkId(player.artPath, workId);
   if (!template) return gameState;
 
   return updateActivePlayer(gameState, (p) => {
     const progressById = { ...(p.minorWorkProgressById || {}) };
-
-    // If we’ve never tracked this id, start at 0
-    if (!Number.isFinite(progressById[workId])) {
-      progressById[workId] = 0;
-    }
+    if (!Number.isFinite(progressById[workId])) progressById[workId] = 0;
 
     return {
       ...p,
@@ -156,12 +150,13 @@ function handleStartMinorWork(gameState, action) {
       minorWorkProgressById: progressById,
       flags: {
         ...(p.flags || {}),
-        lastMinorWorkStartedId: workId,
-        lastMinorWorkStartedName: template.name
+        lastMinorWorkStartedId: workId
       }
     };
   });
 }
+
+
 
 function handleProgressMinorWork(gameState, action) {
   const player = getActivePlayer(gameState);
