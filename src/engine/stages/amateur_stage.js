@@ -359,7 +359,7 @@ function drawProfDevCard(gameState) {
 /**
  * Apply a Professional Dev card to the player:
  * - effects[]: immediate stat changes.
- * - minorWork: optional creation of a new Minor Work (if free slots).
+ * - minorWork: optional progress boost (never completes).
  */
 function applyProfDevEffectsToPlayer(player, card, config) {
   let next = { ...player };
@@ -392,9 +392,8 @@ function applyProfDevEffectsToPlayer(player, card, config) {
       }
     }
   }
-}
 
-    // Optional Minor Work progress boost (never completes)
+  // Optional Minor Work progress boost (never completes)
   if (card.minorWork && card.minorWork.id) {
     const bump = Number.isFinite(card.minorWork.progressDelta) ? card.minorWork.progressDelta : 1;
 
@@ -436,6 +435,9 @@ function applyProfDevEffectsToPlayer(player, card, config) {
       }
     }
   }
+
+  return next;
+}
 
 
 /**
