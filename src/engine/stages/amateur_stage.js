@@ -55,6 +55,12 @@ export function amateurReducer(gameState, action) {
   }
 }
 
+function findTemplateForWorkId(artPath, workId) {
+  const templates = getMinorWorkTemplatesForArtPath(artPath) || [];
+  return templates.find(t => t && t.id === workId) || null;
+}
+
+
 /**
  * TAKE_PROF_DEV:
  * - Spend time on professional development instead of other actions.
@@ -78,32 +84,28 @@ function handleTakeProfDev(gameState) {
   const defaultTimeCost = 2;
   const timeCost = Number.isFinite(card.timeCost) ? card.timeCost : defaultTimeCost;
 
-  let updated = applyProfDevEffectsToPlayer(p, card, config);
-  
-  const withEffects = updateActivePlayer(nextState, (p) => {
-    console.log(
-  '[profDev] before skip =', p.skippedWorkCount,
-  'after skip =', updated.skippedWorkCount,
-  'jobId =', updated.jobId
-);
+  return updateActivePlayer(nextState, (p) => {
+    let updated = applyProfDevEffectsToPlayer(p, card, config);
 
-    
+    console.log(
+      '[profDev] before skip =', p.skippedWorkCount,
+      'after skip =', updated.skippedWorkCount,
+      'jobId =', updated.jobId
+    );
 
     // Deduct Time
     const remainingTime = (updated.timeThisTurn || 0) - timeCost;
     updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
 
-    const flags = {
+    updated.flags = {
       ...(updated.flags || {}),
       lastProfDevCard: card
     };
-    updated.flags = flags;
 
     return updated;
   });
-
-  return withEffects;
 }
+
 
 
 /**
@@ -120,40 +122,128 @@ function handleStartMinorWork(gameState, action) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
+  // New system: START_MINOR_WORK chooses a canonical template by workId
+  const workId = action.workId;
+  if (!workId) return gameState;
+
+  // Only one in progress at a time
+  if (player.minorWorkInProgressId) return gameState;
+
+  // Don’t allow starting more if you already completed maxMinorWorks
   const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
-  const currentMinor = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
+  const completedCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
+  if (completedCount >= maxMinor) return gameState;
 
-  if (currentMinor >= maxMinor) {
-    return gameState;
-  }
+  // Don’t allow starting a work you already completed
+  const alreadyCompleted =
+    Array.isArray(player.minorWorks) && player.minorWorks.some(mw => mw && mw.id === workId);
+  if (alreadyCompleted) return gameState;
 
-  const minorWork = action.minorWork;
-  if (!minorWork || !minorWork.id || !minorWork.name) {
-    return gameState;
-  }
+  const template = findTemplateForWorkId(player.artPath, workId);
+  if (!template) return gameState;
 
-  const nextState = updateActivePlayer(gameState, (p) => {
-    const works = Array.isArray(p.minorWorks) ? p.minorWorks.slice() : [];
+  return updateActivePlayer(gameState, (p) => {
+    const progressById = { ...(p.minorWorkProgressById || {}) };
 
-    works.push({
-      id: minorWork.id,
-      name: minorWork.name,
-      // effects applied at start of each turn (Amateur/Pro)
-      effectsPerTurn: Array.isArray(minorWork.effectsPerTurn)
-        ? minorWork.effectsPerTurn.slice()
-        : [],
-      // For future: track progress/cost etc.
-      meta: minorWork.meta || {}
-    });
+    // If we’ve never tracked this id, start at 0
+    if (!Number.isFinite(progressById[workId])) {
+      progressById[workId] = 0;
+    }
 
     return {
       ...p,
-      minorWorks: works
+      minorWorkInProgressId: workId,
+      minorWorkProgressById: progressById,
+      flags: {
+        ...(p.flags || {}),
+        lastMinorWorkStartedId: workId,
+        lastMinorWorkStartedName: template.name
+      }
     };
   });
-
-  return nextState;
 }
+
+function handleProgressMinorWork(gameState, action) {
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
+
+  const workId = player.minorWorkInProgressId;
+  if (!workId) return gameState;
+
+  // Must have time to spend
+  if (!player.timeThisTurn || player.timeThisTurn <= 0) return gameState;
+
+  const template = findTemplateForWorkId(player.artPath, workId);
+  if (!template) return gameState;
+
+  const target = Number.isFinite(template.progressTarget) ? template.progressTarget : 1;
+
+  return updateActivePlayer(gameState, (p) => {
+    const progressById = { ...(p.minorWorkProgressById || {}) };
+    const current = Number.isFinite(progressById[workId]) ? progressById[workId] : 0;
+    const nextProgress = current + 1;
+
+    // Spend 1 time
+    const nextTime = (p.timeThisTurn || 0) - 1;
+
+    // Completed?
+    if (nextProgress >= target) {
+      const completedWorks = Array.isArray(p.minorWorks) ? p.minorWorks.slice() : [];
+
+      // Push into completed list (this is what your startTurn() already reads)
+      completedWorks.push({
+        id: template.id,
+        name: template.name,
+        kind: template.kind, // optional, but useful
+        effectsPerTurn: Array.isArray(template.effectsPerTurn) ? template.effectsPerTurn.slice() : [],
+        meta: template.meta || {}
+      });
+
+      // Apply one-time completion effects (if any)
+      let out = { ...p };
+      if (Array.isArray(template.onCompleteEffects)) {
+        for (const eff of template.onCompleteEffects) {
+          if (!eff || eff.type !== 'stat') continue;
+          const stat = eff.stat;
+          const delta = eff.delta || 0;
+          out[stat] = (out[stat] || 0) + delta;
+        }
+      }
+
+      // Clear “in progress”
+      delete progressById[workId];
+
+      return {
+        ...out,
+        timeThisTurn: nextTime < 0 ? 0 : nextTime,
+        minorWorks: completedWorks,
+        minorWorkInProgressId: null,
+        minorWorkProgressById: progressById,
+        flags: {
+          ...(out.flags || {}),
+          lastMinorWorkCompletedId: template.id,
+          lastMinorWorkCompletedName: template.name
+        }
+      };
+    }
+
+    // Not completed yet: just store progress
+    progressById[workId] = nextProgress;
+
+    return {
+      ...p,
+      timeThisTurn: nextTime < 0 ? 0 : nextTime,
+      minorWorkProgressById: progressById,
+      flags: {
+        ...(p.flags || {}),
+        lastMinorWorkProgressId: workId,
+        lastMinorWorkProgress: nextProgress,
+        lastMinorWorkProgressTarget: target
+      }
+    };
+  });
+}
+
 
 /**
  * COMPILE_PORTFOLIO:
