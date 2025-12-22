@@ -392,6 +392,7 @@ function applyProfDevEffectsToPlayer(player, card, config) {
       }
     }
   }
+}
 
     // Optional Minor Work progress boost (never completes)
   if (card.minorWork && card.minorWork.id) {
