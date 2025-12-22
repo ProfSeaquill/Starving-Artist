@@ -697,6 +697,80 @@ button.guided-btn {
       white-space: pre-wrap;
     }
 
+
+/* --- Minor Works panel (v0.2) --- */
+.minor-works-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.mw-topline {
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.mw-platform-bonus {
+  font-size: 12px;
+  opacity: 0.95;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.mw-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.mw-row.mw-in-progress {
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.10) inset;
+}
+
+.mw-row.mw-complete {
+  opacity: 0.85;
+}
+
+.mw-left { flex: 1; min-width: 0; }
+
+.mw-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.mw-meta, .mw-progress, .mw-reward, .mw-platform {
+  font-size: 11px;
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.mw-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mw-btn {
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mw-btn-warn {
+  filter: brightness(0.95);
+}
+
        /* Card popup overlay */
 .card-overlay {
   position: fixed;
@@ -1063,7 +1137,9 @@ button.guided-btn {
         
         <!-- Minor works list -->
         <div class="section-title">Minor Works (this player)</div>
-        <pre id="minorWorksList">None yet.</pre>
+        <div id="minorWorksPanel" class="minor-works-panel"></div>
+        <pre id="minorWorksList" style="display:none;">None yet.</pre>
+
 
         <!-- Current / recent card info -->
         <div class="section-title">Recent Events</div>
