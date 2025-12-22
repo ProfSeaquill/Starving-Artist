@@ -201,7 +201,10 @@ function handleProgressMinorWork(gameState, action) {
           if (!eff || eff.type !== 'stat') continue;
           const stat = eff.stat;
           const delta = eff.delta || 0;
-          out[stat] = (out[stat] || 0) + delta;
+          const ALLOWED_STATS = new Set(['money', 'food', 'inspiration', 'craft']);
+            if (!ALLOWED_STATS.has(stat)) continue;
+            out[stat] = (out[stat] || 0) + delta;
+
         }
       }
 
