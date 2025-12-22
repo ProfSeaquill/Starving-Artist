@@ -7,6 +7,12 @@ import {
   updateActivePlayer
 } from '../state.js';
 
+import {
+  getMinorWorkTemplatesForArtPath,
+  MINOR_WORK_KINDS,
+  PLATFORM_BONUS_AMOUNT
+} from '../minor_works.js';
+
 import { rollD6 } from '../dice.js';
 
 /**
@@ -36,8 +42,12 @@ export function amateurReducer(gameState, action) {
     case 'COMPILE_PORTFOLIO':
       return handleCompilePortfolio(gameState);
 
+    case 'PROGRESS_MINOR_WORK':
+      return handleProgressMinorWork(gameState, action); 
+        
     case 'ATTEMPT_ADVANCE_PRO':
       return handleAttemptAdvancePro(gameState);
+
         
     // PROGRESS_MINOR_WORK is left as a future extension for multi-step works.
     default:
