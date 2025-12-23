@@ -110,7 +110,8 @@ function handleTakeProfDev(gameState) {
 
     updated.flags = {
       ...(updated.flags || {}),
-      lastProfDevCard: card
+      lastProfDevCard: card,
+      lastProfDevTurn: gameState.turn || 1
     };
 
     return updated;
