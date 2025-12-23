@@ -829,6 +829,23 @@ function getCardMoneyRequirementForAction(state, action) {
       return getMoneySpendFromEffects(card?.effects);
     }
 
+    case 'RESOLVE_PROF_DEV_CHOICE': {
+  const card =
+    player.flags?.lastProfDevCard ||
+    player.flags?.pendingProfDevCard ||
+    null;
+
+  if (!card) return 0;
+
+  const choice = String(action.choice || '').toUpperCase();
+  const branch =
+    choice === 'A'
+      ? (card.choiceA || card.attend || card.options?.A)
+      : (card.choiceB || card.skip   || card.options?.B);
+
+  return getMoneySpendFromEffects(branch?.effects);
+}
+
     // Pro card resolves immediately on draw
     case ActionTypes.DRAW_PRO_CARD: {
       const deck = state.proDeck || [];
@@ -995,11 +1012,11 @@ if (cardOverlay && cardOverlayClose) {
 
   if (cardOverlaySkip) {
     cardOverlaySkip.addEventListener('click', () => {
-      if (typeof cardOverlaySecondaryAction === 'function') {
-        cardOverlaySecondaryAction();
-      }
-      hideOverlay();
-    });
+  hideOverlay();
+  if (typeof cardOverlaySecondaryAction === 'function') {
+    cardOverlaySecondaryAction();
+  }
+});
   }
 
   // Click on the dark backdrop (but not the card itself) to close (no action)
