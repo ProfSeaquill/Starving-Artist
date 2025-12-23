@@ -258,15 +258,16 @@ function renderJobSelect(gameState) {
   }
 
   const active = players[gameState.activePlayerIndex];
-  const isDreamer = active && active.stage === STAGE_DREAMER;
+  const canChooseJob =
+  active && (active.stage === STAGE_DREAMER || active.stage === STAGE_AMATEUR);
 
   if (active && active.jobId) {
     // Already employed: keep select on placeholder + disabled.
     select.value = '';
     select.disabled = true;
   } else {
-    // Only enable in Dreamer; elsewhere we keep it disabled.
-    select.disabled = !isDreamer;
+  
+    select.disabled = !canChooseJob;
   }
 }
 
