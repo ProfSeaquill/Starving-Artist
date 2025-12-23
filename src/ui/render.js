@@ -1093,7 +1093,39 @@ if (attemptLeaveHomeBtn) {
     lines.push(`Last job worked: ${flags.lastJobName}`);
   }
   if (flags.lastProCard) {
-    lines.push(`Pro Card: ${flags.lastProCard.name}`);
+    const card = flags.lastProCard;
+
+    let line = `Pro Card: ${card.name}`;
+
+    const fmt = (effectsArr) =>
+      (effectsArr || [])
+        .map((eff) =>
+          eff.type === 'stat'
+            ? `${eff.stat} ${eff.delta >= 0 ? '+' : ''}${eff.delta}`
+            : eff.type === 'masterwork'
+            ? `masterwork ${eff.delta >= 0 ? '+' : ''}${eff.delta}`
+            : ''
+        )
+        .filter(Boolean)
+        .join(', ');
+
+    if (Array.isArray(card.effects) && card.effects.length) {
+      const t = fmt(card.effects);
+      if (t) line += ` (${t})`;
+    } else {
+      const chunks = [];
+      if (Array.isArray(card.successEffects) && card.successEffects.length) {
+        const t = fmt(card.successEffects);
+        if (t) chunks.push(`success: ${t}`);
+      }
+      if (Array.isArray(card.failEffects) && card.failEffects.length) {
+        const t = fmt(card.failEffects);
+        if (t) chunks.push(`fail: ${t}`);
+      }
+      if (chunks.length) line += ` (Possible: ${chunks.join(' | ')})`;
+    }
+
+    lines.push(line);
   }
   if (flags.lastMasterworkTimeSpent !== undefined) {
     lines.push(
