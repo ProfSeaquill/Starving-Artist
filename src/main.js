@@ -766,15 +766,25 @@ function showDiceRollAnimation(finalValue, titleText = '') {
 }
 
 function maybeShowDiceRoll(state, action) {
-  if (action.type !== ActionTypes.ROLL_TIME) return;
-
   const player = state.players[state.activePlayerIndex];
   if (!player || !player.flags) return;
 
-  const roll = player.flags.lastTimeRoll;
-  if (roll === undefined || roll === null) return;
+  // Use a generic label for both, or set "" to hide it entirely.
+  const title = 'Dice Roll'; // <-- or '' to leave unlabeled
 
-  showDiceRollAnimation(roll);
+  if (action.type === ActionTypes.ROLL_TIME) {
+    const roll = player.flags.lastTimeRoll;
+    if (roll === undefined || roll === null) return;
+    showDiceRollAnimation(roll, title);
+    return;
+  }
+
+  if (action.type === ActionTypes.ATTEMPT_LEAVE_HOME) {
+    const roll = player.flags.lastHomeRoll;
+    if (roll === undefined || roll === null) return;
+    showDiceRollAnimation(roll, title);
+    return;
+  }
 }
 
 // --- Dispatch wrapper with diagnostics ---
