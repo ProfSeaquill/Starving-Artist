@@ -535,7 +535,7 @@ function maybeShowCardPopup(state, action) {
     }
 
     case ActionTypes.TAKE_PROF_DEV: {
-  card = flags.lastProfDevCard;
+  card = flags.pendingProfDevCard || flags.lastProfDevCard;
   if (!card) return;
 
   flags.lastProfDevCardTurn = currentTurn;
@@ -546,13 +546,41 @@ function maybeShowCardPopup(state, action) {
   const parts = [];
   if (card.text) parts.push(card.text);
 
-  const effText = formatStatEffects(card.effects || []);
-  if (effText) {
+  const hasChoices = !!(card.choiceA || card.choiceB);
+  if (hasChoices) {
+    const a = card.choiceA || {};
+    const b = card.choiceB || {};
+
+    const aText = (a.text || '').trim() || 'Option A';
+    const bText = (b.text || '').trim() || 'Option B';
+    const aEffText = formatStatEffects(a.effects || []);
+    const bEffText = formatStatEffects(b.effects || []);
+
     if (parts.length) parts.push('');
-    parts.push(`Effects: ${effText}`);
+
+    let lineA = `A) ${aText}`;
+    if (aEffText) lineA += ` (Effects: ${aEffText})`;
+    parts.push(lineA);
+
+    let lineB = `B) ${bText}`;
+    if (bEffText) lineB += ` (Effects: ${bEffText})`;
+    parts.push(lineB);
+
+    overlayConfig = {
+      primaryLabel: aText,
+      secondaryLabel: bText,
+      onPrimary: () => dispatch({ type: ActionTypes.RESOLVE_PROF_DEV_CHOICE, choice: 'A' }),
+      onSecondary: () => dispatch({ type: ActionTypes.RESOLVE_PROF_DEV_CHOICE, choice: 'B' })
+    };
+  } else {
+    const effText = formatStatEffects(card.effects || []);
+    if (effText) {
+      if (parts.length) parts.push('');
+      parts.push(`Effects: ${effText}`);
+    }
   }
 
-  bodyText = parts.join('\n') || '(No rules text yet.)';
+  bodyText = parts.join('\n\n') || '(No rules text yet.)';
   break;
 }
 
@@ -631,6 +659,7 @@ function getCardDrawDenyReason(state, action) {
   return null;
 
     case ActionTypes.TAKE_PROF_DEV:
+  if (flags.pendingProfDevCard) return null; // allow re-open
   if (flags.lastProfDevTurn === currentTurn) {
     return 'You already took Prof Dev this turn.';
   }
