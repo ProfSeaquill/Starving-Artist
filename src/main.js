@@ -755,6 +755,77 @@ function maybeShowDiceRoll(state, action) {
   }
 }
 
+// --- Card affordability guard (stage cards only) -----------------------------
+
+function getMoneySpendFromEffects(effects) {
+  if (!Array.isArray(effects)) return 0;
+
+  let spend = 0;
+  for (const eff of effects) {
+    if (!eff || eff.type !== 'stat' || eff.stat !== 'money') continue;
+    const d = Number(eff.delta);
+    if (!Number.isFinite(d)) continue;
+    if (d < 0) spend += -d; // count required money as a positive “cost”
+  }
+  return spend;
+}
+
+function getCardMoneyRequirementForAction(state, action) {
+  const player = state?.players?.[state.activePlayerIndex];
+  if (!player) return 0;
+
+  switch (action.type) {
+    // Home card resolves immediately on draw
+    case ActionTypes.DRAW_HOME_CARD: {
+      const deck = state.homeDeck || [];
+      const card = deck.length ? deck[deck.length - 1] : null;
+      return getMoneySpendFromEffects(card?.effects);
+    }
+
+    // Social resolves on choice (Attend/Skip)
+    case ActionTypes.ATTEND_SOCIAL_EVENT:
+    case ActionTypes.SKIP_SOCIAL_EVENT: {
+      const card = player.flags?.pendingSocialEventCard;
+      if (!card) return 0;
+
+      const branch =
+        action.type === ActionTypes.ATTEND_SOCIAL_EVENT ? card.attend : card.skip;
+
+      return getMoneySpendFromEffects(branch?.effects);
+    }
+
+    // Prof Dev resolves immediately on take (card draw + apply)
+    case ActionTypes.TAKE_PROF_DEV: {
+      const deck = state.profDevDeck || [];
+      const card = deck.length ? deck[deck.length - 1] : null;
+      return getMoneySpendFromEffects(card?.effects);
+    }
+
+    // Pro card resolves immediately on draw
+    case ActionTypes.DRAW_PRO_CARD: {
+      const deck = state.proDeck || [];
+      const card = deck.length ? deck[deck.length - 1] : null;
+      return getMoneySpendFromEffects(card?.effects);
+    }
+
+    default:
+      return 0; // IMPORTANT: does NOT apply to work / portfolio / other costs
+  }
+}
+
+function getCannotAffordMessage(state, action) {
+  const player = state?.players?.[state.activePlayerIndex];
+  if (!player) return null;
+
+  const required = getCardMoneyRequirementForAction(state, action);
+  if (!required) return null;
+
+  const have = player.money || 0;
+  if (have >= required) return null;
+
+  return `You need $${required} but you only have $${have}.`;
+}
+
 // --- Dispatch wrapper with diagnostics ---
 function dispatch(action) {
   // 0) Card draw guard: block extra draws this turn.
@@ -763,6 +834,14 @@ function dispatch(action) {
     showCardOverlay('No more cards this turn', '', denyReason);
     return;
   }
+
+    // 0.5) Card affordability guard (stage cards only)
+  const cannotAfford = getCannotAffordMessage(gameState, action);
+  if (cannotAfford) {
+    showCardOverlay("You can't afford this!", '', cannotAfford);
+    return;
+  }
+
 
   console.log('[dispatch] about to apply action:', action);
   let nextState;
