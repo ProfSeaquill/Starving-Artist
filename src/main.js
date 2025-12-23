@@ -534,6 +534,28 @@ function maybeShowCardPopup(state, action) {
       break;
     }
 
+    case ActionTypes.TAKE_PROF_DEV: {
+  card = flags.lastProfDevCard;
+  if (!card) return;
+
+  flags.lastProfDevCardTurn = currentTurn;
+
+  label = 'Prof Dev';
+  cardName = card.name || '(Prof Dev Card)';
+
+  const parts = [];
+  if (card.text) parts.push(card.text);
+
+  const effText = formatStatEffects(card.effects || []);
+  if (effText) {
+    if (parts.length) parts.push('');
+    parts.push(`Effects: ${effText}`);
+  }
+
+  bodyText = parts.join('\n\n') || '(No rules text yet.)';
+  break;
+}
+
     case ActionTypes.DRAW_PRO_CARD: {
       card = flags.lastProCard;
       if (!card) return;
