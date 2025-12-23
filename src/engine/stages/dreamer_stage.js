@@ -445,12 +445,6 @@ function applySocialChoiceEffects(player, card, choice) {
     return player;
   }
 
-  if (eff.type === 'time') {
-  const delta = eff.delta || 0;
-  const nextTime = (next.timeThisTurn || 0) + delta;
-  next.timeThisTurn = nextTime < 0 ? 0 : nextTime;
-}
-
   let next = { ...player };
 
   for (const eff of branch.effects) {
@@ -461,25 +455,21 @@ function applySocialChoiceEffects(player, card, choice) {
       const delta = eff.delta || 0;
 
       switch (stat) {
-        case 'money':
-          next.money = (next.money || 0) + delta;
-          break;
-        case 'food':
-          next.food = (next.food || 0) + delta;
-          break;
-        case 'inspiration':
-          next.inspiration = (next.inspiration || 0) + delta;
-          break;
-        case 'craft':
-          next.craft = (next.craft || 0) + delta;
-          break;
-        default:
-          // Unknown stat; ignore for now.
-          break;
+        case 'money':        next.money       = (next.money || 0) + delta; break;
+        case 'food':         next.food        = (next.food || 0) + delta; break;
+        case 'inspiration':  next.inspiration = (next.inspiration || 0) + delta; break;
+        case 'craft':        next.craft       = (next.craft || 0) + delta; break;
+        default: break;
       }
+      continue;
     }
 
-    // Future: handle other effect types (extra draws, rerolls, etc.).
+    if (eff.type === 'time') {
+      const delta = eff.delta || 0;
+      const nextTime = (next.timeThisTurn || 0) + delta;
+      next.timeThisTurn = nextTime < 0 ? 0 : nextTime;
+      continue;
+    }
   }
 
   return next;
