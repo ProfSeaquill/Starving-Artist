@@ -417,6 +417,11 @@ function formatStatEffects(effects) {
   return parts.join(', ');
 }
 
+function labelWithEffects(baseLabel, effects) {
+  const effText = formatStatEffects(effects || []);
+  return effText ? `${baseLabel} (${effText})` : baseLabel;
+}
+
 function maybeShowCardPopup(state, action) {
   console.log('[popup] called with action:', action.type);
 
@@ -492,45 +497,23 @@ function maybeShowCardPopup(state, action) {
         parts.push(card.text);
       }
 
-      // Attend line: include rules text and effects
-      if (attendText || attendEffText) {
-        let line = 'Attend';
-        if (attendText) {
-          line += ': ' + attendText;
-        }
-        if (attendEffText) {
-          // add effects in parentheses at the end
-          line += attendText ? ' ' : ': ';
-          line += `(Effects: ${attendEffText})`;
-        }
-        parts.push(line);
-      }
+      // Attend line (no stat effects here)
+if (attendText) parts.push(`Attend: ${attendText}`);
+else parts.push('Attend');
 
-      // Skip line: include rules text and effects
-      if (skipText || skipEffText) {
-        let line = 'Skip';
-        if (skipText) {
-          line += ': ' + skipText;
-        }
-        if (skipEffText) {
-          line += skipText ? ' ' : ': ';
-          line += `(Effects: ${skipEffText})`;
-        }
-        parts.push(line);
-      }
+// Skip line (no stat effects here)
+if (skipText) parts.push(`Skip: ${skipText}`);
+else parts.push('Skip');
+
 
       bodyText = parts.join('\n\n') || '(No rules text yet.)';
 
       overlayConfig = {
-        primaryLabel: 'Attend',
-        secondaryLabel: 'Skip',
-        onPrimary: () => {
-          dispatch({ type: ActionTypes.ATTEND_SOCIAL_EVENT });
-        },
-        onSecondary: () => {
-          dispatch({ type: ActionTypes.SKIP_SOCIAL_EVENT });
-        }
-      };
+  primaryLabel: labelWithEffects('Attend', card.attend?.effects),
+  secondaryLabel: labelWithEffects('Skip', card.skip?.effects),
+  onPrimary: () => dispatch({ type: ActionTypes.ATTEND_SOCIAL_EVENT }),
+  onSecondary: () => dispatch({ type: ActionTypes.SKIP_SOCIAL_EVENT })
+};
       break;
     }
 
@@ -567,8 +550,8 @@ function maybeShowCardPopup(state, action) {
     parts.push(lineB);
 
     overlayConfig = {
-      primaryLabel: aText,
-      secondaryLabel: bText,
+      primaryLabel: labelWithEffects(aText, a.effects),
+      secondaryLabel: labelWithEffects(bText, b.effects),
       onPrimary: () => dispatch({ type: ActionTypes.RESOLVE_PROF_DEV_CHOICE, choice: 'A' }),
       onSecondary: () => dispatch({ type: ActionTypes.RESOLVE_PROF_DEV_CHOICE, choice: 'B' })
     };
