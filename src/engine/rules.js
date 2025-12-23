@@ -58,6 +58,7 @@ export function applyAction(gameState, action) {
 
         // Amateur
     case ActionTypes.TAKE_PROF_DEV:
+    case ActionTypes.RESOLVE_PROF_DEV_CHOICE:
     case ActionTypes.START_MINOR_WORK:
     case ActionTypes.COMPILE_PORTFOLIO:
     case ActionTypes.PROGRESS_MINOR_WORK:
