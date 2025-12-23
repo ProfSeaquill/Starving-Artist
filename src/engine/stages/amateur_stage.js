@@ -78,6 +78,17 @@ function handleTakeProfDev(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
+    // Must have enough time to take Prof Dev (default cost is 2)
+  const available = player.timeThisTurn || 0;
+
+  // Peek the top card to know the true cost without drawing it
+  const top = gameState.profDevDeck && gameState.profDevDeck.length
+    ? gameState.profDevDeck[gameState.profDevDeck.length - 1]
+    : null;
+
+  const cost = top && Number.isFinite(top.timeCost) ? top.timeCost : 2;
+  if (available < cost) return gameState;
+
   const { nextState, card } = drawProfDevCard(gameState);
   if (!card) return gameState;
 
