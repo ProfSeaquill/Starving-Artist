@@ -9,6 +9,12 @@ import {
   STATUS_LOST,
   JOBS
 } from '../engine/state.js';
+import {
+  getMinorWorkTemplatesForArtPath,
+  MINOR_WORK_KINDS,
+  formatStatEffects
+} from '../engine/minor_works.js';
+
 
 // Simple helper for DOM lookups by id
 const $ = (selector) => {
@@ -550,6 +556,68 @@ function updateActionButtonLabels(gameState, player) {
       setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', costLine);
     } else {
       setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', '');
+    }
+  }
+
+    // --- Minor Works (Amateur): show the real template names + stat benefits ---
+
+  const mwQuickBtn = $('#startMinorQuickBtn');
+  const mwCareerBtn = $('#startMinorCareerBtn');
+  const mwSpotlightBtn = $('#startMinorSpotlightBtn');
+  const mwProgressBtn = $('#progressMinorWorkBtn');
+
+  const templates = getMinorWorkTemplatesForArtPath(player.artPath) || [];
+  const byKind = new Map(templates.map((t) => [t.kind, t]));
+
+  function benefitLine(t) {
+    if (!t) return '';
+    const parts = [];
+
+    const onComplete = formatStatEffects(t.onCompleteEffects || []);
+    if (onComplete) parts.push(`Complete: ${onComplete}`);
+
+    const perTurn = formatStatEffects(t.effectsPerTurn || []);
+    if (perTurn) parts.push(`Per turn: ${perTurn}`);
+
+    const target = Number.isFinite(t.progressTarget) ? t.progressTarget : null;
+    if (target) parts.push(`Steps: ${target}`);
+
+    return parts.join(' • ');
+  }
+
+  const tQuick = byKind.get(MINOR_WORK_KINDS.QUICK);
+  const tCareer = byKind.get(MINOR_WORK_KINDS.CAREER);
+  const tSpot = byKind.get(MINOR_WORK_KINDS.SPOTLIGHT);
+
+  if (mwQuickBtn) {
+    const label = tQuick ? `Start Quick: ${tQuick.name}` : 'Start Quick Minor Work';
+    setButtonLabelWithCost(mwQuickBtn, label, benefitLine(tQuick));
+  }
+
+  if (mwCareerBtn) {
+    const label = tCareer ? `Start Career: ${tCareer.name}` : 'Start Career Minor Work';
+    setButtonLabelWithCost(mwCareerBtn, label, benefitLine(tCareer));
+  }
+
+  if (mwSpotlightBtn) {
+    const label = tSpot ? `Start Spotlight: ${tSpot.name}` : 'Start Spotlight Minor Work';
+    setButtonLabelWithCost(mwSpotlightBtn, label, benefitLine(tSpot));
+  }
+
+  if (mwProgressBtn) {
+    const workId = player.minorWorkInProgressId;
+    if (!workId) {
+      setButtonLabelWithCost(mwProgressBtn, 'Work on Minor Work', '');
+    } else {
+      const t = templates.find((x) => x && x.id === workId);
+      const target = t && Number.isFinite(t.progressTarget) ? t.progressTarget : 1;
+      const cur = Number.isFinite(player.minorWorkProgressById?.[workId])
+        ? player.minorWorkProgressById[workId]
+        : 0;
+
+      const main = t ? `Work: ${t.name}` : 'Work on Minor Work';
+      const sub = `Spend 1 Time → ${cur + 1}/${target}`;
+      setButtonLabelWithCost(mwProgressBtn, main, sub);
     }
   }
 
