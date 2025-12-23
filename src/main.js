@@ -436,6 +436,23 @@ function maybeShowCardPopup(state, action) {
 
   const currentTurn = state.turn || 1;
 
+  // --- Non-card popup: Pro maintenance failure ---
+  if (action.type === ActionTypes.PRO_MAINTENANCE_CHECK) {
+    // Show only on failure, and only once per turn.
+    if (flags.lastProMaintenanceSuccess === false &&
+        flags.lastProMaintenanceFailPopupTurn !== currentTurn) {
+      flags.lastProMaintenanceFailPopupTurn = currentTurn;
+
+      showCardOverlay(
+        'Maintenance Check',
+        "You've been canceled!",
+        "The paparazzi photographed you littering. Return to Amateur."
+      );
+    }
+    return;
+  }
+
+
   let card = null;
   let label = '';
   let bodyText = '';
