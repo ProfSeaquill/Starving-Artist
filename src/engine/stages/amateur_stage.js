@@ -134,15 +134,42 @@ function handleStartMinorWork(gameState, action) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  const workId = action.workId;
+  const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
+  const completed = Array.isArray(player.minorWorks) ? player.minorWorks : [];
+  if (completed.length >= maxMinor) return gameState;
+
+  // ✅ Path 1: inline payload (your current UI button)
+  const inline = action && action.minorWork;
+  if (inline && (inline.id || inline.name)) {
+    const id = String(inline.id || '').trim();
+    const name = String(inline.name || '').trim();
+    if (!id || !name) return gameState;
+
+    // Treat this as an instant “completed” minor work (since you don’t have a progress button yet)
+    return updateActivePlayer(gameState, (p) => ({
+      ...p,
+      minorWorks: [
+        ...(Array.isArray(p.minorWorks) ? p.minorWorks : []),
+        {
+          id,
+          name,
+          kind: inline.kind || null,
+          effectsPerTurn: Array.isArray(inline.effectsPerTurn) ? inline.effectsPerTurn.slice() : []
+        }
+      ],
+      flags: {
+        ...(p.flags || {}),
+        lastMinorWorkStartedId: id,
+        lastMinorWorkStartedName: name
+      }
+    }));
+  }
+
+  // ✅ Path 2: template-based flow (workId), kept for future UI
+  const workId = action && action.workId;
   if (!workId) return gameState;
 
-  // Only one in progress at a time
   if (player.minorWorkInProgressId) return gameState;
-
-  const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
-  const completedCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
-  if (completedCount >= maxMinor) return gameState;
 
   const template = findTemplateForWorkId(player.artPath, workId);
   if (!template) return gameState;
@@ -162,6 +189,7 @@ function handleStartMinorWork(gameState, action) {
     };
   });
 }
+
 
 
 
