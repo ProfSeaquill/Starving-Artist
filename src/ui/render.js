@@ -331,7 +331,7 @@ function renderPromotionRules(gameState) {
   const homeEl = $('#homePromotion');
   if (homeEl) {
     const seq = gameState.config?.home?.rollSequence || [];
-    const parts = seq.map((v) => `>${v}`);
+    const parts = seq.map((v) => `≥${v}`);
     if (seq.length) {
       homeEl.textContent = `Home → Dreamer: succeed ${seq.length} rolls (${parts.join(', ')}).`;
     } else {
