@@ -8,6 +8,8 @@ import {
   STAGE_PRO,
   JOBS
 } from '../engine/state.js';
+import { getMinorWorkTemplatesForArtPath, MINOR_WORK_KINDS } from '../engine/minor_works.js';
+
 
 // Simple DOM helper: accepts "id" or "#id"
 const $ = (selector) => {
@@ -414,35 +416,56 @@ if (stage !== STAGE_DREAMER && stage !== STAGE_AMATEUR) return;
 
     dispatch({ type: ActionTypes.GO_TO_WORK });
   });
+
+    
   // --- Amateur ---
+  function pickMinorWorkId(player, kind) {
+  const templates = getMinorWorkTemplatesForArtPath(player.artPath) || [];
+  const t = templates.find((x) => x && x.kind === kind);
+  return t ? t.id : null;
+}
+    
   $('#takeProfDevBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
     if (stage !== STAGE_AMATEUR) return;
     dispatch({ type: ActionTypes.TAKE_PROF_DEV });
   });
 
-  // Simple test button: start a generic minor work
-    $('#startMinorWorkBtn')?.addEventListener('click', () => {
-    const { stage, player } = getPlayerAndStage();
-    // Minor Works can only be *started* while Amateur.
-    if (stage !== STAGE_AMATEUR) return;
-    if (!player) return;
+    $('#startMinorQuickBtn')?.addEventListener('click', () => {
+  const { stage, player } = getPlayerAndStage();
+  if (stage !== STAGE_AMATEUR || !player) return;
 
-    const idx = (player.minorWorks?.length || 0) + 1;
-    const id = `mw_test_${idx}`;
-    const name = `Test Minor Work ${idx}`;
+  const workId = pickMinorWorkId(player, MINOR_WORK_KINDS.QUICK);
+  if (!workId) return;
 
-    dispatch({
-      type: ActionTypes.START_MINOR_WORK,
-      minorWork: {
-        id,
-        name,
-        effectsPerTurn: [
-          { type: 'stat', stat: 'inspiration', delta: 1 }
-        ]
-      }
-    });
-  });
+  dispatch({ type: ActionTypes.START_MINOR_WORK, workId });
+});
+
+$('#startMinorCareerBtn')?.addEventListener('click', () => {
+  const { stage, player } = getPlayerAndStage();
+  if (stage !== STAGE_AMATEUR || !player) return;
+
+  const workId = pickMinorWorkId(player, MINOR_WORK_KINDS.CAREER);
+  if (!workId) return;
+
+  dispatch({ type: ActionTypes.START_MINOR_WORK, workId });
+});
+
+$('#startMinorSpotlightBtn')?.addEventListener('click', () => {
+  const { stage, player } = getPlayerAndStage();
+  if (stage !== STAGE_AMATEUR || !player) return;
+
+  const workId = pickMinorWorkId(player, MINOR_WORK_KINDS.SPOTLIGHT);
+  if (!workId) return;
+
+  dispatch({ type: ActionTypes.START_MINOR_WORK, workId });
+});
+
+$('#progressMinorWorkBtn')?.addEventListener('click', () => {
+  const { stage } = getPlayerAndStage();
+  if (stage !== STAGE_AMATEUR) return;
+  dispatch({ type: ActionTypes.PROGRESS_MINOR_WORK });
+});
 
   $('#compilePortfolioBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
