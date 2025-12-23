@@ -333,8 +333,9 @@ if (!endBtn) {
     const { state, stage, player } = getPlayerAndStage();
     if (!state || !player) return;
 
-    // You can only *pick* a job while Dreamer.
-    if (stage !== STAGE_DREAMER) return;
+    // Allow picking a job in Dreamer OR Amateur.
+if (stage !== STAGE_DREAMER && stage !== STAGE_AMATEUR) return;
+
 
     // If we already have a job, this button acts as "Quit Job"
     if (player.jobId) {
