@@ -1166,11 +1166,6 @@ button.guided-btn {
         <div class="stage-actions stage-dreamer-only">
           <div class="label" style="margin-top:8px;">Dreamer</div>
           <div class="controls-grid">
-            <select id="jobSelect">
-              <option value="">Choose a Job…</option>
-            </select>
-            <button id="chooseJobBtn" type="button">Choose Job</button>
-            <button id="goToWorkBtn" type="button">Go To Work</button>
             <button id="attemptAdvanceDreamerBtn" type="button">Try to Advance</button>
           </div>
         </div>
@@ -1196,6 +1191,18 @@ button.guided-btn {
           </div>
         </div>
       </section>
+
+      <!-- Job actions (Dreamer / Amateur / Pro) -->
+      <select id="jobSelect">
+    <option value="">Choose a Job…</option>
+   </select>
+        <button id="chooseJobBtn" type="button">Choose Job</button>
+      <div class="stage-actions stage-job-any">
+  <div class="label" style="margin-top:8px;">Work</div>
+  <div class="controls-grid">
+    <button id="goToWorkBtn" type="button">Go To Work</button>
+  </div>
+</div>
 
       <!-- Dev / Debug panel (entire block is toggleable) -->
       <section id="debugPanel" class="panel">
