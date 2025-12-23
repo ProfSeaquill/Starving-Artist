@@ -121,36 +121,27 @@ function convertSocialRow(row) {
   }
 
   const id = rawId.trim();
-  const name =
-    (row.title || row.name || row.card_name || id).trim();
+  const name = (row.title || row.name || row.card_name || id).trim();
 
-  // Overall flavor / description of the event
-  const text =
-    (row.flavor || row.text || '').trim();
+  const text = (row.flavor || row.text || '').trim();
 
-  const timeCost =
-    toNumber(row.time_cost ?? row.timeCost) ?? 1;
+  const timeCost = toNumber(row.time_cost ?? row.timeCost) ?? 1;
 
-  // - blocked_paths: these art paths may NOT draw the card
+  // + allowed_paths: ONLY these art paths may draw the card (optional)
+  const allowedPaths = splitList(
+    row.allowed_paths ?? row.allowedPaths ?? row.paths_allowed ?? row.pathsAllowed
+  );
+
+  // - blocked_paths: these art paths may NOT draw the card (optional)
   const blockedPaths = splitList(
     row.blocked_paths ?? row.blockedPaths ?? row.paths_blocked ?? row.pathsBlocked
   );
 
-  // --- Map CSV choiceA_* / choiceB_* → attend / skip branches ---
-
-  // Choice A → Attend
   const attendEffects = buildStatEffects(row, 'choiceA_');
-  const attend = {
-    text: (row.choiceA_label || '').trim(),
-    effects: attendEffects
-  };
+  const attend = { text: (row.choiceA_label || '').trim(), effects: attendEffects };
 
-  // Choice B → Skip
   const skipEffects = buildStatEffects(row, 'choiceB_');
-  const skip = {
-    text: (row.choiceB_label || '').trim(),
-    effects: skipEffects
-  };
+  const skip = { text: (row.choiceB_label || '').trim(), effects: skipEffects };
 
   const card = { id, name, text, timeCost, attend, skip };
 
@@ -159,6 +150,7 @@ function convertSocialRow(row) {
 
   return card;
 }
+
 
 
 
