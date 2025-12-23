@@ -82,10 +82,10 @@ function handleChooseJob(gameState, action) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  // You can only *pick* a job while Dreamer.
-  if (player.stage !== STAGE_DREAMER) {
-    return gameState;
-  }
+  if (player.stage !== STAGE_DREAMER && player.stage !== STAGE_AMATEUR) {
+  return gameState;
+}
+
 
   // Already has a job: cannot choose again.
   if (player.jobId) {
