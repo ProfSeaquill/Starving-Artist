@@ -969,7 +969,7 @@ if (attemptLeaveHomeBtn) {
 
   if (flags.lastHomeRoll !== undefined) {
     lines.push(
-      `Home roll: ${flags.lastHomeRoll} vs >${
+      `Home roll: ${flags.lastHomeRoll} vs ≥${
         flags.lastHomeRollRequired
       } — ${flags.lastHomeRollSuccess ? 'success' : 'fail'}`
     );
