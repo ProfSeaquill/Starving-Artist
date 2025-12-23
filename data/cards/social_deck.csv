@@ -1,5 +1,5 @@
 id,title,flavor,time_cost,choiceA_label,choiceA_gain_food,choiceA_gain_inspiration,choiceA_gain_craft,choiceA_gain_money,choiceA_loss_food,choiceA_loss_inspiration,choiceA_loss_craft,choiceA_loss_money,choiceB_label,choiceB_gain_food,choiceB_gain_inspiration,choiceB_gain_craft,choiceB_gain_money,choiceB_loss_food,choiceB_loss_inspiration,choiceB_loss_craft,choiceB_loss_money,tags,blocked_paths
-S01,Open Mic Night,You sign up for the open mic and immediately regret every life choice. Then the applause happens.,1,Perform a piece,0,2,0,1,0,0,0,0,Stay home (practice),0,0,1,0,0,0,0,0,performance; stage-fright; networking,painter
+S01,Open Mic Night,You sign up for the open mic and immediately regret every life choice. Then the applause happens.,1,Perform a piece,0,2,0,1,0,0,0,0,Stay home (practice),0,0,1,0,0,0,0,0,performance; stage-fright; networking,painter;author
 S02,Gallery Opening With Free Cheese,You pretend to understand the sculpture. The cheese understands you.,1,Mingle aggressively,0,1,0,2,0,0,0,0,Grab cheese and vanish,1,0,0,0,0,0,0,0,art; networking; snacks,
 S03,"House Party: Too Loud, Too Kind",Someone calls your art “a vibe” and you decide to live forever.,1,Go and be social,0,2,0,0,0,1,0,0,Skip (quiet recharge),0,1,0,0,0,0,0,0,party; friends; recharge,
 S04,Critique Circle (Gentle-ish),They say “interesting choice” the way people say “interesting smell.”,1,Get critiqued,0,1,2,0,0,1,0,0,Skip (protect your peace),0,0,1,0,0,0,0,0,critique; craft; ego,painter;filmmaker
@@ -23,3 +23,4 @@ S21,Farmers Market Busking,You perform next to a guy selling honey. The honey gu
 S22,Free Wine Lecture,"It’s 40% learning, 60% sipping, 100% pretending you’re an adult.",1,Stay and take notes,0,1,1,0,0,0,0,1,Skip (leave before you overshare),0,1,0,0,0,0,0,0,lecture; wine; learning,
 S23,After-Show Hang,You stand in a circle outside a venue until someone says “we should collab.”,1,Hang and exchange contacts,0,1,0,1,0,0,0,0,Skip (go home while you’re winning),0,0,0,0,0,0,0,0,networking; nightlife; collab,
 S24,Last-Minute Cancellation Blessing,"Plans get cancelled and you gain a rare resource: time. Also, pajamas.",1,Use the time to create,0,1,2,0,0,0,0,0,Use the time to rest,0,2,0,0,0,0,0,0,cancelled; self-care; productivity,
+
