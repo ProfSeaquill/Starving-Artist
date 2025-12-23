@@ -714,11 +714,18 @@ function getCardDrawDenyReason(state, action) {
   }
 }
 
-function showDiceRollAnimation(finalValue) {
+function showDiceRollAnimation(finalValue, titleText = '') {
   const overlay = document.getElementById('diceOverlay');
   const face = document.getElementById('diceFace');
   const okBtn = document.getElementById('diceOkButton');
+  const titleEl = document.getElementById('diceOverlayTitle');
   if (!overlay || !face || !okBtn) return;
+
+  // Optional title (set to "" to hide)
+  if (titleEl) {
+    titleEl.textContent = titleText || '';
+    titleEl.style.display = titleText ? '' : 'none';
+  }
 
   let closed = false;
 
