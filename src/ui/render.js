@@ -422,6 +422,11 @@ function updateStagePanelVisibility(stage) {
     });
   }
 
+  // Job actions should stay available once you have a job (Dreamer+)
+document.querySelectorAll('.stage-job-any').forEach((el) => {
+  el.style.display = stage === STAGE_HOME ? 'none' : '';
+});
+
   // Job & Culture only matters once you're Amateur or Pro
   const jobSection = document.querySelector('.player-job-section');
   if (jobSection) {
