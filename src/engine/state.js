@@ -80,7 +80,7 @@ export const JOBS = [
     moneyDelta: -1,
     inspirationDelta: 0,
     foodDelta: 1,
-    timeDelta: 2
+    timeDelta: 1
   },
   {
     id: 'job_drug_dealer',
