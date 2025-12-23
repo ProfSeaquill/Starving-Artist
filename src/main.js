@@ -987,11 +987,11 @@ if (cardOverlay && cardOverlayClose) {
   };
 
   cardOverlayClose.addEventListener('click', () => {
-    if (typeof cardOverlayPrimaryAction === 'function') {
-      cardOverlayPrimaryAction();
-    }
-    hideOverlay();
-  });
+  hideOverlay(); // hide the *current* overlay first
+  if (typeof cardOverlayPrimaryAction === 'function') {
+    cardOverlayPrimaryAction(); // this can open a new overlay (e.g., "can't afford")
+  }
+});
 
   if (cardOverlaySkip) {
     cardOverlaySkip.addEventListener('click', () => {
