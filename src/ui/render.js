@@ -674,6 +674,33 @@ export function render(gameState) {
 
   const timeValue = player.timeThisTurn || 0;
 
+    // --- Minor Works buttons: enable/disable rules ---
+
+  const mwQuickBtn = $('#startMinorQuickBtn');
+  const mwCareerBtn = $('#startMinorCareerBtn');
+  const mwSpotlightBtn = $('#startMinorSpotlightBtn');
+  const mwProgressBtn = $('#progressMinorWorkBtn');
+
+  const maxMinor = gameState.config?.amateur?.maxMinorWorks ?? 3;
+  const completedCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
+
+  const canStartMinor =
+    player.stage === STAGE_AMATEUR &&
+    !player.minorWorkInProgressId &&
+    completedCount < maxMinor;
+
+  if (mwQuickBtn) mwQuickBtn.disabled = !canStartMinor;
+  if (mwCareerBtn) mwCareerBtn.disabled = !canStartMinor;
+  if (mwSpotlightBtn) mwSpotlightBtn.disabled = !canStartMinor;
+
+  const canProgressMinor =
+    player.stage === STAGE_AMATEUR &&
+    !!player.minorWorkInProgressId &&
+    timeValue > 0;
+
+  if (mwProgressBtn) mwProgressBtn.disabled = !canProgressMinor;
+
+
   // Update numeric Time text
   const statTimeEl = $('#statTime');
   if (statTimeEl) {
