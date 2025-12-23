@@ -129,7 +129,7 @@ function handleAttemptLeaveHome(gameState) {
 
   // Design: sequence entry is the "must roll > value".
   // e.g. 4 means "roll > 4" → 5 or 6 on a d6.
-  const success = roll > required;
+  const success = roll >= required;
 
   const nextGameState = updateActivePlayer(gameState, (p) => {
     let next = { ...p };
