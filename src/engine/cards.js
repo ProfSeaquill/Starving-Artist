@@ -213,41 +213,58 @@ function convertProfDevRow(row) {
   }
 
   const id = rawId.trim();
-  const name =
-    (row.title || row.name || row.card_name || id).trim();
-  const text =
-    (row.flavor || row.text || '').trim();
+  const name = (row.title || row.name || row.card_name || id).trim();
+  const text = (row.flavor || row.text || '').trim();
+  const timeCost = toNumber(row.time_cost ?? row.timeCost) ?? 2;
 
-  const timeCost =
-    toNumber(row.time_cost ?? row.timeCost) ?? 1;
+  const allowedPaths = splitList(
+    row.allowed_paths ?? row.allowedPaths ?? row.paths_allowed ?? row.pathsAllowed
+  );
 
-  const effects = buildStatEffects(row, '');
+  const blockedPaths = splitList(
+    row.blocked_paths ?? row.blockedPaths ?? row.paths_blocked ?? row.pathsBlocked
+  );
 
-  // Optional Minor Work
-  const mwId =
-    (row.minorWork_id || row.minorwork_id || '').trim();
-  const mwName =
-    (row.minorWork_name || row.minorwork_name || '').trim();
+  const hasChoiceA = !!(row.choiceA_label && String(row.choiceA_label).trim());
+  const hasChoiceB = !!(row.choiceB_label && String(row.choiceB_label).trim());
 
-  let minorWork = undefined;
-  if (mwId || mwName) {
-    const mwEffects = buildStatEffects(row, 'minorWork_');
-    minorWork = {
-      id: mwId || `${id}_mw`,
-      name: mwName || 'Minor Work',
-      effectsPerTurn: mwEffects
-    };
+  let effects = [];
+  let choiceA = null;
+  let choiceB = null;
+
+  if (hasChoiceA || hasChoiceB) {
+    const aEffects = buildStatEffects(row, 'choiceA_');
+    const bEffects = buildStatEffects(row, 'choiceB_');
+
+    choiceA = { text: (row.choiceA_label || '').trim(), effects: aEffects };
+    choiceB = { text: (row.choiceB_label || '').trim(), effects: bEffects };
+  } else {
+    effects = buildStatEffects(row, '');
   }
 
-  return {
+  const card = {
     id,
     name,
     text,
     timeCost,
-    effects,
-    ...(minorWork ? { minorWork } : {})
+    ...(choiceA ? { choiceA } : {}),
+    ...(choiceB ? { choiceB } : {}),
+    ...(effects && effects.length ? { effects } : {})
   };
+
+  if (allowedPaths && allowedPaths.length) card.allowedPaths = allowedPaths;
+  if (blockedPaths && blockedPaths.length) card.blockedPaths = blockedPaths;
+
+  if (row.tags && String(row.tags).trim()) {
+    card.tags = String(row.tags)
+      .split(/[;,]/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+  }
+
+  return card;
 }
+
 
 /**
  * PRO DECK
