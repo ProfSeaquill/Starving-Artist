@@ -321,42 +321,39 @@ function convertProRow(row) {
     return null;
   }
 
-  const id = rawId.trim();
-  const name =
-    (row.title || row.name || row.card_name || id).trim();
-  const text =
-    (row.flavor || row.text || '').trim();
+  const id = String(rawId).trim();
+  const name = String(row.title || row.name || row.card_name || id).trim();
+  const text = String(row.flavor || row.text || '').trim();
 
-  const timeCost =
-    toNumber(row.time_cost ?? row.timeCost) ?? 3;
+  const timeCost = toNumber(row.time_cost ?? row.timeCost) ?? 3;
 
+  // Support BOTH formats:
+  //  1) "direct" effects: gain_money / loss_money (legacy/simple)
+  //  2) "outcome" effects: success_gain_money / fail_gain_money (your current pro_deck.csv)
   const effects = buildStatEffects(row, '');
 
-  // Masterwork delta can be in several places
-  const mwGain = toNumber(row.gain_masterwork);
-  const mwLoss = toNumber(row.loss_masterwork);
-  const mwDelta =
-    toNumber(row.masterwork_delta) ??
-    (mwGain != null
-      ? mwGain
-      : mwLoss != null
-      ? -mwLoss
-      : null);
+  const successEffects = buildStatEffects(row, 'success_');
+  const failEffects = buildStatEffects(row, 'fail_');
 
-  if (mwDelta != null && mwDelta !== 0) {
-    effects.push({
-      type: 'masterwork',
-      delta: mwDelta
-    });
-  }
+  const card = { id, name, text, timeCost, effects };
 
-  return {
-    id,
-    name,
-    text,
-    timeCost,
-    effects
-  };
+  if (successEffects.length) card.successEffects = successEffects;
+  if (failEffects.length) card.failEffects = failEffects;
+
+  const minigameType =
+    (row.minigame_type || row.minigameType || '').trim();
+  if (minigameType) card.minigameType = minigameType;
+
+  const participants = (row.participants || '').trim();
+  if (participants) card.participants = participants;
+
+  const notes = (row.notes || '').trim();
+  if (notes) card.notes = notes;
+
+  const tags = splitList(row.tags);
+  if (tags && tags.length) card.tags = tags;
+
+  return card;
 }
 
 /* ------------------------------------------------------------------ */
