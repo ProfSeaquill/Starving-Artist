@@ -552,9 +552,10 @@ function maybeShowCardPopup(state, action) {
     parts.push(`Effects: ${effText}`);
   }
 
-  bodyText = parts.join('\n\n') || '(No rules text yet.)';
+  bodyText = parts.join('\n') || '(No rules text yet.)';
   break;
 }
+
 
     case ActionTypes.DRAW_PRO_CARD: {
       card = flags.lastProCard;
