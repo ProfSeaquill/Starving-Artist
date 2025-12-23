@@ -629,6 +629,11 @@ function getCardDrawDenyReason(state, action) {
   }
   return null;
 
+    case ActionTypes.TAKE_PROF_DEV:
+  if (flags.lastProfDevTurn === currentTurn) {
+    return 'You already took Prof Dev this turn.';
+  }
+  return null;
 
     case ActionTypes.DRAW_PRO_CARD:
       if (flags.lastProCardTurn === currentTurn) {
