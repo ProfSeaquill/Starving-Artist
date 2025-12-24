@@ -436,23 +436,28 @@ function formatStatEffects(effects) {
   if (!Array.isArray(effects)) return '';
 
   const parts = effects
-    .filter(
-      (eff) =>
-        eff &&
-        eff.type === 'stat' &&
-        typeof eff.delta === 'number' &&
-        eff.delta !== 0
-    )
+    .filter((eff) => eff && typeof eff.delta === 'number' && eff.delta !== 0)
     .map((eff) => {
-      const label = eff.stat
-        ? eff.stat.charAt(0).toUpperCase() + eff.stat.slice(1)
-        : 'Stat';
       const sign = eff.delta >= 0 ? '+' : '';
-      return `${label} ${sign}${eff.delta}`;
-    });
+      if (eff.type === 'stat') {
+        const label = eff.stat
+          ? eff.stat.charAt(0).toUpperCase() + eff.stat.slice(1)
+          : 'Stat';
+        return `${label} ${sign}${eff.delta}`;
+      }
+      if (eff.type === 'masterwork') {
+        return `Masterwork ${sign}${eff.delta}`;
+      }
+      if (eff.type === 'time') {
+        return `Time ${sign}${eff.delta}`;
+      }
+      return '';
+    })
+    .filter(Boolean);
 
   return parts.join(', ');
 }
+
 
 function labelWithEffects(baseLabel, effects) {
   const effText = formatStatEffects(effects || []);
@@ -481,7 +486,7 @@ function maybeShowCardPopup(state, action) {
       flags.lastProMaintenanceFailPopupTurn = currentTurn;
 
       showCardOverlay(
-        'Maintenance Check',
+        'Fame Check',
         "You've been canceled!",
         "The paparazzi photographed you littering. Return to Amateur."
       );
@@ -647,6 +652,24 @@ if (card.minigameType || card.participants) {
   lines.push(`Minigame: ${pretty}${who}`);
 }
 
+      const hasOutcome =
+  (Array.isArray(card.successEffects) && card.successEffects.length) ||
+  (Array.isArray(card.failEffects) && card.failEffects.length);
+
+if (hasOutcome) {
+  // Optional little hint in body
+  lines.push('Choose the outcome:');
+
+  overlayConfig = {
+    primaryLabel: labelWithEffects('Success', card.successEffects),
+    secondaryLabel: labelWithEffects('Fail', card.failEffects),
+    onPrimary: () =>
+      dispatch({ type: ActionTypes.RESOLVE_PRO_CARD_CHOICE, outcome: 'success' }),
+    onSecondary: () =>
+      dispatch({ type: ActionTypes.RESOLVE_PRO_CARD_CHOICE, outcome: 'fail' })
+  };
+}
+
 if (card.notes) {
   lines.push(`How it works: ${card.notes}`);
 }
@@ -749,6 +772,7 @@ function getCardDrawDenyReason(state, action) {
   return null;
 
     case ActionTypes.DRAW_PRO_CARD:
+      if (flags.pendingProCard) return null; // allow re-open
       if (flags.lastProCardTurn === currentTurn) {
         return 'You already drew a Pro card this turn.';
       }
