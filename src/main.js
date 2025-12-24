@@ -633,6 +633,24 @@ else parts.push('Skip');
       if (card.text) {
         lines.push(card.text);
       }
+      // --- NEW: show minigame metadata (so success/fail makes sense) ---
+if (card.minigameType || card.participants) {
+  const pretty = {
+    roll_off: 'Roll-off (D6 threshold)',
+    skill_check: 'Skill check',
+    push_your_luck: 'Push your luck',
+    resource_bid: 'Resource bid',
+    choice: 'Choice'
+  }[card.minigameType] || card.minigameType || '—';
+
+  const who = card.participants ? ` — ${card.participants}` : '';
+  lines.push(`Minigame: ${pretty}${who}`);
+}
+
+if (card.notes) {
+  lines.push(`How it works: ${card.notes}`);
+}
+
       if (Array.isArray(card.effects) && card.effects.length) {
         const effLines = card.effects
           .map((eff) => {
