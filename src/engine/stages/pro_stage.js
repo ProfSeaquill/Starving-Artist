@@ -34,6 +34,9 @@ export function proReducer(gameState, action) {
     case 'DRAW_PRO_CARD':
       return handleDrawProCard(gameState);
 
+    case 'RESOLVE_PRO_CARD_CHOICE':
+     return handleResolveProCardChoice(gameState, action);
+
     case 'PRO_MAINTENANCE_CHECK':
       return handleProMaintenanceCheck(gameState);
 
@@ -126,6 +129,12 @@ function handleDrawProCard(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
+  // If a Pro card is awaiting success/fail resolution, do NOT draw a new one.
+  // This lets the UI re-open the existing popup without spending extra time.
+  if (player.flags && player.flags.pendingProCard) {
+    return gameState;
+  }
+
   const { nextState, card } = drawProCard(gameState);
   if (!card) return gameState;
 
@@ -142,16 +151,26 @@ function handleDrawProCard(gameState) {
 
   // Apply effects + deduct Time.
   let withEffects = updateActivePlayer(nextState, (p) => {
-    let updated = applyProCardToPlayer(p, card);
+    let updated = { ...p };
 
+    // Always pay the time cost to engage the opportunity.
     const remainingTime = (updated.timeThisTurn || 0) - timeCost;
     updated.timeThisTurn = remainingTime < 0 ? 0 : remainingTime;
 
-    const flags = {
+    const hasOutcome =
+      (Array.isArray(card.successEffects) && card.successEffects.length) ||
+      (Array.isArray(card.failEffects) && card.failEffects.length);
+
+    // Legacy deterministic Pro cards: apply immediately
+    if (!hasOutcome) {
+      updated = applyProCardToPlayer(updated, card);
+    }
+
+    updated.flags = {
       ...(updated.flags || {}),
-      lastProCard: card
+      lastProCard: card,
+      ...(hasOutcome ? { pendingProCard: card } : {})
     };
-    updated.flags = flags;
 
     return updated;
   });
@@ -169,6 +188,77 @@ function handleDrawProCard(gameState) {
   }
 
   return withEffects;
+}
+
+function handleResolveProCardChoice(gameState, action) {
+  const { config } = gameState;
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
+
+  const pending = player.flags && player.flags.pendingProCard;
+  if (!pending) return gameState;
+
+  const outcome = String(action.outcome || action.choice || '').toLowerCase();
+  const effects =
+    outcome === 'success'
+      ? (pending.successEffects || [])
+      : (pending.failEffects || []);
+
+  const targetProgress =
+    (config && config.pro && config.pro.masterworkTargetProgress) || 10;
+
+  let nextState = updateActivePlayer(gameState, (p) => {
+    let updated = applyEffectsToPlayer(p, effects);
+
+    const flags = { ...(updated.flags || {}) };
+    flags.lastProCardOutcome = outcome === 'success' ? 'success' : 'fail';
+    flags.lastProCardOutcomeEffects = effects;
+    delete flags.pendingProCard;
+    updated.flags = flags;
+
+    return updated;
+  });
+
+  // Win check if the outcome affected masterwork
+  const updatedPlayer = getActivePlayer(nextState);
+  if (
+    updatedPlayer &&
+    (updatedPlayer.masterworkProgress || 0) >= targetProgress
+  ) {
+    nextState = { ...nextState, status: STATUS_WON };
+  }
+
+  return nextState;
+}
+
+function applyEffectsToPlayer(player, effects) {
+  if (!Array.isArray(effects)) return player;
+
+  let next = { ...player };
+
+  for (const eff of effects) {
+    if (!eff || typeof eff !== 'object') continue;
+
+    if (eff.type === 'stat') {
+      const stat = eff.stat;
+      const delta = Number(eff.delta || 0);
+      switch (stat) {
+        case 'money': next.money = (next.money || 0) + delta; break;
+        case 'food': next.food = (next.food || 0) + delta; break;
+        case 'inspiration': next.inspiration = (next.inspiration || 0) + delta; break;
+        case 'craft': next.craft = (next.craft || 0) + delta; break;
+        default: break;
+      }
+    } else if (eff.type === 'masterwork') {
+      const delta = Number(eff.delta || 0);
+      next.masterworkProgress = (next.masterworkProgress || 0) + delta;
+    } else if (eff.type === 'time') {
+      const delta = Number(eff.delta || 0);
+      next.timeThisTurn = Math.max(0, (next.timeThisTurn || 0) + delta);
+    }
+  }
+
+  return next;
 }
 
 /**
