@@ -324,24 +324,60 @@ function markStageTutorialSeen(player, stage) {
   set.add(stage);
 }
 
+const pendingTutorialByPlayerId = new Map();
+
+function isCardOverlayVisible() {
+  const el = document.getElementById('cardOverlay');
+  return !!(el && el.classList.contains('visible'));
+}
+
+function queueStageTutorial(player, stage) {
+  if (!player || !player.id || !stage) return;
+  pendingTutorialByPlayerId.set(player.id, stage);
+}
+
+function maybeShowPendingStageTutorial() {
+  const player = gameState?.players?.[gameState.activePlayerIndex];
+  if (!player) return;
+
+  const stage = pendingTutorialByPlayerId.get(player.id);
+  if (!stage) return;
+
+  if (hasSeenStageTutorial(player, stage)) {
+    pendingTutorialByPlayerId.delete(player.id);
+    return;
+  }
+
+  const tutorial = STAGE_TUTORIALS[stage];
+  if (!tutorial) {
+    pendingTutorialByPlayerId.delete(player.id);
+    markStageTutorialSeen(player, stage);
+    return;
+  }
+
+  showCardOverlay(tutorial.title, tutorial.name, tutorial.body);
+  markStageTutorialSeen(player, stage);
+  pendingTutorialByPlayerId.delete(player.id);
+}
+
 // prevStage is the stage the active player had *before* the action.
 function maybeShowStageTutorial(prevStage) {
   const player = gameState.players[gameState.activePlayerIndex];
   if (!player) return;
 
   const nextStage = player.stage;
-  if (!nextStage || nextStage === prevStage) {
-    return; // no change
-  }
+  if (!nextStage || nextStage === prevStage) return;
 
-  // Only show each tutorial once per player per stage.
-  if (hasSeenStageTutorial(player, nextStage)) {
+  if (hasSeenStageTutorial(player, nextStage)) return;
+
+  // NEW: if another popup is already showing, defer the tutorial
+  if (isCardOverlayVisible()) {
+    queueStageTutorial(player, nextStage);
     return;
   }
 
   const tutorial = STAGE_TUTORIALS[nextStage];
   if (!tutorial) {
-    // Stage has no tutorial defined; mark as seen so we don't keep checking.
     markStageTutorialSeen(player, nextStage);
     return;
   }
@@ -349,6 +385,7 @@ function maybeShowStageTutorial(prevStage) {
   showCardOverlay(tutorial.title, tutorial.name, tutorial.body);
   markStageTutorialSeen(player, nextStage);
 }
+
 
 
 let cardOverlayPrimaryAction = null;
@@ -1001,6 +1038,7 @@ const cardOverlaySkip = document.getElementById('cardOverlaySkip');
 if (cardOverlay && cardOverlayClose) {
   const hideOverlay = () => {
     cardOverlay.classList.remove('visible');
+    maybeShowPendingStageTutorial();
   };
 
   cardOverlayClose.addEventListener('click', () => {
