@@ -69,6 +69,7 @@ export function applyAction(gameState, action) {
     // Pro
     case ActionTypes.WORK_ON_MASTERWORK:
     case ActionTypes.DRAW_PRO_CARD:
+    case ActionTypes.RESOLVE_PRO_CARD_CHOICE:
     case ActionTypes.PRO_MAINTENANCE_CHECK:
       return proReducer(gameState, action);
 
