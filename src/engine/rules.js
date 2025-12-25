@@ -507,6 +507,17 @@ function endTurn(gameState) {
 
   let state = gameState;
 
+    // --- Pro: Fame Check is mandatory at end of Pro turns ---
+  const activeBefore = getActivePlayer(state);
+  if (activeBefore && activeBefore.stage === STAGE_PRO) {
+    const f = activeBefore.flags || {};
+    if (!f.didProMaintenanceThisTurn) {
+      // Let the Pro reducer handle the roll + outcomes (demotion, etc.)
+      state = proReducer(state, { type: ActionTypes.PRO_MAINTENANCE_CHECK });
+    }
+  }
+
+
   // --- Work skip / firing logic for the active player ---
   const activePlayer = getActivePlayer(state);
 
