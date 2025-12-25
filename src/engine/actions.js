@@ -6,6 +6,11 @@ export const ActionTypes = {
   // Global-ish
   START_TURN: 'START_TURN',
   END_TURN: 'END_TURN',
+    // PR / Scandal (new)
+  LAY_LOW: 'LAY_LOW',
+  PLANT_HIT_PIECE: 'PLANT_HIT_PIECE',
+  BUYOUT_SCANDAL: 'BUYOUT_SCANDAL',
+
 
   // Downtime (available on any stage as long as you have time)
   DOWNTIME_PRACTICE: 'DOWNTIME_PRACTICE',
