@@ -76,7 +76,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
       return [
         {
           id: 'mw_author_microfiction_thread',
-          name: 'Microfiction Thread / Newsletter Post',
+          name: 'Newsletter Post',
           kind: MINOR_WORK_KINDS.QUICK,
           isPlatform: true,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.QUICK],
@@ -107,7 +107,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
       return [
         {
           id: 'mw_music_tiktok_cover_loop',
-          name: 'TikTok/IG Cover Loop',
+          name: 'Tiktok Cover Loop',
           kind: MINOR_WORK_KINDS.QUICK,
           isPlatform: true,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.QUICK],
@@ -125,7 +125,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
         },
         {
           id: 'mw_music_paid_gig_or_viral_performance',
-          name: 'Paid Gig / Viral Performance',
+          name: 'Paid Gig',
           kind: MINOR_WORK_KINDS.SPOTLIGHT,
           isPlatform: false,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.SPOTLIGHT],
@@ -138,7 +138,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
       return [
         {
           id: 'mw_visual_speedpaint_reel',
-          name: 'Speedpaint Reel / Carousel Post',
+          name: 'Speedpaint Reel',
           kind: MINOR_WORK_KINDS.QUICK,
           isPlatform: true,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.QUICK],
@@ -169,7 +169,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
       return [
         {
           id: 'mw_film_short_form_reel',
-          name: 'Short-Form Reel (30–60s)',
+          name: 'Short-Form Reel',
           kind: MINOR_WORK_KINDS.QUICK,
           isPlatform: true,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.QUICK],
@@ -200,7 +200,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
       return [
         {
           id: 'mw_actor_self_tape_clip',
-          name: 'Self-Tape Clip / TikTok Scene',
+          name: 'Self-Tape Clip',
           kind: MINOR_WORK_KINDS.QUICK,
           isPlatform: true,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.QUICK],
@@ -209,7 +209,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
         },
         {
           id: 'mw_actor_scene_study_tape',
-          name: 'Scene Study Tape (Partner/Coach)',
+          name: 'Background Extra Role',
           kind: MINOR_WORK_KINDS.CAREER,
           isPlatform: false,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.CAREER],
@@ -218,7 +218,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
         },
         {
           id: 'mw_actor_showcase_booked_role',
-          name: 'Showcase Night / Booked Role',
+          name: 'Booked Minor Role',
           kind: MINOR_WORK_KINDS.SPOTLIGHT,
           isPlatform: false,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.SPOTLIGHT],
@@ -240,7 +240,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
         },
         {
           id: 'mw_dance_choreo_routine_class',
-          name: 'Choreo Routine (Class/Studio)',
+          name: 'Studio Choreo Routine',
           kind: MINOR_WORK_KINDS.CAREER,
           isPlatform: false,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.CAREER],
@@ -249,7 +249,7 @@ export function getMinorWorkTemplatesForArtPath(artPath) {
         },
         {
           id: 'mw_dance_competition_set_paid_gig',
-          name: 'Competition Set / Paid Stage Gig',
+          name: 'Paid Stage Gig',
           kind: MINOR_WORK_KINDS.SPOTLIGHT,
           isPlatform: false,
           progressTarget: DEFAULT_PROGRESS[MINOR_WORK_KINDS.SPOTLIGHT],
