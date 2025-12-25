@@ -128,6 +128,8 @@ function startTurn(gameState) {
             // PR / Scandal (per-turn)
       canLayLowThisTurn: false,
       hasActedThisTurn: false,
+      
+      didProMaintenanceThisTurn: false,
       // Reset per-turn downtime usage
       usedPracticeThisTurn: false,
       usedSleepThisTurn: false,
