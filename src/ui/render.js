@@ -554,16 +554,31 @@ function updateActionButtonLabels(gameState, player) {
   // --- Work on Masterwork: show how much progress you'll gain ---
 
   const workMasterBtn = $('#workMasterworkBtn');
-  if (workMasterBtn) {
-    const timeAvailable = player.timeThisTurn || 0;
+if (workMasterBtn) {
+  const timeAvailable = player.timeThisTurn || 0;
+  const focus = player.flags?.proMasterworkFocusStat;
+  const focusVal = focus ? (player[focus] || 0) : 0;
 
-    if (timeAvailable > 0) {
-      const costLine = `Spend ${timeAvailable} Time → +${timeAvailable} progress`;
-      setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', costLine);
-    } else {
-      setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', '');
-    }
+  const focusLabel =
+    focus === 'food' ? 'Food' :
+    focus === 'inspiration' ? 'Inspiration' :
+    focus === 'craft' ? 'Craft' :
+    'Focus';
+
+  const maxProgress = Math.max(0, Math.min(timeAvailable, focusVal));
+
+  if (timeAvailable > 0 && focus) {
+    const costLine =
+      maxProgress > 0
+        ? `Spend ${maxProgress} Time + ${maxProgress} ${focusLabel} → +${maxProgress} progress`
+        : `Need ${focusLabel} to make progress (0 available)`;
+
+    setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', costLine);
+  } else {
+    setButtonLabelWithCost(workMasterBtn, 'Work on Masterwork', '');
   }
+}
+
 
     // --- Minor Works (Amateur): show the real template names + stat benefits ---
 
@@ -1138,6 +1153,16 @@ if (attemptLeaveHomeBtn) {
   if (flags.lastTurnStartedAtTurn !== undefined) {
     lines.push(`Turn ${flags.lastTurnStartedAtTurn} started.`);
   }
+
+  if (player.stage === STAGE_PRO && flags.proMasterworkFocusStat) {
+  const f = flags.proMasterworkFocusStat;
+  const label =
+    f === 'food' ? 'Food' :
+    f === 'inspiration' ? 'Inspiration' :
+    f === 'craft' ? 'Craft' : f;
+  lines.push(`Masterwork Focus: ${label}`);
+}
+
 
   if (flags.lastHomeCard) {
   const card = flags.lastHomeCard;
