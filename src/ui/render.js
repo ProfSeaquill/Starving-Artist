@@ -434,6 +434,12 @@ document.querySelectorAll('.stage-job-any').forEach((el) => {
   el.style.display = stage === STAGE_HOME ? 'none' : '';
 });
 
+    // PR should show in Amateur or Pro
+  document.querySelectorAll('.stage-pr-any').forEach((el) => {
+    el.style.display = (stage === STAGE_AMATEUR || stage === STAGE_PRO) ? '' : 'none';
+  });
+
+
   // Job & Culture only matters once you're Amateur or Pro
   const jobSection = document.querySelector('.player-job-section');
   if (jobSection) {
