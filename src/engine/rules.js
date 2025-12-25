@@ -2,6 +2,7 @@ import { ActionTypes } from './actions.js';
 import {
   getActivePlayer,
   updateActivePlayer,
+  updatePlayerById,
   isGameOver,
   STAGE_DREAMER,
   STAGE_AMATEUR,
@@ -20,32 +21,49 @@ import { proReducer } from './stages/pro_stage.js';
  * returns the next gameState (pure function).
  */
 export function applyAction(gameState, action) {
-  if (!gameState || isGameOver(gameState)) {
-    // Once game is over, ignore further actions (for now).
-    return gameState;
-  }
+  if (!gameState || isGameOver(gameState)) return gameState;
+
+  let next = gameState;
 
   switch (action.type) {
     case ActionTypes.START_TURN:
-      return startTurn(gameState);
+      next = startTurn(gameState);
+      break;
 
     case ActionTypes.END_TURN:
-      return endTurn(gameState);
+      next = endTurn(gameState);
+      break;
 
     case ActionTypes.ROLL_TIME:
-      return rollTime(gameState);
+      next = rollTime(gameState);
+      break;
+
+    // --- NEW: PR / Scandal ---
+    case ActionTypes.LAY_LOW:
+      next = layLow(gameState);
+      break;
+
+    case ActionTypes.PLANT_HIT_PIECE:
+      next = plantHitPiece(gameState, action);
+      break;
+
+    case ActionTypes.BUYOUT_SCANDAL:
+      next = buyoutScandal(gameState, action);
+      break;
 
     case ActionTypes.DOWNTIME_PRACTICE:
     case ActionTypes.DOWNTIME_SLEEP:
     case ActionTypes.DOWNTIME_EAT_AT_HOME:
-      return applyDowntimeAction(gameState, action.type);
-      
+      next = applyDowntimeAction(gameState, action.type);
+      break;
+
     // Home
     case ActionTypes.DRAW_HOME_CARD:
     case ActionTypes.ATTEMPT_LEAVE_HOME:
-      return homeReducer(gameState, action);
+      next = homeReducer(gameState, action);
+      break;
 
-        // Dreamer
+    // Dreamer
     case ActionTypes.DRAW_SOCIAL_CARD:
     case ActionTypes.ATTEND_SOCIAL_EVENT:
     case ActionTypes.SKIP_SOCIAL_EVENT:
@@ -53,32 +71,38 @@ export function applyAction(gameState, action) {
     case ActionTypes.QUIT_JOB:
     case ActionTypes.GO_TO_WORK:
     case ActionTypes.ATTEMPT_ADVANCE_DREAMER:
-      return dreamerReducer(gameState, action);
+      next = dreamerReducer(gameState, action);
+      break;
 
-
-        // Amateur
+    // Amateur
     case ActionTypes.TAKE_PROF_DEV:
     case ActionTypes.RESOLVE_PROF_DEV_CHOICE:
     case ActionTypes.START_MINOR_WORK:
     case ActionTypes.COMPILE_PORTFOLIO:
     case ActionTypes.PROGRESS_MINOR_WORK:
     case ActionTypes.ATTEMPT_ADVANCE_PRO:
-      return amateurReducer(gameState, action);
-
+      next = amateurReducer(gameState, action);
+      break;
 
     // Pro
     case ActionTypes.WORK_ON_MASTERWORK:
     case ActionTypes.DRAW_PRO_CARD:
     case ActionTypes.RESOLVE_PRO_CARD_CHOICE:
     case ActionTypes.PRO_MAINTENANCE_CHECK:
-      return proReducer(gameState, action);
-
-    // Culture, etc. will go here later.
+      next = proReducer(gameState, action);
+      break;
 
     default:
-      return gameState;
+      next = gameState;
+      break;
   }
+
+  // If you did ANY action other than Lay Low / start/end turn, you lose Lay Low.
+  next = consumeLayLowOnAnyOtherAction(gameState, next, action);
+
+  return next;
 }
+
 
 /**
  * START_TURN:
@@ -101,6 +125,9 @@ function startTurn(gameState) {
       timeRerollsRemaining: 0,
       // NEW: reset per-turn work flag
       hasWorkedThisTurn: false,
+            // PR / Scandal (per-turn)
+      canLayLowThisTurn: false,
+      hasActedThisTurn: false,
       // Reset per-turn downtime usage
       usedPracticeThisTurn: false,
       usedSleepThisTurn: false,
@@ -114,6 +141,11 @@ function startTurn(gameState) {
 
     if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
       // No Minor Work income at Home or Dreamer (for now).
+        // Lay Low is ONLY offered to Pros with Scandal, at the very start of the turn.
+    if (player.stage === STAGE_PRO && (player.scandal || 0) > 0) {
+      flags.canLayLowThisTurn = true;
+    }
+
       return {
         ...player,
         timeThisTurn: 0,
@@ -209,11 +241,22 @@ function rollTime(gameState) {
       timeRerollsRemaining: newRerolls
     };
 
+        const scandal = p.stage === STAGE_PRO ? (p.scandal || 0) : 0;
+    const netTime = Math.max(0, roll - scandal);
+
+    const newFlags2 = {
+      ...newFlags,
+      lastTimeRollRaw: roll,
+      lastTimeRollScandalTax: scandal,
+      lastTimeRollNet: netTime
+    };
+
     return {
       ...p,
-      timeThisTurn: roll,
-      flags: newFlags
+      timeThisTurn: netTime,
+      flags: newFlags2
     };
+
   });
 
   return next;
@@ -280,6 +323,174 @@ function applyDowntimeAction(gameState, actionType) {
   });
 }
 
+// --- NEW: Lay Low + PR mechanics ---
+
+function isLayLowAllowed(player) {
+  if (!player) return false;
+  const f = player.flags || {};
+  return (
+    player.stage === STAGE_PRO &&
+    (player.scandal || 0) > 0 &&
+    !f.hasRolledTimeThisTurn &&
+    !f.hasActedThisTurn &&
+    !!f.canLayLowThisTurn
+  );
+}
+
+/**
+ * LAY_LOW:
+ * - Only allowed if you have NOT rolled time and have done nothing else.
+ * - Roll d6, reduce Scandal by that amount (min 0).
+ * - ALWAYS ends turn.
+ */
+function layLow(gameState) {
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
+  if (!isLayLowAllowed(player)) return gameState;
+
+  const roll = rollD6();
+
+  let next = updateActivePlayer(gameState, (p) => {
+    const before = p.scandal || 0;
+    const reduced = Math.min(before, roll);
+    const after = Math.max(0, before - reduced);
+
+    return {
+      ...p,
+      scandal: after,
+      flags: {
+        ...(p.flags || {}),
+        lastLayLowRoll: roll,
+        lastLayLowScandalBefore: before,
+        lastLayLowScandalReduced: reduced,
+        lastLayLowScandalAfter: after
+      }
+    };
+  });
+
+  // Lay Low ALWAYS ends the turn.
+  return endTurn(next);
+}
+
+/**
+ * PLANT_HIT_PIECE:
+ * - Allowed for Amateurs or Pros
+ * - Can only target Pros
+ * - Spend Time this turn to add equal Scandal to the target
+ * - Once per game per player
+ *
+ * action: { type, targetPlayerId, amount? }
+ */
+function plantHitPiece(gameState, action) {
+  const attacker = getActivePlayer(gameState);
+  if (!attacker) return gameState;
+
+  if (attacker.stage !== STAGE_AMATEUR && attacker.stage !== STAGE_PRO) return gameState;
+  if (attacker.prHitUsed) return gameState;
+
+  const targetId = String(action.targetPlayerId || '').trim();
+  if (!targetId) return gameState;
+  if (targetId === attacker.id) return gameState;
+
+  const target = gameState.players.find((p) => p && p.id === targetId);
+  if (!target || target.stage !== STAGE_PRO) return gameState;
+
+  const available = attacker.timeThisTurn || 0;
+  if (available <= 0) return gameState;
+
+  let amount = Number.isFinite(action.amount) ? Math.floor(action.amount) : available;
+  if (!Number.isFinite(amount) || amount <= 0) amount = available;
+  if (amount > available) amount = available;
+
+  let next = updateActivePlayer(gameState, (p) => ({
+    ...p,
+    timeThisTurn: Math.max(0, (p.timeThisTurn || 0) - amount),
+    prHitUsed: true,
+    flags: {
+      ...(p.flags || {}),
+      lastHitPieceAmount: amount,
+      lastHitPieceTargetId: targetId
+    }
+  }));
+
+  next = updatePlayerById(next, targetId, (p) => ({
+    ...p,
+    scandal: (p.scandal || 0) + amount,
+    flags: {
+      ...(p.flags || {}),
+      lastScandalGained: amount,
+      lastScandalFromPlayerId: attacker.id
+    }
+  }));
+
+  return next;
+}
+
+/**
+ * BUYOUT_SCANDAL:
+ * - Only meaningful in Pro
+ * - 3 money removes 1 Scandal
+ * - If action.amount omitted, removes as much as affordable
+ */
+function buyoutScandal(gameState, action) {
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
+  if (player.stage !== STAGE_PRO) return gameState;
+
+  const scandal = player.scandal || 0;
+  if (scandal <= 0) return gameState;
+
+  const money = player.money || 0;
+  const RATE = 3; // money per 1 scandal removed
+
+  const maxAffordable = Math.floor(money / RATE);
+  const maxRemovable = Math.min(scandal, maxAffordable);
+  if (maxRemovable <= 0) return gameState;
+
+  let amount = Number.isFinite(action.amount) ? Math.floor(action.amount) : maxRemovable;
+  if (!Number.isFinite(amount) || amount <= 0) amount = maxRemovable;
+  if (amount > maxRemovable) amount = maxRemovable;
+
+  const cost = amount * RATE;
+
+  return updateActivePlayer(gameState, (p) => ({
+    ...p,
+    money: (p.money || 0) - cost,
+    scandal: Math.max(0, (p.scandal || 0) - amount),
+    flags: {
+      ...(p.flags || {}),
+      lastBuyoutScandalRemoved: amount,
+      lastBuyoutCostMoney: cost
+    }
+  }));
+}
+
+/**
+ * Any action other than Lay Low (including Roll Time) permanently removes Lay Low option this turn.
+ * We only apply this if the action actually changed state.
+ */
+function consumeLayLowOnAnyOtherAction(prev, next, action) {
+  if (!action || !action.type) return next;
+  if (next === prev) return next;
+
+  const t = action.type;
+  if (
+    t === ActionTypes.START_TURN ||
+    t === ActionTypes.END_TURN ||
+    t === ActionTypes.LAY_LOW
+  ) {
+    return next;
+  }
+
+  return updateActivePlayer(next, (p) => ({
+    ...p,
+    flags: {
+      ...(p.flags || {}),
+      canLayLowThisTurn: false,
+      hasActedThisTurn: true
+    }
+  }));
+}
 
 /**
  * END_TURN:
