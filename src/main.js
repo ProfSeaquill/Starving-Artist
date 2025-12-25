@@ -73,23 +73,24 @@ function shuffleArray(arr) {
 }
 
 // --- Game setup ---
-let gameState = createInitialGame({
-  numPlayers: 1,
-  artPaths: ['author'] // or 'painter', etc.
-});
+let gameState = null;
+let gameStarted = false;
 
 // Seed decks with CSV data where available (fallback: SAMPLE_* arrays)
-gameState = {
-  ...gameState,
-  homeDeck: shuffleArray(HOME_DECK_SOURCE),
-  homeDiscard: [],
-  socialDeck: shuffleArray(SOCIAL_DECK_SOURCE),
-  socialDiscard: [],
-  profDevDeck: shuffleArray(PROF_DEV_DECK_SOURCE),
-  profDevDiscard: [],
-  proDeck: shuffleArray(PRO_DECK_SOURCE),
-  proDiscard: []
-};
+function seedDecks(state) {
+  if (!state) return state;
+  return {
+    ...state,
+    homeDeck: shuffleArray(HOME_DECK_SOURCE),
+    homeDiscard: [],
+    socialDeck: shuffleArray(SOCIAL_DECK_SOURCE),
+    socialDiscard: [],
+    profDevDeck: shuffleArray(PROF_DEV_DECK_SOURCE),
+    profDevDiscard: [],
+    proDeck: shuffleArray(PRO_DECK_SOURCE),
+    proDiscard: []
+  };
+}
 
 // --- Dev helpers (mutate active player & log) ---
 
@@ -431,6 +432,41 @@ function showCardOverlay(title, name, bodyText, config = {}) {
   overlay.classList.add('visible');
 }
 
+
+// --- Hotseat (pass-the-device) overlay -----------------------------------
+let pendingHotseatStageTutorial = false;
+
+function showHotseatOverlayForNextPlayer(nextPlayer) {
+  const overlay = document.getElementById('hotseatOverlay');
+  if (!overlay || !nextPlayer) return;
+
+  const titleEl = document.getElementById('hotseatTitle');
+  const bodyEl  = document.getElementById('hotseatBody');
+  const btn     = document.getElementById('hotseatContinueBtn');
+
+  if (titleEl) titleEl.textContent = 'Pass the device';
+  if (bodyEl)  bodyEl.textContent = `${nextPlayer.name}, you're up.`;
+
+  pendingHotseatStageTutorial = true;
+  overlay.classList.add('visible');
+
+  if (btn) {
+    try { btn.focus(); } catch (_) {}
+  }
+}
+
+function closeHotseatOverlay() {
+  const overlay = document.getElementById('hotseatOverlay');
+  if (!overlay) return;
+
+  overlay.classList.remove('visible');
+
+  if (pendingHotseatStageTutorial) {
+    pendingHotseatStageTutorial = false;
+    // Show the active player's stage tutorial (only if they haven't seen it)
+    maybeShowStageTutorial(null);
+  }
+}
 
 function formatStatEffects(effects) {
   if (!Array.isArray(effects)) return '';
@@ -921,6 +957,10 @@ function getCannotAffordMessage(state, action) {
 
 // --- Dispatch wrapper with diagnostics ---
 function dispatch(action) {
+  if (!gameStarted) {
+    console.warn('[dispatch] Game not started yet; ignoring action:', action);
+    return;
+  }
   // 0) Card draw guard: block extra draws this turn.
   const denyReason = getCardDrawDenyReason(gameState, action);
   if (denyReason) {
@@ -979,14 +1019,29 @@ function dispatch(action) {
   console.log('[dispatch] new state:', gameState);
   render(gameState);
 
-  // 3) Show a card popup if this action drew/resolved a card.
+  // 3) If we passed the device to the next player, show hotseat overlay first.
+  const prevIndex = prevState ? prevState.activePlayerIndex : null;
+  const nextIndex = gameState ? gameState.activePlayerIndex : null;
+  const playerSwitched =
+    Number.isInteger(prevIndex) && Number.isInteger(nextIndex) && prevIndex !== nextIndex;
+
+  if (playerSwitched && (gameState.players || []).length > 1) {
+    const nextPlayer = gameState.players[gameState.activePlayerIndex];
+    showHotseatOverlayForNextPlayer(nextPlayer);
+    return;
+  }
+
+  // 4) Show a card popup if this action drew/resolved a card.
   maybeShowCardPopup(gameState, action);
 
-  // 4) Show dice animation if we just rolled Time.
+  // 5) Show dice animation if we just rolled.
   maybeShowDiceRoll(gameState, action);
 
-  // 5) Show stage tutorial if the active player's stage changed.
-  maybeShowStageTutorial(prevStage);
+  // 6) Show stage tutorial. If the active player changed, treat this as a fresh view.
+  const prevPlayerId = prevPlayer ? prevPlayer.id : null;
+  const nextPlayerId = gameState?.players?.[gameState.activePlayerIndex]?.id || null;
+  const stageArg = (prevPlayerId && nextPlayerId && prevPlayerId === nextPlayerId) ? prevStage : null;
+  maybeShowStageTutorial(stageArg);
 }
 
 
@@ -1001,14 +1056,171 @@ window._starvingArtistShowCardOverlay = showCardOverlay;
 // --- Kick off UI ---
 setupControls(dispatch, () => gameState);
 setupDevPanel(dispatch);
-render(gameState);
 
-// Consider the game ready at Turn 1 with no Time yet.
-// The player explicitly starts their turn by clicking "Roll Time".
-dispatch({ type: ActionTypes.START_TURN });
-// Show Home tutorial once at game start (optional).
-maybeShowStageTutorial(null);
-// (no auto ROLL_TIME here)
+// Game now starts via the Setup overlay (hotseat).
+// We keep the board inert until the player clicks "Start Game".
+
+
+// --- Setup (New Game) overlay wiring ---------------------------------------
+
+const ART_PATH_OPTIONS = [
+  { value: 'author', label: 'Author' },
+  { value: 'musician', label: 'Musician' },
+  { value: 'actor', label: 'Actor' },
+  { value: 'dancer', label: 'Dancer' },
+  { value: 'filmmaker', label: 'Filmmaker' },
+  { value: 'visual_artist', label: 'Visual Artist' }
+];
+
+function buildSetupPlayerRows(numPlayers) {
+  const listEl = document.getElementById('setupPlayersList');
+  if (!listEl) return;
+
+  listEl.innerHTML = '';
+
+  for (let i = 0; i < numPlayers; i++) {
+    const row = document.createElement('div');
+    row.className = 'setup-player-row';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.id = `setupPlayerName${i}`;
+    nameInput.placeholder = `Player ${i + 1} name`;
+    nameInput.value = `Player ${i + 1}`;
+
+    const artSelect = document.createElement('select');
+    artSelect.id = `setupPlayerArt${i}`;
+
+    for (const opt of ART_PATH_OPTIONS) {
+      const o = document.createElement('option');
+      o.value = opt.value;
+      o.textContent = opt.label;
+      artSelect.appendChild(o);
+    }
+
+    // Nice default variety across seats
+    const defaultOpt = ART_PATH_OPTIONS[i % ART_PATH_OPTIONS.length];
+    if (defaultOpt) artSelect.value = defaultOpt.value;
+
+    row.appendChild(nameInput);
+    row.appendChild(artSelect);
+    listEl.appendChild(row);
+  }
+}
+
+function startNewGameFromSetup({ numPlayers, names, artPaths }) {
+  // Reset tutorial tracking for a true fresh game
+  tutorialSeenByPlayerId.clear();
+  pendingTutorialByPlayerId.clear();
+
+  // Create base state
+  gameState = createInitialGame({
+    numPlayers,
+    artPaths
+  });
+
+  // Apply names (artPaths already applied above)
+  const players = gameState.players || [];
+  for (let i = 0; i < players.length; i++) {
+    const n = (names[i] || '').trim();
+    if (n) players[i].name = n;
+  }
+
+  // Seed decks
+  gameState = seedDecks(gameState);
+
+  gameStarted = true;
+
+  render(gameState);
+  dispatch({ type: ActionTypes.START_TURN });
+  // Force show the stage tutorial once for the active player.
+  maybeShowStageTutorial(null);
+}
+
+function initSetupOverlay() {
+  const overlay = document.getElementById('setupOverlay');
+  const numSel = document.getElementById('setupNumPlayers');
+  const startBtn = document.getElementById('setupStartBtn');
+  const cancelBtn = document.getElementById('setupCancelBtn');
+
+  if (!overlay || !numSel || !startBtn || !cancelBtn) {
+    // If the overlay isn't present, start a default solo game.
+    startNewGameFromSetup({
+      numPlayers: 1,
+      names: ['Player 1'],
+      artPaths: ['author']
+    });
+    return;
+  }
+
+  const open = () => {
+    overlay.classList.add('visible');
+    const n = Number(numSel.value || 2);
+    buildSetupPlayerRows(Number.isFinite(n) ? n : 2);
+  };
+
+  const close = () => {
+    overlay.classList.remove('visible');
+  };
+
+  // Show by default on page load
+  open();
+
+  numSel.addEventListener('change', () => {
+    const n = Number(numSel.value || 2);
+    buildSetupPlayerRows(Number.isFinite(n) ? n : 2);
+  });
+
+  startBtn.addEventListener('click', () => {
+    const n = Number(numSel.value || 2);
+    const numPlayers = Number.isFinite(n) ? Math.max(1, Math.min(6, n)) : 2;
+
+    const names = [];
+    const artPaths = [];
+    for (let i = 0; i < numPlayers; i++) {
+      const nameEl = document.getElementById(`setupPlayerName${i}`);
+      const artEl = document.getElementById(`setupPlayerArt${i}`);
+      names.push(nameEl ? nameEl.value : `Player ${i + 1}`);
+      artPaths.push(artEl ? artEl.value : 'visual_artist');
+    }
+
+    close();
+    startNewGameFromSetup({ numPlayers, names, artPaths });
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    close();
+    if (!gameStarted) {
+      startNewGameFromSetup({
+        numPlayers: 1,
+        names: ['Player 1'],
+        artPaths: ['author']
+      });
+    }
+  });
+}
+
+// --- Hotseat overlay wiring (close / backdrop / escape) ---------------------
+(function initHotseatOverlayWiring() {
+  const overlay = document.getElementById('hotseatOverlay');
+  const btn = document.getElementById('hotseatContinueBtn');
+  if (!overlay || !btn) return;
+
+  const close = () => closeHotseatOverlay();
+
+  btn.addEventListener('click', close);
+  overlay.addEventListener('click', (evt) => {
+    if (evt.target === overlay) close();
+  });
+  document.addEventListener('keydown', (evt) => {
+    if (evt.key === 'Escape' && overlay.classList.contains('visible')) {
+      close();
+    }
+  });
+})();
+
+// Initialize the setup flow (this starts the game)
+initSetupOverlay();
 
 // --- Dev panel toggle (repurpose the old "Toggle JSON" button) ---
 const devToggleBtn = document.getElementById('toggleDebug');   // same button
@@ -1082,6 +1294,3 @@ if (cardOverlay && cardOverlayClose) {
     }
   });
 }
-
-
-
