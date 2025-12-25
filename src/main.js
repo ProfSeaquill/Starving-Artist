@@ -688,7 +688,10 @@ if (card.notes) {
           lines.push('Effects: ' + effLines.join(', '));
         }
       }
-      
+            if (card.notes) {
+        lines.push('', card.notes);
+      }
+
       bodyText = lines.join('\n\n') || '(No rules text yet.)';
       break;
     }
