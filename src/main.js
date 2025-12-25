@@ -863,12 +863,19 @@ function showDiceRollAnimation(finalValue, titleText = '') {
   }, intervalMs);
 }
 
-function maybeShowDiceRoll(state, action) {
-  const player = state.players[state.activePlayerIndex];
+function maybeShowDiceRoll(state, action, prevState) {
+  // For actions that rotate the active player (Lay Low auto-ends turn),
+  // we want the roller to be the player who was active BEFORE the action.
+  const actorIndex =
+    prevState && typeof prevState.activePlayerIndex === 'number'
+      ? prevState.activePlayerIndex
+      : state.activePlayerIndex;
+
+  const player = state.players?.[actorIndex];
   if (!player || !player.flags) return;
 
   // Use a generic label for both, or set "" to hide it entirely.
-  const title = 'Dice Roll'; // <-- or '' to leave unlabeled
+  const title = 'Dice Roll';
 
   if (action.type === ActionTypes.ROLL_TIME) {
     const roll = player.flags.lastTimeRoll;
@@ -883,7 +890,16 @@ function maybeShowDiceRoll(state, action) {
     showDiceRollAnimation(roll, title);
     return;
   }
+
+  // NEW: Lay Low roll popup
+  if (action.type === ActionTypes.LAY_LOW) {
+    const roll = player.flags.lastLayLowRoll;
+    if (roll === undefined || roll === null) return;
+    showDiceRollAnimation(roll, 'Lay Low');
+    return;
+  }
 }
+
 
 // --- Card affordability guard (stage cards only) -----------------------------
 
@@ -1053,7 +1069,7 @@ function dispatch(action) {
   maybeShowCardPopup(gameState, action);
 
   // 5) Show dice animation if we just rolled.
-  maybeShowDiceRoll(gameState, action);
+  maybeShowDiceRoll(gameState, action, prevState);
 
   // 6) Show stage tutorial. If the active player changed, treat this as a fresh view.
   const prevPlayerId = prevPlayer ? prevPlayer.id : null;
