@@ -649,7 +649,6 @@ if (card.minigameType || card.participants) {
   }[card.minigameType] || card.minigameType || '—';
 
   const who = card.participants ? ` — ${card.participants}` : '';
-  lines.push(`Minigame: ${pretty}${who}`);
 }
 
       const hasOutcome =
@@ -657,9 +656,6 @@ if (card.minigameType || card.participants) {
   (Array.isArray(card.failEffects) && card.failEffects.length);
 
 if (hasOutcome) {
-  // Optional little hint in body
-  lines.push('Choose the outcome:');
-
   overlayConfig = {
     primaryLabel: labelWithEffects('Success', card.successEffects),
     secondaryLabel: labelWithEffects('Fail', card.failEffects),
@@ -671,7 +667,7 @@ if (hasOutcome) {
 }
 
 if (card.notes) {
-  lines.push(`How it works: ${card.notes}`);
+  lines.push(`Minigame: ${card.notes}`);
 }
 
       if (Array.isArray(card.effects) && card.effects.length) {
