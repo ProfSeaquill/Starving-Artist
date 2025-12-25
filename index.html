@@ -821,6 +821,128 @@ button.guided-btn {
 }
 
 
+/* Setup + Hotseat overlays */
+.setup-overlay,
+.hotseat-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at top,
+    rgba(255, 64, 129, 0.28),
+    rgba(0, 0, 0, 0.70)
+  );
+  z-index: 1002; /* above dice + card */
+}
+.setup-overlay.visible,
+.hotseat-overlay.visible {
+  display: flex;
+}
+
+.setup-modal,
+.hotseat-modal {
+  background: #ffffff;
+  border-radius: 22px;
+  border: 3px solid #40c4ff;
+  padding: 18px 20px;
+  max-width: 520px;
+  width: calc(100% - 40px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.60);
+  color: #212121;
+}
+
+.setup-modal h2,
+.hotseat-modal h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7c4dff;
+}
+
+.setup-sub {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #424242;
+}
+
+.setup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.setup-row label {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #424242;
+}
+
+.setup-players {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.setup-player-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.setup-player-row input,
+.setup-player-row select,
+.setup-row select {
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.10);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.setup-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.setup-actions button,
+.hotseat-modal button {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.setup-actions button.primary,
+.hotseat-modal button.primary {
+  background: linear-gradient(90deg, #ff4081, #7c4dff, #40c4ff);
+  color: #fff;
+}
+
+.setup-actions button.secondary {
+  background: rgba(0, 0, 0, 0.07);
+  color: #212121;
+}
+
+.hotseat-body {
+  font-size: 14px;
+  margin: 10px 0 14px;
+  color: #424242;
+}
+
+
         /* Time bar (for Time this turn) */
 .time-bar {
   display: inline-flex;
@@ -928,6 +1050,7 @@ button.guided-btn {
 
     <div class="meta">
       <span>Turn: <span id="turn">1</span></span>
+      <span>Player: <span id="headerPlayerName">Player 1</span></span>
       <span>Art Path: <span id="artPath">Author</span></span>
     </div>
 </header>
@@ -1327,7 +1450,43 @@ button.guided-btn {
     </div>
   </main>
 
-    <!-- Card popup overlay -->
+    <!-- Setup (New Game) overlay -->
+  <div id="setupOverlay" class="setup-overlay">
+    <div class="setup-modal">
+      <h2>New Game</h2>
+      <p class="setup-sub">Hotseat multiplayer (pass the device between turns).</p>
+
+      <div class="setup-row">
+        <label for="setupNumPlayers">Players</label>
+        <select id="setupNumPlayers">
+          <option value="1">1 (solo)</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+
+      <div id="setupPlayersList" class="setup-players"></div>
+
+      <div class="setup-actions">
+        <button id="setupStartBtn" class="primary" type="button">Start Game</button>
+        <button id="setupCancelBtn" class="secondary" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hotseat handoff overlay -->
+  <div id="hotseatOverlay" class="hotseat-overlay">
+    <div class="hotseat-modal">
+      <h2 id="hotseatTitle">Pass the device</h2>
+      <div id="hotseatBody" class="hotseat-body">Next player, you're up.</div>
+      <button id="hotseatContinueBtn" type="button" class="primary">Continue</button>
+    </div>
+  </div>
+
+  <!-- Card popup overlay -->
   <div id="cardOverlay" class="card-overlay">
     <div class="card-modal">
       <h2 id="cardOverlayTitle">Card</h2>
