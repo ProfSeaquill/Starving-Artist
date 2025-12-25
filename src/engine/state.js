@@ -194,7 +194,7 @@ export function createInitialGame(options = {}) {
   const players = [];
   for (let i = 0; i < numPlayers; i++) {
     const name    = `Player ${i + 1}`;
-    const artPath = artPaths[i] || 'painter'; // default path
+    const artPath = artPaths[i] || 'visual_artist'; // default path
     players.push(createPlayer(name, artPath));
   }
 
