@@ -302,7 +302,8 @@ function handleProMaintenanceCheck(gameState) {
       lastProMaintenanceRoll: roll,
       lastProMaintenanceTarget: target,
       lastProMaintenanceSuccess: success,
-      didProMaintenanceThisTurn: true
+      didProMaintenanceThisTurn: true,
+      proMaintenanceRequired: false
     };
     updated.flags = flags;
 
