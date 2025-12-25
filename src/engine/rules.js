@@ -141,12 +141,12 @@ function startTurn(gameState) {
     delete flags.homeCardDrawnThisTurn;
     delete flags.leaveHomeAttemptedThisTurn; // NEW
 
-    if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
-      // No Minor Work income at Home or Dreamer (for now).
-        // Lay Low is ONLY offered to Pros with Scandal, at the very start of the turn.
+     // Lay Low is ONLY offered to Pros with Scandal, at the very start of the turn.
     if (player.stage === STAGE_PRO && (player.scandal || 0) > 0) {
       flags.canLayLowThisTurn = true;
     }
+
+    if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
 
       return {
         ...player,
