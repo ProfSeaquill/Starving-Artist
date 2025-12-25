@@ -132,6 +132,7 @@ function startTurn(gameState) {
       hasActedThisTurn: false,
       
       didProMaintenanceThisTurn: false,
+      proMaintenanceRequired: false,
       // Reset per-turn downtime usage
       usedPracticeThisTurn: false,
       usedSleepThisTurn: false,
@@ -509,13 +510,19 @@ function endTurn(gameState) {
 
   let state = gameState;
 
-      // --- Pro: Fame Check is mandatory at end of Pro turns ---
+      // --- Pro: Fame Check must happen before you can end turn ---
   const activeBefore = getActivePlayer(state);
   if (activeBefore && activeBefore.stage === STAGE_PRO) {
     const f = activeBefore.flags || {};
     if (!f.didProMaintenanceThisTurn) {
-      // Run the check before rotating to the next player.
-      state = proReducer(state, { type: ActionTypes.PRO_MAINTENANCE_CHECK });
+      // Block END_TURN; leave the player active.
+      return updateActivePlayer(state, (p) => ({
+        ...p,
+        flags: {
+          ...(p.flags || {}),
+          proMaintenanceRequired: true
+        }
+      }));
     }
   }
 
