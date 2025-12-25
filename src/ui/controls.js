@@ -520,15 +520,13 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
     dispatch({ type: ActionTypes.DRAW_PRO_CARD });
   });
 
-  $('#proMaintenanceBtn')?.addEventListener('click', () => {
+    $('#proMaintenanceBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
     if (stage !== STAGE_PRO) return;
     dispatch({ type: ActionTypes.PRO_MAINTENANCE_CHECK });
   });
-    } catch (err) {
-    console.error('[controls] ERROR during setupControls:', err);
-  }
-    // --- PR / Scandal ---
+
+  // --- PR / Scandal ---
   $('#prHitPieceBtn')?.addEventListener('click', () => {
     const { state, player } = getPlayerAndStage();
     if (!state || !player) return;
@@ -558,4 +556,8 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
       amount
     });
   });
+
+} catch (err) {
+  console.error('[controls] ERROR during setupControls:', err);
+}
 }
