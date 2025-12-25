@@ -73,45 +73,79 @@ if ((player.scandal || 0) > 0) {
 }
   
   const availableTime = player.timeThisTurn || 0;
-  if (availableTime <= 0) {
-    // Nothing to spend.
-    return gameState;
-  }
+if (availableTime <= 0) return gameState;
 
-  let timeSpent = Number.isFinite(action.timeSpent)
-    ? action.timeSpent
-    : availableTime;
+// --- NEW: Masterwork Focus stat (consumed) ---
+const focusStat =
+  (player.flags && player.flags.proMasterworkFocusStat) || null;
 
-  if (timeSpent < 0) timeSpent = 0;
-  if (timeSpent > availableTime) timeSpent = availableTime;
+const focusValue =
+  focusStat && Number.isFinite(player[focusStat]) ? player[focusStat] : 0;
 
-  const targetProgress =
-    (config &&
-      config.pro &&
-      config.pro.masterworkTargetProgress) ||
-    10;
+if (!focusStat) {
+  // Should never happen if START_TURN sets it, but fail safely.
+  return updateActivePlayer(gameState, (p) => ({
+    ...p,
+    flags: {
+      ...(p.flags || {}),
+      lastMasterworkBlocked: true,
+      lastMasterworkBlockedReason: 'no_focus_stat'
+    }
+  }));
+}
 
-  // First update the player (time + progress).
-  let updatedState = updateActivePlayer(gameState, (p) => {
-    let updated = { ...p };
+if (focusValue <= 0) {
+  // No fuel to convert Time into progress.
+  return updateActivePlayer(gameState, (p) => ({
+    ...p,
+    flags: {
+      ...(p.flags || {}),
+      lastMasterworkBlocked: true,
+      lastMasterworkBlockedReason: 'no_focus_value',
+      lastMasterworkFocusStat: focusStat
+    }
+  }));
+}
 
-    updated.timeThisTurn = (updated.timeThisTurn || 0) - timeSpent;
-    if (updated.timeThisTurn < 0) updated.timeThisTurn = 0;
+let requestedTime = Number.isFinite(action.timeSpent)
+  ? action.timeSpent
+  : availableTime;
 
-    // Simple rule: 1 Time → 1 progress.
-    updated.masterworkProgress =
-      (updated.masterworkProgress || 0) + timeSpent;
+if (requestedTime < 0) requestedTime = 0;
+if (requestedTime > availableTime) requestedTime = availableTime;
 
-    const flags = {
-      ...(updated.flags || {}),
-      lastMasterworkTimeSpent: timeSpent,
-      lastMasterworkProgress: updated.masterworkProgress,
-      masterworkTarget: targetProgress
-    };
-    updated.flags = flags;
+// Progress is limited by BOTH time and the focus stat
+const progressGained = Math.min(requestedTime, focusValue);
 
-    return updated;
-  });
+const targetProgress =
+  (config && config.pro && config.pro.masterworkTargetProgress) || 10;
+
+// First update the player (time + focus stat + progress).
+let updatedState = updateActivePlayer(gameState, (p) => {
+  let updated = { ...p };
+
+  // Spend exactly the progress we can actually gain (not the requestedTime if fuel is lower)
+  updated.timeThisTurn = Math.max(0, (updated.timeThisTurn || 0) - progressGained);
+
+  // Consume the chosen focus stat
+  updated[focusStat] = Math.max(0, (updated[focusStat] || 0) - progressGained);
+
+  // Gain progress
+  updated.masterworkProgress =
+    (updated.masterworkProgress || 0) + progressGained;
+
+  updated.flags = {
+    ...(updated.flags || {}),
+    lastMasterworkFocusStat: focusStat,
+    lastMasterworkFocusSpent: progressGained,
+    lastMasterworkTimeSpent: progressGained,
+    lastMasterworkProgress: updated.masterworkProgress,
+    masterworkTarget: targetProgress
+  };
+
+  return updated;
+});
+
 
   // Check win condition after update.
   const updatedPlayer = getActivePlayer(updatedState);
