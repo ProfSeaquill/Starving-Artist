@@ -89,6 +89,35 @@ if (!endBtn) {
       return;
     }
 
+    // --- Pro: Fame Check required before ending turn ---
+if (player?.stage === STAGE_PRO) {
+  const f = player.flags || {};
+  if (!f.didProMaintenanceThisTurn) {
+    const showOverlay = window._starvingArtistShowCardOverlay;
+
+    const bodyText =
+      "You're in the Pro stage.\n\n" +
+      "Before you can end your turn, you must complete a Fame Check.";
+
+    if (typeof showOverlay === 'function') {
+      showOverlay(
+        'Fame Check Required',
+        'Finish your turn',
+        bodyText,
+        {
+          primaryLabel: 'Ok',
+          onPrimary: () => {}
+        }
+      );
+    } else {
+      // Fallback if the overlay isn’t wired for some reason
+      window.alert(bodyText.replace(/\n\n/g, '\n'));
+    }
+
+    return; // critical: don’t dispatch END_TURN yet
+  }
+}
+
     console.log('[endTurn] jobId =', player?.jobId);
     console.log('[endTurn] skippedWorkCount =', player?.skippedWorkCount);
     console.log(
