@@ -105,6 +105,14 @@ export function applyAction(gameState, action) {
   return next;
 }
 
+// --- Pro Masterwork Focus (Food/Inspiration/Craft) ---
+const PRO_FOCUS_STATS = ['food', 'inspiration', 'craft'];
+
+function rollProFocusStat() {
+  const i = Math.floor(Math.random() * PRO_FOCUS_STATS.length);
+  return PRO_FOCUS_STATS[i];
+}
+
 
 /**
  * START_TURN:
@@ -145,18 +153,29 @@ function startTurn(gameState) {
     delete flags.leaveHomeAttemptedThisTurn; // NEW
 
      // Lay Low is ONLY offered to Pros with Scandal, at the very start of the turn.
-    if (player.stage === STAGE_PRO && (player.scandal || 0) > 0) {
-      flags.canLayLowThisTurn = true;
-    }
+if (player.stage === STAGE_PRO && (player.scandal || 0) > 0) {
+  flags.canLayLowThisTurn = true;
+}
 
-    if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
+// --- NEW: Pro "Masterwork Focus" stat is chosen at the start of each Pro turn ---
+if (player.stage === STAGE_PRO) {
+  const focus = rollProFocusStat(); // 'food' | 'inspiration' | 'craft'
+  flags.proMasterworkFocusStat = focus;
+  flags.proMasterworkFocusSetAtTurn = gameState.turn;
+} else {
+  // Prevent stale focus leaking into other stages
+  delete flags.proMasterworkFocusStat;
+  delete flags.proMasterworkFocusSetAtTurn;
+}
 
-      return {
-        ...player,
-        timeThisTurn: 0,
-        flags
-      };
-    }
+if (player.stage !== STAGE_AMATEUR && player.stage !== STAGE_PRO) {
+  return {
+    ...player,
+    timeThisTurn: 0,
+    flags
+  };
+}
+
 
     let updated = {
       ...player,
