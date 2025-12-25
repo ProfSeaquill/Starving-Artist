@@ -127,6 +127,10 @@ export function createPlayer(name, artPath) {
     inspiration: 0,
     craft: 0,
 
+    // PR / Scandal (new)
+    scandal: 0,        // persists across turns; taxes Pro Time rolls
+    prHitUsed: false,  // once per game per player
+
     // Per-turn time (not stored between turns)
     timeThisTurn: 0,
 
@@ -265,12 +269,54 @@ export function updateActivePlayer(gameState, updater) {
   if ('craft' in fixed) fixed.craft = clamp0(fixed.craft);
   if ('timeThisTurn' in fixed) fixed.timeThisTurn = clamp0(fixed.timeThisTurn);
   if ('time' in fixed) fixed.time = clamp0(fixed.time);
+  if ('scandal' in fixed) fixed.scandal = clamp0(fixed.scandal);
+
 
   
   const players = gameState.players.slice();
   players[idx] = fixed;
 
   return { ...gameState, players };
+}
+
+// --- NEW: update helpers for non-active players (needed for PR targeting) ---
+
+function normalizePlayerForState(player) {
+  const clamp0 = (v) => (Number.isFinite(v) ? Math.max(0, v) : 0);
+  const fixed = { ...player };
+
+  // Global stat floor (money is intentionally NOT clamped; debt is allowed)
+  if ('food' in fixed) fixed.food = clamp0(fixed.food);
+  if ('inspiration' in fixed) fixed.inspiration = clamp0(fixed.inspiration);
+  if ('craft' in fixed) fixed.craft = clamp0(fixed.craft);
+  if ('timeThisTurn' in fixed) fixed.timeThisTurn = clamp0(fixed.timeThisTurn);
+  if ('time' in fixed) fixed.time = clamp0(fixed.time);
+  if ('scandal' in fixed) fixed.scandal = clamp0(fixed.scandal);
+
+  return fixed;
+}
+
+/**
+ * Update a player by index (immutable).
+ */
+export function updatePlayerAtIndex(gameState, index, updater) {
+  const current = gameState.players[index];
+  if (!current) return gameState;
+
+  const updated = normalizePlayerForState(updater(current));
+  const players = gameState.players.slice();
+  players[index] = updated;
+
+  return { ...gameState, players };
+}
+
+/**
+ * Update a player by id (immutable).
+ */
+export function updatePlayerById(gameState, playerId, updater) {
+  const idx = gameState.players.findIndex((p) => p && p.id === playerId);
+  if (idx < 0) return gameState;
+  return updatePlayerAtIndex(gameState, idx, updater);
 }
 
 
