@@ -277,7 +277,7 @@ What you’ll do here:
 • Try to escape
 
 Goal:
-Achieve enough success to leave Home and enter the wider world.`
+Nurture your talents and develop foundational skills before going out to the wider world.`
   },
   
   dreamer: {
@@ -299,8 +299,7 @@ Goal: Meet the requirements to advance into the Amateur stage.`
     name: '“This Is Starting to Count.”',
     body: `You’re no longer just trying—you’re producing real work.
 
-Prove your creative talents: make your art and share it with the 
-world, laying the foundation for your future stardom.
+Prove your creative talents: make your art and share it with the world, laying the foundation for your future stardom.
 
 What’s new here:
 • Minor Works ladder
@@ -315,8 +314,7 @@ Your goal: Compile your portfolio and successfully go Pro.`
     name: '“Now It’s Serious.”',
     body: `You’ve made it—but staying here is hard.
 
-Navigate the chaos and thrill of a professional career, establishing 
-a legacy that will last long after you're gone.
+Navigate the chaos and thrill of a professional career, establishing a legacy that will last long after you're gone.
 
 What’s new here:
 • Masterwork progress
