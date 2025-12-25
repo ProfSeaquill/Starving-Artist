@@ -59,6 +59,19 @@ function handleWorkOnMasterwork(gameState, action) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
+  // NEW: You cannot progress your Masterwork while you have any Scandal.
+// (You must Buyout / Lay Low first.)
+if ((player.scandal || 0) > 0) {
+  return updateActivePlayer(gameState, (p) => ({
+    ...p,
+    flags: {
+      ...(p.flags || {}),
+      lastMasterworkBlockedByScandal: true,
+      lastMasterworkBlockedAtScandal: p.scandal || 0
+    }
+  }));
+}
+  
   const availableTime = player.timeThisTurn || 0;
   if (availableTime <= 0) {
     // Nothing to spend.
