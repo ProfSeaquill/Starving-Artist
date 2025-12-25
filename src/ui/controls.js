@@ -538,19 +538,62 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
 
   // --- Pro ---
   $('#workMasterworkBtn')?.addEventListener('click', () => {
-    const { stage, player } = getPlayerAndStage();
-    if (stage !== STAGE_PRO) return;
-    if (!player) return;
+  const { stage, player } = getPlayerAndStage();
+  if (stage !== STAGE_PRO) return;
+  if (!player) return;
 
-    const timeAvailable = player.timeThisTurn || 0;
-    if (timeAvailable <= 0) return;
+  const timeAvailable = player.timeThisTurn || 0;
+  if (timeAvailable <= 0) return;
 
-    // For now: spend all available Time on Masterwork.
-    dispatch({
-      type: ActionTypes.WORK_ON_MASTERWORK,
-      timeSpent: timeAvailable
-    });
+  const focus = player.flags?.proMasterworkFocusStat;
+  const focusVal = focus ? (player[focus] || 0) : 0;
+  const maxProgress = Math.max(0, Math.min(timeAvailable, focusVal));
+
+  if (!focus) {
+    // Should not happen if START_TURN sets it, but fail loud.
+    const showOverlay = window._starvingArtistShowCardOverlay;
+    const bodyText = `Something went wrong: no Masterwork Focus stat was set for this turn.`;
+    if (typeof showOverlay === 'function') {
+      showOverlay('No Focus Set', 'Work on Masterwork', bodyText, {
+        primaryLabel: 'Ok',
+        onPrimary: () => {}
+      });
+    } else {
+      window.alert(bodyText);
+    }
+    return;
+  }
+
+  if (maxProgress <= 0) {
+    const focusLabel =
+      focus === 'food' ? 'Food' :
+      focus === 'inspiration' ? 'Inspiration' :
+      focus === 'craft' ? 'Craft' : 'Focus';
+
+    const showOverlay = window._starvingArtistShowCardOverlay;
+    const bodyText =
+      `Your Masterwork Focus this turn is ${focusLabel}.\n\n` +
+      `You have 0 ${focusLabel}, so you can’t make progress right now.\n\n` +
+      `Use downtime or other actions to build ${focusLabel}, then try again.`;
+
+    if (typeof showOverlay === 'function') {
+      showOverlay('No Fuel', 'Work on Masterwork', bodyText, {
+        primaryLabel: 'Got it',
+        onPrimary: () => {}
+      });
+    } else {
+      window.alert(bodyText.replace(/\n\n/g, '\n'));
+    }
+    return;
+  }
+
+  // Spend exactly what we can actually convert this turn
+  dispatch({
+    type: ActionTypes.WORK_ON_MASTERWORK,
+    timeSpent: maxProgress
   });
+});
+
 
   $('#drawProCardBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
