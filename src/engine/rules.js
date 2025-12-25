@@ -16,6 +16,8 @@ import { dreamerReducer } from './stages/dreamer_stage.js';
 import { amateurReducer } from './stages/amateur_stage.js';
 import { proReducer } from './stages/pro_stage.js';
 
+console.log('[rules] loaded: fame-check enforcement patch v1');
+
 /**
  * Main reducer. Takes the current gameState and an action,
  * returns the next gameState (pure function).
