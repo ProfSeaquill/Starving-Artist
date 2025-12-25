@@ -672,6 +672,10 @@ export function render(gameState) {
   $('#statInspiration').textContent = String(player.inspiration || 0);
   $('#statCraft').textContent = String(player.craft || 0);
 
+    const scandalEl = $('#statScandal');
+  if (scandalEl) scandalEl.textContent = String(player.scandal || 0);
+
+
   const timeValue = player.timeThisTurn || 0;
 
     // --- Minor Works buttons: enable/disable rules ---
@@ -807,11 +811,94 @@ if (drawHomeBtn) {
       !timeValue || dtFlags.usedEatAtHomeThisTurn;
   }
 
+    const endTurnBtn = $('#endTurnBtn');
+  if (endTurnBtn) {
+    const canLayLow =
+      player.stage === STAGE_PRO &&
+      (player.scandal || 0) > 0 &&
+      !!pFlags.canLayLowThisTurn &&
+      !pFlags.hasRolledTimeThisTurn &&
+      !pFlags.hasActedThisTurn;
+
+    if (canLayLow) {
+      setButtonLabelWithCost(endTurnBtn, 'Lay Low', 'Roll d6 → reduce Scandal, end turn');
+    } else {
+      setButtonLabelWithCost(endTurnBtn, 'End Turn', '');
+    }
+  }
+
     // After all enable/disable logic, update button labels to show costs/buffs.
   updateActionButtonLabels(gameState, player);
 
 
   // --- Advancement button gating ---
+
+    // --- PR / Scandal UI ---
+  const prSelect = $('#prTargetSelect');
+  const prSpend = $('#prSpendTime');
+  const prBtn = $('#prHitPieceBtn');
+
+  if (prSelect) {
+    // Rebuild options
+    while (prSelect.options.length > 1) prSelect.remove(1);
+
+    const pros = gameState.players.filter(
+      (p) => p && p.stage === STAGE_PRO && p.id !== player.id
+    );
+
+    for (const p of pros) {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.name} (Scandal: ${p.scandal || 0})`;
+      prSelect.appendChild(opt);
+    }
+
+    const canUsePR =
+      (player.stage === STAGE_AMATEUR || player.stage === STAGE_PRO) &&
+      !player.prHitUsed &&
+      (player.timeThisTurn || 0) > 0 &&
+      pros.length > 0;
+
+    prSelect.disabled = !canUsePR;
+
+    if (prSpend) {
+      const max = player.timeThisTurn || 0;
+      prSpend.disabled = !canUsePR;
+      prSpend.min = '1';
+      prSpend.max = String(Math.max(1, max));
+      // Keep within bounds
+      const cur = Number(prSpend.value);
+      if (!Number.isFinite(cur) || cur <= 0 || cur > max) {
+        prSpend.value = String(max || 1);
+      }
+    }
+
+    if (prBtn) prBtn.disabled = !canUsePR;
+  }
+
+  const buyoutBtn = $('#buyoutScandalBtn');
+  const buyoutAmt = $('#buyoutAmount');
+  if (buyoutBtn) {
+    const canBuyout =
+      player.stage === STAGE_PRO &&
+      (player.scandal || 0) > 0 &&
+      (player.money || 0) >= 3;
+
+    buyoutBtn.disabled = !canBuyout;
+
+    if (buyoutAmt) {
+      const maxAffordable = Math.floor((player.money || 0) / 3);
+      const maxRemovable = Math.min(player.scandal || 0, maxAffordable);
+      buyoutAmt.disabled = !canBuyout;
+      buyoutAmt.min = '1';
+      buyoutAmt.max = String(Math.max(1, maxRemovable));
+      const cur = Number(buyoutAmt.value);
+      if (!Number.isFinite(cur) || cur <= 0 || cur > maxRemovable) {
+        buyoutAmt.value = String(maxRemovable || 1);
+      }
+    }
+  }
+
 
   // Home → Dreamer: only meaningful while on the Home track
   const attemptLeaveHomeBtn = $('#attemptLeaveHomeBtn');
@@ -1141,6 +1228,30 @@ if (attemptLeaveHomeBtn) {
       } vs ≥${flags.lastProMaintenanceTarget} — ${
         flags.lastProMaintenanceSuccess ? 'stay Pro' : 'demoted to Amateur'
       }`
+    );
+  }
+
+    if (flags.lastLayLowRoll !== undefined) {
+    lines.push(
+      `Lay Low: rolled ${flags.lastLayLowRoll} (Scandal ${flags.lastLayLowScandalBefore} → ${flags.lastLayLowScandalAfter})`
+    );
+  }
+
+  if (flags.lastHitPieceAmount !== undefined) {
+    lines.push(
+      `Hit Piece: spent ${flags.lastHitPieceAmount} Time on ${flags.lastHitPieceTargetId}`
+    );
+  }
+
+  if (flags.lastScandalGained !== undefined) {
+    lines.push(
+      `Scandal gained: +${flags.lastScandalGained} (from ${flags.lastScandalFromPlayerId || 'unknown'})`
+    );
+  }
+
+  if (flags.lastBuyoutScandalRemoved !== undefined) {
+    lines.push(
+      `Buyout: removed ${flags.lastBuyoutScandalRemoved} Scandal (paid $${flags.lastBuyoutCostMoney})`
     );
   }
 
