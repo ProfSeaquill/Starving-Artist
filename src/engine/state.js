@@ -28,9 +28,9 @@ export const DEFAULT_CONFIG = {
   },
   amateur: {
     portfolioCost: {
-      money: 5,
-      inspiration: 3,
-      craft: 2
+      money: 2,
+      inspiration: 5,
+      craft: 3
     },
     proAdvanceRollTarget: 4,
     maxMinorWorks: 3,
