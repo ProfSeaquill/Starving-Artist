@@ -20,6 +20,18 @@ const $ = (selector) => {
   return document.getElementById(id);
 };
 
+function canLayLowNow(state, player) {
+  const f = player?.flags || {};
+  return (
+    !!state &&
+    !!player &&
+    player.stage === STAGE_PRO &&
+    (player.scandal || 0) > 0 &&
+    !!f.canLayLowThisTurn &&
+    !f.hasRolledTimeThisTurn &&
+    !f.hasActedThisTurn
+  );
+}
 
 /**
  * Hook up DOM controls to dispatch actions.
@@ -70,6 +82,13 @@ if (!endBtn) {
     console.log('[controls] End Turn clicked (handler)');
 
     const { state, player } = getPlayerAndStage();
+    
+    // NEW: Lay Low replaces End Turn only if it's the very first thing you do (no roll, no actions).
+    if (canLayLowNow(state, player)) {
+      dispatch({ type: ActionTypes.LAY_LOW });
+      return;
+    }
+
     console.log('[endTurn] jobId =', player?.jobId);
     console.log('[endTurn] skippedWorkCount =', player?.skippedWorkCount);
     console.log(
@@ -509,4 +528,34 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
     } catch (err) {
     console.error('[controls] ERROR during setupControls:', err);
   }
+    // --- PR / Scandal ---
+  $('#prHitPieceBtn')?.addEventListener('click', () => {
+    const { state, player } = getPlayerAndStage();
+    if (!state || !player) return;
+
+    const targetId = $('#prTargetSelect')?.value;
+    if (!targetId) return;
+
+    const amtRaw = Number($('#prSpendTime')?.value);
+    const amount = Number.isFinite(amtRaw) ? amtRaw : (player.timeThisTurn || 0);
+
+    dispatch({
+      type: ActionTypes.PLANT_HIT_PIECE,
+      targetPlayerId: targetId,
+      amount
+    });
+  });
+
+  $('#buyoutScandalBtn')?.addEventListener('click', () => {
+    const { player } = getPlayerAndStage();
+    if (!player) return;
+
+    const amtRaw = Number($('#buyoutAmount')?.value);
+    const amount = Number.isFinite(amtRaw) ? amtRaw : undefined;
+
+    dispatch({
+      type: ActionTypes.BUYOUT_SCANDAL,
+      amount
+    });
+  });
 }
