@@ -37,7 +37,7 @@ export const DEFAULT_CONFIG = {
     jobLossSkipCount: 3
   },
   pro: {
-    maintenanceRollTarget: 4,
+    maintenanceRollTarget: 1,
     masterworkTargetProgress: 10
   },
   global: {
