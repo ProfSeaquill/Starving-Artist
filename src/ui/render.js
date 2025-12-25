@@ -666,6 +666,8 @@ export function render(gameState) {
 
   // --- Basic header info ---
   $('#turn').textContent = String(gameState.turn);
+  const headerPlayerNameEl = $('#headerPlayerName');
+  if (headerPlayerNameEl) headerPlayerNameEl.textContent = player.name;
   $('#artPath').textContent = player.artPath;
 
   // Player name & art path in the player panel
