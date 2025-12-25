@@ -1209,10 +1209,40 @@ button.guided-btn {
           <div class="controls-grid">
             <button id="workMasterworkBtn" type="button">Masterwork Progress</button>
             <button id="proMaintenanceBtn" type="button">Fame Check</button>
+                        <input
+              id="buyoutAmount"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Scandal"
+              style="max-width:110px;"
+            />
+            <button id="buyoutScandalBtn" type="button">Bury Scandal</button>
+
           </div>
         </div>
       </section>
 
+            <!-- PR actions (Amateur / Pro) -->
+        <div class="stage-actions stage-pr-any">
+          <div class="label" style="margin-top:8px;">PR</div>
+          <div class="controls-grid">
+            <select id="prTargetSelect">
+              <option value="">Target a Pro…</option>
+            </select>
+
+            <input
+              id="prSpendTime"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Time"
+              style="max-width:110px;"
+            />
+
+            <button id="prHitPieceBtn" type="button">Plant Hit Piece</button>
+          </div>
+        </div>
 
 
       <!-- Dev / Debug panel (entire block is toggleable) -->
