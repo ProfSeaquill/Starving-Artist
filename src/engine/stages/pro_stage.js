@@ -289,10 +289,10 @@ function handleProMaintenanceCheck(gameState) {
     (config &&
       config.pro &&
       config.pro.maintenanceRollTarget) ||
-    4;
+    1;
 
   const roll = rollD6();
-  const success = roll >= target;
+  const success = roll > target;
 
   const nextState = updateActivePlayer(gameState, (p) => {
     let updated = { ...p };
@@ -301,7 +301,8 @@ function handleProMaintenanceCheck(gameState) {
       ...(updated.flags || {}),
       lastProMaintenanceRoll: roll,
       lastProMaintenanceTarget: target,
-      lastProMaintenanceSuccess: success
+      lastProMaintenanceSuccess: success,
+      didProMaintenanceThisTurn: true
     };
     updated.flags = flags;
 
