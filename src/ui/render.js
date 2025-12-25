@@ -1233,7 +1233,7 @@ if (attemptLeaveHomeBtn) {
     lines.push(
       `Pro maintenance roll: ${
         flags.lastProMaintenanceRoll
-      } vs ≥${flags.lastProMaintenanceTarget} — ${
+      } vs >${flags.lastProMaintenanceTarget} — ${
         flags.lastProMaintenanceSuccess ? 'stay Pro' : 'demoted to Amateur'
       }`
     );
