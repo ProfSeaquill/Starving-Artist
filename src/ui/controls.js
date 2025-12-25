@@ -565,7 +565,7 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
   });
 
   // --- PR / Scandal ---
-  $('#prHitPieceBtn')?.addEventListener('click', () => {
+    $('#prHitPieceBtn')?.addEventListener('click', () => {
     const { state, player } = getPlayerAndStage();
     if (!state || !player) return;
 
@@ -575,16 +575,63 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
     const amtRaw = Number($('#prSpendTime')?.value);
     const amount = Number.isFinite(amtRaw) ? amtRaw : (player.timeThisTurn || 0);
 
+    // --- capture BEFORE for success detection ---
+    const attackerIndex = state.activePlayerIndex;
+    const targetIndex = (state.players || []).findIndex(p => p && p.id === targetId);
+    const targetBefore = targetIndex >= 0 ? state.players[targetIndex] : null;
+    const beforeTargetScandal = targetBefore ? (targetBefore.scandal || 0) : null;
+
     dispatch({
       type: ActionTypes.PLANT_HIT_PIECE,
       targetPlayerId: targetId,
       amount
     });
+
+    // --- read AFTER and show popup if the action actually did something ---
+    const afterState = getState && getState();
+    if (!afterState) return;
+
+    const targetAfter = targetIndex >= 0 ? afterState.players[targetIndex] : null;
+    const afterTargetScandal = targetAfter ? (targetAfter.scandal || 0) : null;
+
+    const changed =
+      beforeTargetScandal !== null &&
+      afterTargetScandal !== null &&
+      afterTargetScandal !== beforeTargetScandal;
+
+    if (!changed) return; // action was ignored/invalid, don’t popup
+
+    const attackerAfter = afterState.players?.[attackerIndex];
+    const actualAmount =
+      attackerAfter?.flags?.lastHitPieceAmount ?? amount;
+
+    const targetName = targetAfter?.name || 'your rival';
+
+    const showOverlay = window._starvingArtistShowCardOverlay;
+    const bodyText =
+      `You give your agent the green light.\n\n` +
+      `"We'll take it from here," she says with a wink.\n\n` +
+      `${targetName} gains ${actualAmount} Scandal.`;
+
+    if (typeof showOverlay === 'function') {
+      showOverlay(
+        'Hit Piece Planted',
+        'PR / Scandal',
+        bodyText,
+        { primaryLabel: 'Got it', onPrimary: () => {} }
+      );
+    } else {
+      window.alert(bodyText.replace(/\n\n/g, '\n'));
+    }
   });
 
-  $('#buyoutScandalBtn')?.addEventListener('click', () => {
-    const { player } = getPlayerAndStage();
-    if (!player) return;
+
+    $('#buyoutScandalBtn')?.addEventListener('click', () => {
+    const { state, player } = getPlayerAndStage();
+    if (!state || !player) return;
+
+    const beforeScandal = player.scandal || 0;
+    const beforeMoney = player.money || 0;
 
     const amtRaw = Number($('#buyoutAmount')?.value);
     const amount = Number.isFinite(amtRaw) ? amtRaw : undefined;
@@ -593,6 +640,38 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
       type: ActionTypes.BUYOUT_SCANDAL,
       amount
     });
+
+    const afterState = getState && getState();
+    if (!afterState) return;
+
+    const p2 = afterState.players?.[afterState.activePlayerIndex];
+    if (!p2) return;
+
+    const afterScandal = p2.scandal || 0;
+    const afterMoney = p2.money || 0;
+
+    // Only popup if it actually reduced scandal (i.e., buyout succeeded)
+    if (afterScandal >= beforeScandal) return;
+
+    const removed = p2.flags?.lastBuyoutScandalRemoved ?? (beforeScandal - afterScandal);
+    const cost = p2.flags?.lastBuyoutCostMoney ?? (beforeMoney - afterMoney);
+
+    const showOverlay = window._starvingArtistShowCardOverlay;
+    const bodyText =
+      `You make a few quiet calls.\n\n` +
+      `The story changes shape in the hands of the right people.\n\n` +
+      `-${removed} Scandal (Cost: $${cost}).`;
+
+    if (typeof showOverlay === 'function') {
+      showOverlay(
+        'Damage Control',
+        'PR / Scandal',
+        bodyText,
+        { primaryLabel: 'Got it', onPrimary: () => {} }
+      );
+    } else {
+      window.alert(bodyText.replace(/\n\n/g, '\n'));
+    }
   });
 
 } catch (err) {
