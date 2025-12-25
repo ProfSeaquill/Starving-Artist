@@ -102,6 +102,15 @@ if (!endBtn) {
       return;
     }
 
+        // --- Pro: End Turn should force a Fame Check first ---
+    if (player?.stage === STAGE_PRO) {
+      const f = player.flags || {};
+      if (!f.didProMaintenanceThisTurn) {
+        dispatch({ type: ActionTypes.PRO_MAINTENANCE_CHECK });
+        return;
+      }
+    }
+
     const flags = player.flags || {};
     const hasWorkedThisTurn = !!flags.hasWorkedThisTurn;
 
