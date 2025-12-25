@@ -864,41 +864,82 @@ function showDiceRollAnimation(finalValue, titleText = '') {
 }
 
 function maybeShowDiceRoll(state, action, prevState) {
-  // For actions that rotate the active player (Lay Low auto-ends turn),
-  // we want the roller to be the player who was active BEFORE the action.
-  const actorIndex =
+  if (!state || !action) return;
+
+  const prevIdx =
     prevState && typeof prevState.activePlayerIndex === 'number'
       ? prevState.activePlayerIndex
       : state.activePlayerIndex;
 
-  const player = state.players?.[actorIndex];
-  if (!player || !player.flags) return;
+  const prevPlayer = prevState?.players?.[prevIdx] || null;
 
-  // Use a generic label for both, or set "" to hide it entirely.
-  const title = 'Dice Roll';
+  // Helper to safely fetch the "actor" (the player who actually rolled),
+  // even if the action auto-ended the turn and advanced the active player.
+  const getActor = (idx) => state?.players?.[idx] || null;
 
+  // Generic label for non-specific rolls
+  const genericTitle = 'Dice Roll';
+
+  // ---- Time Roll ----
   if (action.type === ActionTypes.ROLL_TIME) {
-    const roll = player.flags.lastTimeRoll;
+    const player = state.players[state.activePlayerIndex];
+    const roll = player?.flags?.lastTimeRoll;
     if (roll === undefined || roll === null) return;
-    showDiceRollAnimation(roll, title);
+    showDiceRollAnimation(roll, genericTitle);
     return;
   }
 
+  // ---- Leave Home roll ----
   if (action.type === ActionTypes.ATTEMPT_LEAVE_HOME) {
-    const roll = player.flags.lastHomeRoll;
+    const player = state.players[state.activePlayerIndex];
+    const roll = player?.flags?.lastHomeRoll;
     if (roll === undefined || roll === null) return;
-    showDiceRollAnimation(roll, title);
+    showDiceRollAnimation(roll, genericTitle);
     return;
   }
 
-  // NEW: Lay Low roll popup
+  // ---- Lay Low roll (Lay Low auto-ends the turn, so actor is prevIdx) ----
   if (action.type === ActionTypes.LAY_LOW) {
-    const roll = player.flags.lastLayLowRoll;
+    const actor = getActor(prevIdx);
+    const roll = actor?.flags?.lastLayLowRoll;
     if (roll === undefined || roll === null) return;
     showDiceRollAnimation(roll, 'Lay Low');
     return;
   }
+
+  // ---- Fame Check roll (manual click) ----
+  if (action.type === ActionTypes.PRO_MAINTENANCE_CHECK) {
+    const player = state.players[state.activePlayerIndex];
+    const roll = player?.flags?.lastProMaintenanceRoll;
+    if (roll === undefined || roll === null) return;
+    showDiceRollAnimation(roll, 'Fame Check');
+    return;
+  }
+
+  // ---- Fame Check roll (auto-run during END_TURN) ----
+  // If your rules.js triggers PRO_MAINTENANCE_CHECK inside endTurn(),
+  // dispatch() sees END_TURN, not PRO_MAINTENANCE_CHECK — so detect it.
+  if (action.type === ActionTypes.END_TURN) {
+    if (!prevPlayer || prevPlayer.stage !== 'pro') return;
+
+    const beforeFlags = prevPlayer.flags || {};
+    const actor = getActor(prevIdx);
+    const afterFlags = actor?.flags || {};
+
+    const ranThisEndTurn =
+      !beforeFlags.didProMaintenanceThisTurn &&
+      !!afterFlags.didProMaintenanceThisTurn;
+
+    if (!ranThisEndTurn) return;
+
+    const roll = afterFlags.lastProMaintenanceRoll;
+    if (roll === undefined || roll === null) return;
+
+    showDiceRollAnimation(roll, 'Fame Check');
+    return;
+  }
 }
+
 
 
 // --- Card affordability guard (stage cards only) -----------------------------
