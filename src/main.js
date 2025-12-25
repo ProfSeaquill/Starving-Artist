@@ -692,33 +692,6 @@ if (card.notes) {
           lines.push('Effects: ' + effLines.join(', '));
         }
       }
-     // If this Pro card uses "outcome" columns (success_/fail_), show those too.
-      if ((!Array.isArray(card.effects) || !card.effects.length) &&
-          ((Array.isArray(card.successEffects) && card.successEffects.length) ||
-           (Array.isArray(card.failEffects) && card.failEffects.length))) {
-        const fmt = (effectsArr) =>
-          (effectsArr || [])
-            .map((eff) => {
-              if (eff.type === 'stat') {
-                const sign = eff.delta >= 0 ? '+' : '';
-                return `${eff.stat} ${sign}${eff.delta}`;
-              }
-              if (eff.type === 'masterwork') {
-                const sign = eff.delta >= 0 ? '+' : '';
-                return `Masterwork ${sign}${eff.delta}`;
-              }
-              return '';
-            })
-            .filter(Boolean)
-            .join(', ');
-
-        if (Array.isArray(card.successEffects) && card.successEffects.length) {
-          lines.push('On success: ' + (fmt(card.successEffects) || 'no change'));
-        }
-        if (Array.isArray(card.failEffects) && card.failEffects.length) {
-          lines.push('On fail: ' + (fmt(card.failEffects) || 'no change'));
-        }
-      }
       
       bodyText = lines.join('\n\n') || '(No rules text yet.)';
       break;
