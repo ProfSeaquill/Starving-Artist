@@ -319,6 +319,7 @@ Navigate the chaos and thrill of a professional career, establishing a legacy th
 What’s new here:
 • Masterwork progress
 • High-stakes Pro cards
+• Fame Checks
 
 Your goal: Be the first player to complete a Masterwork and win the game.`
   },
