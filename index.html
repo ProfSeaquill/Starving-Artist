@@ -1159,6 +1159,19 @@ button.guided-btn {
           <button id="endTurnBtn" type="button">End Turn</button>
         </div>
 
+        <!-- Job actions (Dreamer / Amateur / Pro) -->
+<div class="stage-actions stage-job-any">
+  <div class="label" style="margin-top:8px;">Work</div>
+  <div class="controls-grid">
+    <select id="jobSelect">
+      <option value="">Choose a Job…</option>
+    </select>
+
+    <button id="chooseJobBtn" type="button">Choose Job</button>
+    <button id="goToWorkBtn" type="button">Go To Work</button>
+  </div>
+</div>
+        
         <!-- Home-only actions -->
         <div class="stage-actions stage-home-only">
           <div class="label" style="margin-top:8px;">Home</div>
@@ -1180,28 +1193,16 @@ button.guided-btn {
         <div class="stage-actions stage-amateur-only">
           <div class="label" style="margin-top:8px;">Amateur</div>
           <div class="controls-grid">
-            <button id="startMinorQuickBtn" type="button">Start Quick Minor Work</button>
-            <button id="startMinorCareerBtn" type="button">Start Career Minor Work</button>
-            <button id="startMinorSpotlightBtn" type="button">Start Spotlight Minor Work</button>
-            <button id="progressMinorWorkBtn" type="button">Work on Minor Work</button>
+            <button id="startMinorQuickBtn" type="button">Quick Work</button>
+            <button id="startMinorCareerBtn" type="button">Long Work</button>
+            <button id="startMinorSpotlightBtn" type="button">Spotlight Work</button>
+            <button id="progressMinorWorkBtn" type="button">Progress Minor Work</button>
 
             <button id="compilePortfolioBtn" type="button">Compile Portfolio</button>
             <button id="attemptAdvanceProBtn" type="button">Try to Go Pro</button>
           </div>
         </div>
 
-            <!-- Job actions (Dreamer / Amateur / Pro) -->
-<div class="stage-actions stage-job-any">
-  <div class="label" style="margin-top:8px;">Work</div>
-  <div class="controls-grid">
-    <select id="jobSelect">
-      <option value="">Choose a Job…</option>
-    </select>
-
-    <button id="chooseJobBtn" type="button">Choose Job</button>
-    <button id="goToWorkBtn" type="button">Go To Work</button>
-  </div>
-</div>
 
         <!-- Pro-only actions -->
         <div class="stage-actions stage-pro-only">
@@ -1221,9 +1222,8 @@ button.guided-btn {
 
           </div>
         </div>
-      </section>
 
-            <!-- PR actions (Amateur / Pro) -->
+      <!-- PR actions (Amateur / Pro) -->
         <div class="stage-actions stage-pr-any">
           <div class="label" style="margin-top:8px;">PR</div>
           <div class="controls-grid">
@@ -1243,6 +1243,10 @@ button.guided-btn {
             <button id="prHitPieceBtn" type="button">Plant Hit Piece</button>
           </div>
         </div>
+        
+      </section>
+
+            
 
 
       <!-- Dev / Debug panel (entire block is toggleable) -->
