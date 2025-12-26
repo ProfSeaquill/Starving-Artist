@@ -20,8 +20,8 @@ H18,Coupon Wizardry,You stack coupons like a sorcerer. The cashier bows.,1,0,0,2
 H19,Sunlight Hits Your Desk Just Right,For ten glorious minutes your workspace looks like an indie film poster.,0,1,0,0,0,0,0,0,mood; workspace; magic
 H20,One Good Stretch,Your back cracks like a drum fill. Your brain immediately forgives you.,0,1,0,0,0,0,0,0,health; reset; home
 H21,Mystery Smell in the Fridge,You open the fridge and something opens its eyes back. You lose your appetite — and your peace.,0,0,0,0,1,0,0,0,setback; food; chaos
-H22,Rent Reminder Jumpscare,Your landlord texts “Hey :)” and your soul leaves your body.,0,0,0,0,0,1,0,2,bills; setback; home
 H23,Surprise Leftovers from a Friend,A friend drops off leftovers like a benevolent food fairy.,2,0,0,0,0,0,0,0,friends; food; windfall
 H24,Clear-the-Table Ceremony,"You clean your space, light a candle, and declare your living room a sacred studio.",0,1,1,0,0,0,0,0,studio; cleaning; focus
+
 
 
