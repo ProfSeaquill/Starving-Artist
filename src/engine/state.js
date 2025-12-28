@@ -20,15 +20,17 @@ export const DEFAULT_CONFIG = {
   },
   dreamer: {
     advanceThresholds: {
-      money: 5,
-      inspiration: 5,
-      craft: 3
+      money: 3,
+      food: 2,
+      inspiration: 4,
+      craft: 5
     },
     advanceRollTarget: 4
   },
   amateur: {
     portfolioCost: {
-      money: 2,
+      money: 5,
+      food: 2,
       inspiration: 5,
       craft: 3
     },
