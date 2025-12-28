@@ -347,26 +347,29 @@ function renderPromotionRules(gameState) {
   }
 
   // Dreamer → Amateur
-  const dreamerEl = $('#dreamerPromotion');
-  if (dreamerEl) {
-    const thresholds = gameState.config?.dreamer?.advanceThresholds || {};
-    const tParts = Object.entries(thresholds).map(
-      ([stat, val]) => `${stat} ≥ ${val}`
-    );
-    const rollTarget = gameState.config?.dreamer?.advanceRollTarget;
-    let text = 'Dreamer → Amateur: ';
-    if (tParts.length) {
-      text += `need ${tParts.join(', ')}`;
-    } else {
-      text += 'meet the Dreamer thresholds';
-    }
-    if (rollTarget !== undefined) {
-      text += `, then roll ≥ ${rollTarget}.`;
-    } else {
-      text += '.';
-    }
-    dreamerEl.textContent = text;
+const dreamerEl = $('#dreamerPromotion');
+if (dreamerEl) {
+  const cost =
+    gameState.config?.dreamer?.advanceCost ??
+    gameState.config?.dreamer?.advanceThresholds ??
+    {};
+
+  const costParts = Object.entries(cost).map(([stat, val]) => `${val} ${stat}`);
+  const rollTarget = gameState.config?.dreamer?.advanceRollTarget;
+
+  let text = 'Dreamer → Amateur: ';
+  if (costParts.length) {
+    text += `pay ${costParts.join(', ')}`;
+  } else {
+    text += 'pay the Dreamer cost';
   }
+  if (rollTarget !== undefined) {
+    text += `, then roll ≥ ${rollTarget}.`;
+  } else {
+    text += '.';
+  }
+  dreamerEl.textContent = text;
+}
 
   // Amateur → Pro
   const amateurEl = $('#amateurPromotion');
@@ -940,26 +943,32 @@ if (attemptLeaveHomeBtn) {
 }
 
 
-  // Dreamer → Amateur: require stat thresholds from config.dreamer.advanceThresholds
-  const attemptAdvanceDreamerBtn = $('#attemptAdvanceDreamerBtn');
-  if (attemptAdvanceDreamerBtn) {
-    const thresholds = gameState.config?.dreamer?.advanceThresholds || {};
-    let meetsThresholds = true;
+  // Dreamer → Amateur: require stat COST + only 1 attempt roll per turn
+const attemptAdvanceDreamerBtn = $('#attemptAdvanceDreamerBtn');
+if (attemptAdvanceDreamerBtn) {
+  const cost =
+    gameState.config?.dreamer?.advanceCost ??
+    gameState.config?.dreamer?.advanceThresholds ??
+    {};
 
-    for (const [stat, required] of Object.entries(thresholds)) {
-      const requiredNum = Number(required);
-      if (!Number.isFinite(requiredNum)) continue; // ignore weird values
+  let canPay = true;
+  for (const [stat, required] of Object.entries(cost)) {
+    const requiredNum = Number(required);
+    if (!Number.isFinite(requiredNum)) continue;
 
-      const value = Number(player[stat] ?? 0);
-      if (value < requiredNum) {
-        meetsThresholds = false;
-        break;
-      }
+    const value = Number(player[stat] ?? 0);
+    if (value < requiredNum) {
+      canPay = false;
+      break;
     }
-
-    attemptAdvanceDreamerBtn.disabled =
-      player.stage !== STAGE_DREAMER || !meetsThresholds;
   }
+
+  const alreadyAttempted = !!pFlags.dreamerAdvanceAttemptedThisTurn;
+
+  attemptAdvanceDreamerBtn.disabled =
+    player.stage !== STAGE_DREAMER || !canPay || alreadyAttempted;
+}
+
 
   // Amateur → Pro: require Portfolio before attempting to advance
   const attemptAdvanceProBtn = $('#attemptAdvanceProBtn');
