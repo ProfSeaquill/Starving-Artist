@@ -331,32 +331,74 @@ function handleAttemptAdvanceDreamer(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  const thresholds = (config && config.dreamer && config.dreamer.advanceThresholds) || {};
+  const prevFlags = player.flags || {};
+  const alreadyAttempted = !!prevFlags.dreamerAdvanceAttemptedThisTurn;
+
+  // Use the new config key, but fall back to the old one so nothing breaks.
+  const cost =
+    (config && config.dreamer && (config.dreamer.advanceCost || config.dreamer.advanceThresholds)) || {};
   const target = (config && config.dreamer && config.dreamer.advanceRollTarget) || 4;
 
-  const meets = meetsDreamerThresholds(player, thresholds);
+  const canPay = canPayCost(player, cost);
+
+  // NEW: Only one attempt roll per turn.
+  // Preserve your “flags get written” behavior even when blocked,
+  // but do NOT roll (and do NOT consume stats).
+  if (alreadyAttempted) {
+    return updateActivePlayer(gameState, (p) => {
+      const updated = { ...p };
+      updated.flags = {
+        ...(updated.flags || {}),
+        dreamerAdvanceCost: cost,              // new name (see note below)
+        lastDreamerAdvanceEligible: canPay,
+        lastDreamerAdvanceTarget: target,
+        lastDreamerAdvanceSuccess: false,
+        lastDreamerAdvanceBlockedReason: 'already_attempted'
+      };
+      return updated;
+    });
+  }
+
+  // If they can’t pay, don’t roll. (Button should be disabled anyway, but this keeps reducer safe.)
+  if (!canPay) {
+    return updateActivePlayer(gameState, (p) => {
+      const updated = { ...p };
+      updated.flags = {
+        ...(updated.flags || {}),
+        dreamerAdvanceCost: cost,
+        lastDreamerAdvanceEligible: false,
+        lastDreamerAdvanceTarget: target,
+        lastDreamerAdvanceSuccess: false,
+        lastDreamerAdvanceBlockedReason: 'cannot_pay'
+      };
+      return updated;
+    });
+  }
 
   const roll = rollD6();
-  const success = meets && roll >= target;
+  const success = roll >= target;
 
   const nextState = updateActivePlayer(gameState, (p) => {
     let updated = { ...p };
 
-    const flags = {
+    updated.flags = {
       ...(updated.flags || {}),
-      dreamerAdvanceThresholds: thresholds,
-      lastDreamerAdvanceEligible: meets,
+      dreamerAdvanceCost: cost,               // store the cost for UI/debug
+      lastDreamerAdvanceEligible: true,
       lastDreamerAdvanceRoll: roll,
       lastDreamerAdvanceTarget: target,
-      lastDreamerAdvanceSuccess: success
+      lastDreamerAdvanceSuccess: success,
+      // NEW: consumes the “1 attempt per turn” only when we actually roll
+      dreamerAdvanceAttemptedThisTurn: true
     };
-    updated.flags = flags;
 
     if (success) {
+      // NEW: Pay ONLY on success (not on failure)
+      updated = payCost(updated, cost);
+
       updated.stage = STAGE_AMATEUR;
-      // Reset per-turn stuff when entering Amateur.
       updated.timeThisTurn = 0;
-      // We leave stats/minor works as-is.
+      // We still leave minor works as-is.
     }
 
     return updated;
@@ -365,15 +407,16 @@ function handleAttemptAdvanceDreamer(gameState) {
   return nextState;
 }
 
+
 /**
  * Check if a player meets the Dreamer stat thresholds.
- * thresholds is an object like { money: 5, inspiration: 5, craft: 3 }.
+ * cost is an object like { money: 5, inspiration: 5, craft: 3 }.
  */
-function meetsDreamerThresholds(player, thresholds) {
-  if (!thresholds) return true;
+function canPayCost(player, cost) {
+  if (!cost) return true;
 
-  for (const key of Object.keys(thresholds)) {
-    const required = thresholds[key];
+  for (const key of Object.keys(cost)) {
+    const required = cost[key];
     if (!Number.isFinite(required)) continue;
 
     const value = Number(player[key] || 0);
@@ -383,6 +426,20 @@ function meetsDreamerThresholds(player, thresholds) {
   }
   return true;
 }
+
+function payCost(player, cost) {
+  if (!cost) return player;
+
+  const next = { ...player };
+  for (const key of Object.keys(cost)) {
+    const required = cost[key];
+    if (!Number.isFinite(required)) continue;
+
+    next[key] = Number(next[key] || 0) - required;
+  }
+  return next;
+}
+
 
 /**
  * Draw the top Social card, reshuffling the discard if needed.
