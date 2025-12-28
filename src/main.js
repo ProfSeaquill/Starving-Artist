@@ -781,23 +781,12 @@ function getCardDrawDenyReason(state, action) {
       return null;
 
     case ActionTypes.DRAW_SOCIAL_CARD:
-  if (flags.lastSocialEventTurn === currentTurn) {
-    return 'You already resolved a Social Event this turn.';
-  }
   return null;
 
     case ActionTypes.TAKE_PROF_DEV:
-  if (flags.pendingProfDevCard) return null; // allow re-open
-  if (flags.lastProfDevTurn === currentTurn) {
-    return 'You already took Prof Dev this turn.';
-  }
   return null;
 
     case ActionTypes.DRAW_PRO_CARD:
-      if (flags.pendingProCard) return null; // allow re-open
-      if (flags.lastProCardTurn === currentTurn) {
-        return 'You already drew a Pro card this turn.';
-      }
       return null;
 
     case ActionTypes.DRAW_CULTURE_CARD:
