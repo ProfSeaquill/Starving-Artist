@@ -135,6 +135,9 @@ function startTurn(gameState) {
       timeRerollsRemaining: 0,
       // NEW: reset per-turn work flag
       hasWorkedThisTurn: false,
+      
+      dreamerAdvanceAttemptedThisTurn: false,
+
             // PR / Scandal (per-turn)
       canLayLowThisTurn: false,
       hasActedThisTurn: false,
