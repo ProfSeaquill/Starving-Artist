@@ -19,7 +19,7 @@ export const DEFAULT_CONFIG = {
     rollSequence: [4, 3, 2]
   },
   dreamer: {
-    advanceThresholds: {
+    advanceCost: {
       money: 3,
       food: 2,
       inspiration: 4,
