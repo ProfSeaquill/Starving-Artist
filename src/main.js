@@ -268,77 +268,72 @@ const STAGE_TUTORIALS = {
   home: {
     title: '🏠 Home — Getting Out',
     name: '',
-    body: `Survival, self-belief, and small victories.
+    body: `You've got ambitions that require you to leave your childhood bedroom.
 
-You've got ambitions that require you to leave your childhood bedroom.
+Goal: Nurture your talents and develop foundational skills before going out to the wider world.
 
-Goal:
-Nurture your talents and develop foundational skills before going out to the wider world.`
-      
-'On your turn:\n\n' +
-      '1) Draw a Home card.\n' +
-      '2) Try to Leave Home (one attempt per turn).\n' +
-      '3) End Turn.\n\n'
+On your turn:
 
-
+1) Draw a Home card.
+2) Try to Leave Home (one attempt per turn).
+3) End Turn.`
   },
-  
+
   dreamer: {
     title: '🌠 Dreamer — Balancing Work and Ambition',
     name: '',
-    body: `Supporting yourself while chasing your art.
+    body: `You're out of your parent's house and on your first step to becoming a legend!
 
-You're out of your parent's house and on your first step to becoming a legend!
+Goal: Meet the requirements to advance into the Amateur stage.
 
-Goal: Meet the requirements to advance into the Amateur stage.`
+On your turn:
 
-'On your turn:\n\n' +
-      '1) Roll Time.\n' +
-      '2) If you don’t have a Job, choose one.\n' +
-      '3) Go To Work (once per turn) to gain stats.\n' +
-      '4) Go to Social events and/or use Downtime (Practice, Sleep, Eat at Home).\n' +
-      '5) When you’re ready, try to advance to Amateur.\n' +
-      '6) End Turn.'
+1) Roll Time.
+2) If you don’t have a Job, choose one.
+3) Go To Work (once per turn) to gain stats.
+4) Go to Social events and/or use Downtime (Practice, Sleep, Eat at Home).
+5) When you’re ready, try to advance to Amateur.
+6) End Turn.`
   },
-  
+
   amateur: {
     title: '🎓 AMATEUR STAGE',
     name: '“This Is Starting to Count.”',
-    body: `You’re no longer just trying—you’re producing real work.
+    body: `Prove your creative talents: make your art and share it with the world, laying the foundation for your future stardom.
 
-Prove your creative talents: make your art and share it with the world, laying the foundation for your future stardom.
+Your goal: Compile your portfolio and successfully go Pro.
 
-Your goal: Compile your portfolio and successfully go Pro.`
-    
-'On your turn:\n\n' +
-      '1) Roll Time.\n' +
-      '2) Go To Work (once per turn) if you have a Job.\n' +
-      '3) Start Minor Work and spend Time to progress it.\n' +
-      '4) Draw a Prof Dev card.\n' +
-      '5) (Optional) PR actions.\n' +
-      '6) When you have enough Minor Works, Compile Portfolio.\n' +
-      '7) When you’re ready, try to advance to Pro.\n' +
-      '8) End Turn.'
+On your turn:
+
+1) Roll Time.
+2) Go To Work (once per turn) if you have a Job.
+3) Start Minor Work and spend Time to progress it.
+4) Draw a Prof Dev card.
+5) (Optional) PR actions.
+6) When you have enough Minor Works, Compile Portfolio.
+7) When you’re ready, try to advance to Pro.
+8) End Turn.`
   },
-  
+
   pro: {
     title: '🏆 PRO STAGE',
     name: '“Now It’s Serious.”',
-    body: `You’ve made it—but staying here is hard.
+    body: `Navigate the chaos and thrill of a professional career, establishing a legacy that will last long after you're gone.
 
-Navigate the chaos and thrill of a professional career, establishing a legacy that will last long after you're gone.
+Your goal: Be the first player to complete a Masterwork and win the game.
 
-Your goal: Be the first player to complete a Masterwork and win the game.`
-    
-'On your turn:\n\n' +
-      '1) Roll Time (Scandal reduces your roll).\n' +
-      '2) Go To Work (once per turn) if you still have a Job.\n' +
-      '3) Spend Time on Masterwork Progress.\n' +
-      '4) Draw Pro cards.\n' +
-      '5) Take your Fame Check (required before End Turn).\n' +
-      '6) (Optional) PR actions / Bury Scandal.\n' +
-      '7) End Turn.'
-  };
+On your turn:
+
+1) Roll Time (Scandal reduces your roll).
+2) Go To Work (once per turn) if you still have a Job.
+3) Spend Time on Masterwork Progress.
+4) Draw Pro cards.
+5) Take your Fame Check (required before End Turn).
+6) (Optional) PR actions / Bury Scandal.
+7) End Turn.`
+  }
+};
+
 
 // player.id -> Set of stages they’ve already seen tutorials for.
 const tutorialSeenByPlayerId = new Map();
