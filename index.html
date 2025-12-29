@@ -233,6 +233,9 @@ main.app {
   pointer-events: none;
   position: relative;
   z-index: 3;                   /* sit above the stage bands */
+
+  /* NEW: default outline color (overridden per stage) */
+  --arrow-outline: #212121;
 }
 
 /* We’ll draw the bar + head via pseudo-elements */
@@ -258,6 +261,10 @@ main.app {
   width: 20px;
   height: 48px;            /* was 40px – extend a bit so it rises higher */
   border-radius: 999px;
+
+  /* NEW: match stage band outline */
+  box-sizing: border-box;
+  border: 2px solid var(--arrow-outline);
 }
 
 /* Arrowhead sitting on top of the bar */
@@ -272,6 +279,13 @@ main.app {
   border-left: 24px solid transparent;
   border-right: 24px solid transparent;
   border-bottom: 32px solid #000; /* overridden per stage */
+
+  /* NEW: faux “stroke” around triangle using the stage outline color */
+  filter:
+    drop-shadow( 2px  0 0 var(--arrow-outline))
+    drop-shadow(-2px  0 0 var(--arrow-outline))
+    drop-shadow( 0  2px 0 var(--arrow-outline))
+    drop-shadow( 0 -2px 0 var(--arrow-outline));
 }
 
     .stage-arrow-label {
@@ -327,6 +341,10 @@ main.app {
   border-bottom-color: rgba(255, 213, 79, 0.95);
 }
 
+/* NEW: arrow outlines match stage band border colors */
+.stage-arrow-home   { --arrow-outline: #d84315; }
+.stage-arrow-dreamer{ --arrow-outline: #0288d1; }
+.stage-arrow-amateur{ --arrow-outline: #f9a825; }
 
 
     /* Tracks */
