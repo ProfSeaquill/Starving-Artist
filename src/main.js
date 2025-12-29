@@ -310,9 +310,8 @@ On your turn:
 3) Start Minor Work and spend Time to progress it.
 4) Draw a Prof Dev card.
 5) (Optional) PR actions.
-6) When you have enough Minor Works, Compile Portfolio.
-7) When you’re ready, try to advance to Pro.
-8) End Turn.`
+6) After you complete 3 Minor Works, try to advance to Pro.
+7) End Turn.`
   },
 
   pro: {
