@@ -80,7 +80,6 @@ export function applyAction(gameState, action) {
     case ActionTypes.TAKE_PROF_DEV:
     case ActionTypes.RESOLVE_PROF_DEV_CHOICE:
     case ActionTypes.START_MINOR_WORK:
-    case ActionTypes.COMPILE_PORTFOLIO:
     case ActionTypes.PROGRESS_MINOR_WORK:
     case ActionTypes.ATTEMPT_ADVANCE_PRO:
       next = amateurReducer(gameState, action);
