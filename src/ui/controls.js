@@ -451,7 +451,7 @@ if (wasFiredFromThisJob) {
       let bodyText;
       if (wasFiredFromThisJob) {
         bodyText =
-          `Your old manager recognizes you and laughs at your job application until you leave.were fired from this job earlier.`; 
+          `Your old manager recognizes you and laughs at your job application until you leave.`; 
       } else {
         // Fallback: job is gone, but not specifically tied to this player.
         bodyText =
