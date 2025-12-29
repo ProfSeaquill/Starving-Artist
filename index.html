@@ -251,7 +251,6 @@ main.app {
   line-height: 0;
 }
 
-/* Wider vertical bar connecting stages */
 .stage-arrow-icon::before {
   content: "";
   position: absolute;
@@ -259,14 +258,19 @@ main.app {
   left: 50%;
   transform: translateX(-50%);
   width: 20px;
-  height: 48px;            /* was 40px – extend a bit so it rises higher */
+  height: 48px;
   border-radius: 999px;
 
-  /* NEW: match stage band outline */
   box-sizing: border-box;
-  border: 2px solid var(--arrow-outline);
-  background-clip: padding-box, border-box;   /* layer 1 fills inside, layer 2 is the stroke */
+
+  /* IMPORTANT: must be transparent so the gradient-stroke can fade */
+  border: 2px solid transparent;
+
+  /* 2-layer backgrounds: fill (padding-box) + stroke (border-box) */
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
 }
+
 
 /* Arrowhead sitting on top of the bar */
 .stage-arrow-icon::after {
@@ -283,10 +287,10 @@ main.app {
 
   /* NEW: faux “stroke” around triangle using the stage outline color */
   filter:
-    drop-shadow( 2px  0 0 var(--arrow-outline))
-    drop-shadow(-2px  0 0 var(--arrow-outline))
-    drop-shadow( 0  2px 0 var(--arrow-outline))
-    drop-shadow( 0 -2px 0 var(--arrow-outline));
+  drop-shadow( 1px  0 0 var(--arrow-outline))
+  drop-shadow(-1px  0 0 var(--arrow-outline))
+  drop-shadow( 0  1px 0 var(--arrow-outline))
+  drop-shadow( 0 -1px 0 var(--arrow-outline));
 }
 
     .stage-arrow-label {
