@@ -1285,33 +1285,45 @@ function initSetupOverlay() {
 // Initialize the setup flow (this starts the game)
 initSetupOverlay();
 
-// --- Dev panel toggle (repurpose the old "Toggle JSON" button) ---
-const devToggleBtn = document.getElementById('toggleDebug');   // same button
-const devPanelEl   = document.getElementById('debugPanel');    // whole panel
-const debugLogEl   = document.getElementById('debugLog');      // optional, for legacy JSON
+// --- Dev panel collapse/expand (keep the toggle button visible) ---
+const devToggleBtn = document.getElementById('toggleDebug'); // button in the panel header
+const devPanelEl   = document.getElementById('debugPanel');  // whole panel
+const debugLogEl   = document.getElementById('debugLog');    // optional, for legacy JSON
+
+let devPanelCollapsed = false;
+
+function setDevPanelCollapsed(next) {
+  devPanelCollapsed = !!next;
+
+  if (!devPanelEl) return;
+
+  // Keep the header visible (it contains the toggle button)
+  const headerEl = devPanelEl.querySelector('h2');
+
+  // Hide/show everything else inside the panel
+  for (const child of Array.from(devPanelEl.children)) {
+    if (child === headerEl) continue;
+    child.style.display = devPanelCollapsed ? 'none' : '';
+  }
+
+  // If you ever move debugLog outside the panel, keep old behavior
+  if (debugLogEl && !devPanelEl.contains(debugLogEl)) {
+    debugLogEl.style.display = devPanelCollapsed ? 'none' : 'block';
+  }
+
+  if (devToggleBtn) {
+    devToggleBtn.textContent = devPanelCollapsed ? 'Show Dev Panel' : 'Hide Dev Panel';
+  }
+
+  console.log('[main] Dev panel is now', devPanelCollapsed ? 'collapsed' : 'expanded');
+}
 
 if (devToggleBtn && devPanelEl) {
+  // Start expanded, but update the label to be clear
+  setDevPanelCollapsed(false);
+
   devToggleBtn.addEventListener('click', () => {
-    const isHidden =
-      devPanelEl.style.display === 'none' ||
-      getComputedStyle(devPanelEl).display === 'none';
-
-    // Show/hide the entire dev panel
-    devPanelEl.style.display = isHidden ? 'block' : 'none';
-
-    // OPTIONAL: if your raw JSON bar lives somewhere *outside* the panel,
-    // you can still hide/show it in lockstep:
-    if (debugLogEl && !devPanelEl.contains(debugLogEl)) {
-      debugLogEl.style.display = isHidden ? 'block' : 'none';
-    }
-
-    // OPTIONAL: update label so it reads like a panel toggle instead of JSON toggle
-    devToggleBtn.textContent = isHidden ? 'Hide Dev Panel' : 'Show Dev Panel';
-
-    console.log(
-      '[main] Dev panel toggle clicked. Panel now',
-      isHidden ? 'visible' : 'hidden'
-    );
+    setDevPanelCollapsed(!devPanelCollapsed);
   });
 }
 
