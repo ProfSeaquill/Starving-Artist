@@ -415,6 +415,44 @@ main.app {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
+/* Stage "Players here" markers (fixed-size so 1/2/10 don't change pill width) */
+.stage-players {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-players-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #424242;
+}
+
+.stage-players > div {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.player-marker {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  box-sizing: border-box;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
 
     .job-market {
   display: flex;
@@ -1268,9 +1306,6 @@ button.guided-btn {
         <pre id="minorWorksList" style="display:none;">None yet.</pre>
 
 
-        <!-- Current / recent card info -->
-        <div class="section-title">Recent Events</div>
-        <pre id="cardInfo">No recent events yet.</pre>
 
                 <!-- Actions -->
         <div class="section-title">Actions</div>
@@ -1366,7 +1401,10 @@ button.guided-btn {
             <button id="prHitPieceBtn" type="button">Plant Hit Piece</button>
           </div>
         </div>
-        
+
+        <!-- Current / recent card info -->
+        <div class="section-title">Recent Events</div>
+        <pre id="cardInfo">No recent events yet.</pre>
       </section>
 
             
