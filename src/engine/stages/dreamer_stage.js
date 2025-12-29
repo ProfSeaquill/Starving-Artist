@@ -88,11 +88,17 @@ function handleChooseJob(gameState, action) {
 
 
   // Already has a job: cannot choose again.
-  if (player.jobId) {
-    return gameState;
-  }
+if (player.jobId) {
+  return gameState;
+}
 
-  const jobIndex = gameState.jobDeck.indexOf(jobId);
+// NEW: If this player was fired from this job before, they can never take it again.
+const firedJobs = Array.isArray(player.firedJobs) ? player.firedJobs : [];
+if (firedJobs.includes(jobId)) {
+  return gameState;
+}
+
+const jobIndex = gameState.jobDeck.indexOf(jobId);
   if (jobIndex === -1) {
     // Job not available.
     return gameState;
