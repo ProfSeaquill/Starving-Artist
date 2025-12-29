@@ -425,9 +425,9 @@ if (wasFiredFromThisJob) {
   const jobName = job ? job.name : 'This job';
 
   const bodyText =
-    `They remember you.\n\n` +
-    `Your application doesn't even make it to the desk.\n\n` +
-    `You're not getting rehired here.`;
+    `Your old manager recognizes you and laughs so manaically you worry he's having a breakdown\n\n` +
+    `"Absolutely not," he says.\n\n` +
+    `You were fired from this job — they won't rehire you.`;
 
   if (typeof showOverlay === 'function') {
     showOverlay('Not Rehired', jobName, bodyText, {
