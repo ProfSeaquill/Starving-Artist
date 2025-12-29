@@ -429,6 +429,14 @@ if (wasFiredFromThisJob) {
     `"Absolutely not," he says.\n\n` +
     `You were fired from this job — they won't rehire you.`;
 
+  // Custom: Drug Dealer (cartel)
+if (jobId === 'job_drug_dealer') {
+  bodyText =
+  `A black SUV idles across the street.\n\n` +
+  `Your phone buzzes: "You're dead to us."\n\n` +
+  `Message us again and you'll be dead to everyone else too.`;
+}
+
   if (typeof showOverlay === 'function') {
     showOverlay('Not Rehired', jobName, bodyText, {
       primaryLabel: 'Ouch',
