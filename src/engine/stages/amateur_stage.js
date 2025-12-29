@@ -326,7 +326,7 @@ function handleCompilePortfolio(gameState) {
 
 /**
  * ATTEMPT_ADVANCE_PRO:
- * - Requires portfolioBuilt = true.
+ * - Requires enough Minor Works (>= config.amateur.maxMinorWorks, default 3).
  * - Rolls a d6 and compares to config.amateur.proAdvanceRollTarget.
  * - On success, move player to Pro.
  */
@@ -335,9 +335,12 @@ function handleAttemptAdvancePro(gameState) {
   const player = getActivePlayer(gameState);
   if (!player) return gameState;
 
-  if (!player.portfolioBuilt) {
-    return gameState;
-  }
+  const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
+  const requiredMinor =
+    (config && config.amateur && config.amateur.portfolioMinorWorkCount) || maxMinor;
+
+  const minorCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
+  if (minorCount < requiredMinor) return gameState;
 
   const target = (config && config.amateur && config.amateur.proAdvanceRollTarget) || 4;
   const roll = rollD6();
