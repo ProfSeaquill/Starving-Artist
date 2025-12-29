@@ -418,6 +418,30 @@ if (stage !== STAGE_DREAMER && stage !== STAGE_AMATEUR) return;
       : [];
     const wasFiredFromThisJob = firedJobs.includes(jobId);
 
+        // NEW: Even if the job is available globally, THIS player can never re-take it.
+if (wasFiredFromThisJob) {
+  const showOverlay = window._starvingArtistShowCardOverlay;
+  const job = JOBS.find((j) => j.id === jobId);
+  const jobName = job ? job.name : 'This job';
+
+  const bodyText =
+    `They remember you.\n\n` +
+    `Your application doesn't even make it to the desk.\n\n` +
+    `You're not getting rehired here.`;
+
+  if (typeof showOverlay === 'function') {
+    showOverlay('Not Rehired', jobName, bodyText, {
+      primaryLabel: 'Ouch',
+      onPrimary: () => {}
+    });
+  } else {
+    window.alert(bodyText.replace(/\n\n/g, '\n'));
+  }
+
+  return; // don’t dispatch CHOOSE_JOB
+}
+
+
     if (!inDeck) {
       // The game state says this job is no longer available.
       const showOverlay = window._starvingArtistShowCardOverlay;
