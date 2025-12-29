@@ -265,6 +265,7 @@ main.app {
   /* NEW: match stage band outline */
   box-sizing: border-box;
   border: 2px solid var(--arrow-outline);
+  background-clip: padding-box, border-box;   /* layer 1 fills inside, layer 2 is the stroke */
 }
 
 /* Arrowhead sitting on top of the bar */
@@ -303,7 +304,15 @@ main.app {
     rgba(255, 171, 145, 0.60) 50%,
     rgba(255, 171, 145, 0.01) 70%,
     rgba(255, 171, 145, 0.00) 100%
-  );
+  ) padding-box,
+    /* Stroke (fades out too, so it blends into the band) */
+    linear-gradient(
+      180deg,
+      rgba(216, 67, 21, 0.95) 0%,
+      rgba(216, 67, 21, 0.55) 50%,
+      rgba(216, 67, 21, 0.01) 70%,
+      rgba(216, 67, 21, 0.00) 100%
+    ) border-box;
 }
 .stage-arrow-home .stage-arrow-icon::after {
   border-bottom-color: rgba(255, 171, 145, 0.95);
@@ -318,8 +327,14 @@ main.app {
     rgba(79, 195, 247, 0.60) 50%,
     rgba(79, 195, 247, 0.01) 70%,
     rgba(79, 195, 247, 0.00) 100%
-  );
-  box-shadow: none;
+  ) padding-box,
+    linear-gradient(
+      180deg,
+      rgba(2, 136, 209, 0.95) 0%,
+      rgba(2, 136, 209, 0.55) 50%,
+      rgba(2, 136, 209, 0.01) 70%,
+      rgba(2, 136, 209, 0.00) 100%
+    ) border-box;
 }
 .stage-arrow-dreamer .stage-arrow-icon::after {
   border-bottom-color: rgba(79, 195, 247, 0.95);
@@ -334,8 +349,14 @@ main.app {
     rgba(255, 213, 79, 0.60) 50%,
     rgba(255, 213, 79, 0.01) 70%,
     rgba(255, 213, 79, 0.00) 100%
-  );
-  box-shadow: none;
+  ) padding-box,
+    linear-gradient(
+      180deg,
+      rgba(249, 168, 37, 0.95) 0%,
+      rgba(249, 168, 37, 0.55) 50%,
+      rgba(249, 168, 37, 0.01) 70%,
+      rgba(249, 168, 37, 0.00) 100%
+    ) border-box;
 }
 .stage-arrow-amateur .stage-arrow-icon::after {
   border-bottom-color: rgba(255, 213, 79, 0.95);
