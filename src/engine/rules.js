@@ -566,37 +566,39 @@ function endTurn(gameState) {
   const currentSkipped = activePlayer.skippedWorkCount || 0;
   const newSkipped = currentSkipped + 1;
 
-  state = updateActivePlayer(state, (p) => {
-    const updated = { ...p };
+  // Track which job (if any) was fired this END_TURN so we can return it to the market.
+let firedJobId = null;
 
-    updated.skippedWorkCount = newSkipped;
+state = updateActivePlayer(state, (p) => {
+  const updated = { ...p };
 
-    // Lose job permanently once you hit the skip limit.
-    if (newSkipped >= jobLossSkipCount && updated.jobId) {
-      const firedJobId = updated.jobId;
+  updated.skippedWorkCount = newSkipped;
 
-      // Clear the job
-      updated.jobId = null;
+  // Lose job permanently for THIS player once you hit the skip limit.
+  if (newSkipped >= jobLossSkipCount && updated.jobId) {
+    firedJobId = updated.jobId;
 
-      // Record this job in firedJobs
-      const prevFired = Array.isArray(updated.firedJobs)
-        ? updated.firedJobs
-        : [];
+    // Clear the job
+    updated.jobId = null;
 
-      // Avoid duplicates if somehow fired twice from same job
-      if (!prevFired.includes(firedJobId)) {
-        updated.firedJobs = prevFired.concat(firedJobId);
-      } else {
-        updated.firedJobs = prevFired;
-      }
+    // Record this job in firedJobs (per-player permanent ban)
+    const prevFired = Array.isArray(updated.firedJobs) ? updated.firedJobs : [];
+    updated.firedJobs = prevFired.includes(firedJobId)
+      ? prevFired
+      : prevFired.concat(firedJobId);
+  }
 
-      // (Optionally, you could also reset skippedWorkCount here,
-      //  but since you now reset it in CHOOSE_JOB, it's fine to
-      //  leave it as a lifetime tally.)
-    }
+  return updated;
+});
 
-    return updated;
-  });
+// IMPORTANT: Return the job back to the global market so OTHER players can take it.
+if (firedJobId) {
+  const deck = Array.isArray(state.jobDeck) ? state.jobDeck : [];
+  if (!deck.includes(firedJobId)) {
+    state = { ...state, jobDeck: deck.concat(firedJobId) };
+  }
+}
+
 }
 }
 
