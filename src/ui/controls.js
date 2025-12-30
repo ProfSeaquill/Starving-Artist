@@ -556,11 +556,6 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
   dispatch({ type: ActionTypes.PROGRESS_MINOR_WORK });
 });
 
-  $('#compilePortfolioBtn')?.addEventListener('click', () => {
-    const { stage } = getPlayerAndStage();
-    if (stage !== STAGE_AMATEUR) return;
-    dispatch({ type: ActionTypes.COMPILE_PORTFOLIO });
-  });
 
   $('#attemptAdvanceProBtn')?.addEventListener('click', () => {
     const { stage } = getPlayerAndStage();
