@@ -975,9 +975,11 @@ if (attemptAdvanceDreamerBtn) {
 if (attemptAdvanceProBtn) {
   const requiredMinor = gameState.config?.amateur?.maxMinorWorks ?? 3;
   const minorCount = (player.minorWorks && player.minorWorks.length) || 0;
+
   attemptAdvanceProBtn.disabled =
     player.stage !== STAGE_AMATEUR || minorCount < requiredMinor;
 }
+
 
 
   const minorCount =
