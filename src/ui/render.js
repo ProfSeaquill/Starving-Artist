@@ -990,9 +990,13 @@ if (attemptAdvanceProBtn) {
     ? 'Built'
     : 'Not yet';
 
-  $('#masterworkProgress').textContent = `${player.masterworkProgress || 0} / ${
-    gameState.config.pro.masterworkTargetProgress
-  }`;
+  // Masterwork progress (guarded — element may not exist during setup overlay)
+const masterworkProgressEl = $('#masterworkProgress');
+if (masterworkProgressEl) {
+  const target = gameState.config?.pro?.masterworkTargetProgress ?? 10;
+  masterworkProgressEl.textContent = `${player.masterworkProgress || 0} / ${target}`;
+}
+
 
     // --- Home Path track (board-level) ---
   const homePathTrackEl = $('#homePathTrack');
