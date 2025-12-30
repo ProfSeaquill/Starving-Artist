@@ -359,12 +359,12 @@ if (dreamerEl) {
 
   let text = 'Dreamer → Amateur: ';
   if (costParts.length) {
-    text += `pay ${costParts.join(', ')}`;
+    text += `→ pay ${costParts.join(', ')}`;
   } else {
     text += 'pay the Dreamer cost';
   }
   if (rollTarget !== undefined) {
-    text += `, then roll ≥ ${rollTarget}.`;
+    text += `→ roll ≥ ${rollTarget}.`;
   } else {
     text += '.';
   }
@@ -380,12 +380,12 @@ if (dreamerEl) {
       ([stat, val]) => `${val} ${stat}`
     );
     const rollTarget = gameState.config?.amateur?.proAdvanceRollTarget;
-    let text = `Amateur → Pro: build a Portfolio of ${maxMinor} Minor Works`;
+    let text = `Amateur → Pro: build a Portfolio (${maxMinor} Minor Works)`;
     if (costParts.length) {
-      text += ` (pay ${costParts.join(', ')})`;
+      text += `→ pay ${costParts.join(', ')})`;
     }
     if (rollTarget !== undefined) {
-      text += `, then roll ≥ ${rollTarget}.`;
+      text += `→ roll ≥ ${rollTarget}.`;
     } else {
       text += '.';
     }
@@ -972,10 +972,13 @@ if (attemptAdvanceDreamerBtn) {
 
   // Amateur → Pro: require Portfolio before attempting to advance
   const attemptAdvanceProBtn = $('#attemptAdvanceProBtn');
-  if (attemptAdvanceProBtn) {
-    attemptAdvanceProBtn.disabled =
-      player.stage !== STAGE_AMATEUR || !player.portfolioBuilt;
-  }
+if (attemptAdvanceProBtn) {
+  const requiredMinor = gameState.config?.amateur?.maxMinorWorks ?? 3;
+  const minorCount = (player.minorWorks && player.minorWorks.length) || 0;
+  attemptAdvanceProBtn.disabled =
+    player.stage !== STAGE_AMATEUR || minorCount < requiredMinor;
+}
+
 
   const minorCount =
     (player.minorWorks && player.minorWorks.length) || 0;
