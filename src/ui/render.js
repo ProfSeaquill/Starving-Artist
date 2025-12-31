@@ -983,19 +983,23 @@ if (attemptAdvanceProBtn) {
 
 
   const minorCount =
-    (player.minorWorks && player.minorWorks.length) || 0;
-  $('#minorWorksCount').textContent = String(minorCount);
+  (player.minorWorks && player.minorWorks.length) || 0;
 
-  $('#portfolioStatus').textContent = player.portfolioBuilt
-    ? 'Built'
-    : 'Not yet';
+const minorWorksCountEl = $('#minorWorksCount');
+if (minorWorksCountEl) minorWorksCountEl.textContent = String(minorCount);
 
-  // Masterwork progress (guarded — element may not exist during setup overlay)
+const portfolioStatusEl = $('#portfolioStatus');
+if (portfolioStatusEl) {
+  portfolioStatusEl.textContent = player.portfolioBuilt ? 'Built' : 'Not yet';
+}
+
+// Guard both: missing element AND missing config.pro
 const masterworkProgressEl = $('#masterworkProgress');
 if (masterworkProgressEl) {
   const target = gameState.config?.pro?.masterworkTargetProgress ?? 10;
   masterworkProgressEl.textContent = `${player.masterworkProgress || 0} / ${target}`;
 }
+
 
 
     // --- Home Path track (board-level) ---
