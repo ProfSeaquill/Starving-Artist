@@ -20,7 +20,6 @@ import { rollD6 } from '../dice.js';
  * Handles:
  *  - TAKE_PROF_DEV
  *  - START_MINOR_WORK
- *  - COMPILE_PORTFOLIO
  *  - ATTEMPT_ADVANCE_PRO
  */
 
@@ -38,9 +37,6 @@ export function amateurReducer(gameState, action) {
 
     case 'START_MINOR_WORK':
       return handleStartMinorWork(gameState, action);
-
-    case 'COMPILE_PORTFOLIO':
-      return handleCompilePortfolio(gameState);
 
     case 'PROGRESS_MINOR_WORK':
       return handleProgressMinorWork(gameState, action); 
@@ -279,54 +275,9 @@ function handleProgressMinorWork(gameState, action) {
 
 
 /**
- * COMPILE_PORTFOLIO:
- * - Requires enough Minor Works (>= portfolioMinorWorkCount, default = maxMinorWorks).
- * - Requires paying portfolioCost from config.amateur.portfolioCost.
- * - On success, sets portfolioBuilt = true.
- */
-function handleCompilePortfolio(gameState) {
-  const { config } = gameState;
-  const player = getActivePlayer(gameState);
-  if (!player) return gameState;
-
-  if (player.portfolioBuilt) {
-    return gameState;
-  }
-
-  const maxMinor = (config && config.amateur && config.amateur.maxMinorWorks) || 3;
-  const requiredMinor = (config && config.amateur && config.amateur.portfolioMinorWorkCount) || maxMinor;
-
-  const minorCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
-  if (minorCount < requiredMinor) {
-    return gameState;
-  }
-
-  const cost = (config && config.amateur && config.amateur.portfolioCost) || {};
-  const canPay = canPayCost(player, cost);
-
-  if (!canPay) {
-    return gameState;
-  }
-
-  const nextState = updateActivePlayer(gameState, (p) => {
-    let updated = payCost(p, cost);
-    updated.portfolioBuilt = true;
-
-    const flags = {
-      ...(updated.flags || {}),
-      lastPortfolioCost: cost
-    };
-    updated.flags = flags;
-
-    return updated;
-  });
-
-  return nextState;
-}
-
-/**
  * ATTEMPT_ADVANCE_PRO:
- * - Requires enough Minor Works (>= config.amateur.maxMinorWorks, default 3).
+ * - Requires enough Minor Works (>= requiredMinor).
+ * - Requires paying config.amateur.portfolioCost (now treated as the "Go Pro" cost).
  * - Rolls a d6 and compares to config.amateur.proAdvanceRollTarget.
  * - On success, move player to Pro.
  */
@@ -342,32 +293,40 @@ function handleAttemptAdvancePro(gameState) {
   const minorCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
   if (minorCount < requiredMinor) return gameState;
 
+  // ✅ cost is no longer "portfolio", it's just the Pro-advance cost
+  const cost = (config && config.amateur && config.amateur.portfolioCost) || {};
+  if (!canPayCost(player, cost)) return gameState;
+
   const target = (config && config.amateur && config.amateur.proAdvanceRollTarget) || 4;
   const roll = rollD6();
   const success = roll >= target;
 
-  const nextState = updateActivePlayer(gameState, (p) => {
-    let updated = { ...p };
+  return updateActivePlayer(gameState, (p) => {
+    // Choose when cost is paid:
+    // Option A (recommended): pay on attempt (prevents spam attempts)
+    let updated = payCost(p, cost);
 
-    const flags = {
+    // Option B: pay only on success:
+    // let updated = { ...p };
+    // if (success) updated = payCost(updated, cost);
+
+    updated.flags = {
       ...(updated.flags || {}),
+      lastProAdvanceCost: cost,
       lastProAdvanceRoll: roll,
       lastProAdvanceTarget: target,
       lastProAdvanceSuccess: success
     };
-    updated.flags = flags;
 
     if (success) {
       updated.stage = STAGE_PRO;
       updated.timeThisTurn = 0;
-      // MasterworkProgress starts at 0 (already initialized in state.js).
     }
 
     return updated;
   });
-
-  return nextState;
 }
+
 
 /**
  * Draw a Professional Dev card, reshuffling discard if needed.
