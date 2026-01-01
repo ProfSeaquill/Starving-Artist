@@ -558,10 +558,53 @@ $('#progressMinorWorkBtn')?.addEventListener('click', () => {
 
 
   $('#attemptAdvanceProBtn')?.addEventListener('click', () => {
-    const { stage } = getPlayerAndStage();
-    if (stage !== STAGE_AMATEUR) return;
-    dispatch({ type: ActionTypes.ATTEMPT_ADVANCE_PRO });
-  });
+  const { state, stage, player } = getPlayerAndStage();
+  if (!state || !player) return;
+  if (stage !== STAGE_AMATEUR) return;
+
+  const cost = state.config?.amateur?.portfolioCost || {};
+  const target = state.config?.amateur?.proAdvanceRollTarget ?? 4;
+
+  const parts = Object.entries(cost)
+    .filter(([, v]) => Number(v) > 0)
+    .map(([k, v]) => `${v} ${k}`);
+
+  const costLine = parts.length ? parts.join(', ') : 'no cost';
+  const afterMoney = (player.money || 0) - (cost.money || 0);
+  const afterInsp  = (player.inspiration || 0) - (cost.inspiration || 0);
+  const afterCraft = (player.craft || 0) - (cost.craft || 0);
+
+  const bodyText =
+    `Attempting to go Pro will cost: ${costLine}.\n\n` +
+    `This cost is paid immediately (even if you fail the roll).\n\n` +
+    `After paying, you'll have:\n` +
+    `Money: ${afterMoney}\nInspiration: ${afterInsp}\nCraft: ${afterCraft}\n\n` +
+    `Proceed?`;
+
+  const showOverlay = window._starvingArtistShowCardOverlay;
+
+  if (typeof showOverlay === 'function') {
+    showOverlay(
+      'Go Pro Attempt',
+      'This is a big step',
+      bodyText,
+      {
+        primaryLabel: 'Pay & Roll',
+        secondaryLabel: 'Cancel',
+        onPrimary: () => dispatch({ type: ActionTypes.ATTEMPT_ADVANCE_PRO }),
+        onSecondary: () => {}
+      }
+    );
+    return;
+  }
+
+  // Fallback if overlay isn't wired
+  const confirmed = window.confirm(bodyText.replace(/\n\n/g, '\n'));
+  if (!confirmed) return;
+
+  dispatch({ type: ActionTypes.ATTEMPT_ADVANCE_PRO });
+});
+
 
   // --- Pro ---
   $('#workMasterworkBtn')?.addEventListener('click', () => {
