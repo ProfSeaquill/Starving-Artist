@@ -16,7 +16,7 @@ export const DEFAULT_CONFIG = {
   home: {
     // rollSequence: meaning "must roll strictly greater than each value in order"
     // This corresponds to: >4, then >3, then >2
-    rollSequence: [4, 3, 2]
+    rollSequence: [3, 2, 1]
   },
   dreamer: {
     advanceCost: {
@@ -25,16 +25,16 @@ export const DEFAULT_CONFIG = {
       inspiration: 4,
       craft: 5
     },
-    advanceRollTarget: 4
+    advanceRollTarget: 3
   },
   amateur: {
     portfolioCost: {
-      money: 5,
+      money: 4,
       food: 2,
       inspiration: 5,
       craft: 3
     },
-    proAdvanceRollTarget: 4,
+    proAdvanceRollTarget: 3,
     maxMinorWorks: 3,
     jobLossSkipCount: 3
   },
