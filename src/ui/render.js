@@ -380,16 +380,16 @@ if (dreamerEl) {
       ([stat, val]) => `${val} ${stat}`
     );
     const rollTarget = gameState.config?.amateur?.proAdvanceRollTarget;
-    let text = `Amateur → Pro: build a Portfolio (${maxMinor} Minor Works)`;
-    if (costParts.length) {
-      text += `→ pay ${costParts.join(', ')})`;
-    }
-    if (rollTarget !== undefined) {
-      text += `→ roll ≥ ${rollTarget}.`;
-    } else {
-      text += '.';
-    }
-    amateurEl.textContent = text;
+   let text = `Amateur → Pro: complete ${maxMinor} Minor Works`;
+if (costParts.length) {
+  text += ` → pay ${costParts.join(', ')}`;
+}
+if (rollTarget !== undefined) {
+  text += ` → roll ≥ ${rollTarget}.`;
+} else {
+  text += '.';
+}
+amateurEl.textContent = text;
   }
 
   // Pro win condition
@@ -976,6 +976,15 @@ if (attemptAdvanceProBtn) {
   const requiredMinor = gameState.config?.amateur?.maxMinorWorks ?? 3;
   const minorCount = (player.minorWorks && player.minorWorks.length) || 0;
 
+  const cost = gameState.config?.amateur?.portfolioCost || {};
+let canPay = true;
+for (const [stat, required] of Object.entries(cost)) {
+  const req = Number(required);
+  if (!Number.isFinite(req)) continue;
+  const val = Number(player[stat] ?? 0);
+  if (val < req) { canPay = false; break; }
+}
+
   attemptAdvanceProBtn.disabled =
     player.stage !== STAGE_AMATEUR || minorCount < requiredMinor;
 }
@@ -987,11 +996,6 @@ if (attemptAdvanceProBtn) {
 
 const minorWorksCountEl = $('#minorWorksCount');
 if (minorWorksCountEl) minorWorksCountEl.textContent = String(minorCount);
-
-const portfolioStatusEl = $('#portfolioStatus');
-if (portfolioStatusEl) {
-  portfolioStatusEl.textContent = player.portfolioBuilt ? 'Built' : 'Not yet';
-}
 
 // Guard both: missing element AND missing config.pro
 const masterworkProgressEl = $('#masterworkProgress');
