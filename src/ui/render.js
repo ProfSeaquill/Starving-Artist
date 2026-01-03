@@ -340,7 +340,7 @@ function renderPromotionRules(gameState) {
     const seq = gameState.config?.home?.rollSequence || [];
     const parts = seq.map((v) => `≥${v}`);
     if (seq.length) {
-      homeEl.textContent = `Home → Dreamer: succeed ${seq.length} rolls (${parts.join(', ')}).`;
+      homeEl.textContent = `Home → Dreamer: succeed on ${seq.length} rolls (${parts.join(', ')}).`;
     } else {
       homeEl.textContent = 'Home → Dreamer: succeed the required Home rolls.';
     }
@@ -359,12 +359,12 @@ if (dreamerEl) {
 
   let text = 'Dreamer → Amateur: ';
   if (costParts.length) {
-    text += `→ pay ${costParts.join(', ')}`;
+    text += `pay ${costParts.join(', ')}`;
   } else {
     text += 'pay the Dreamer cost';
   }
   if (rollTarget !== undefined) {
-    text += `→ roll ≥ ${rollTarget}.`;
+    text += `, then roll ≥ ${rollTarget}.`;
   } else {
     text += '.';
   }
@@ -382,10 +382,10 @@ if (dreamerEl) {
     const rollTarget = gameState.config?.amateur?.proAdvanceRollTarget;
    let text = `Amateur → Pro: complete ${maxMinor} Minor Works`;
 if (costParts.length) {
-  text += ` → pay ${costParts.join(', ')}`;
+  text += `, pay ${costParts.join(', ')}`;
 }
 if (rollTarget !== undefined) {
-  text += ` → roll ≥ ${rollTarget}.`;
+  text += `, then roll ≥ ${rollTarget}.`;
 } else {
   text += '.';
 }
