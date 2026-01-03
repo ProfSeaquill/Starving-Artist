@@ -980,13 +980,13 @@ if (attemptAdvanceProBtn) {
 let canPay = true;
 for (const [stat, required] of Object.entries(cost)) {
   const req = Number(required);
-  if (!Number.isFinite(req)) continue;
+  if (!Number.isFinite(req) || req <= 0) continue;
   const val = Number(player[stat] ?? 0);
   if (val < req) { canPay = false; break; }
 }
 
   attemptAdvanceProBtn.disabled =
-    player.stage !== STAGE_AMATEUR || minorCount < requiredMinor;
+  player.stage !== STAGE_AMATEUR || minorCount < requiredMinor || !canPay;
 }
 
 
