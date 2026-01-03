@@ -293,7 +293,6 @@ function handleAttemptAdvancePro(gameState) {
   const minorCount = Array.isArray(player.minorWorks) ? player.minorWorks.length : 0;
   if (minorCount < requiredMinor) return gameState;
 
-  // ✅ cost is no longer "portfolio", it's just the Pro-advance cost
   const cost = (config && config.amateur && config.amateur.portfolioCost) || {};
   if (!canPayCost(player, cost)) return gameState;
 
@@ -302,13 +301,8 @@ function handleAttemptAdvancePro(gameState) {
   const success = roll >= target;
 
   return updateActivePlayer(gameState, (p) => {
-    // Choose when cost is paid:
-    // Option A (recommended): pay on attempt (prevents spam attempts)
+    // pay-on-attempt (matches how Portfolio used to work: pay up front)
     let updated = payCost(p, cost);
-
-    // Option B: pay only on success:
-    // let updated = { ...p };
-    // if (success) updated = payCost(updated, cost);
 
     updated.flags = {
       ...(updated.flags || {}),
@@ -326,6 +320,7 @@ function handleAttemptAdvancePro(gameState) {
     return updated;
   });
 }
+
 
 
 /**
