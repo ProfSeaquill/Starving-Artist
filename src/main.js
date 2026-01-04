@@ -895,12 +895,16 @@ function maybeShowDiceRoll(state, action, prevState) {
     return;
   }
 
-    if (action.type === ActionTypes.ATTEMPT_ADVANCE_PRO) {
-    const roll = player.flags.lastProAdvanceRoll;
-    if (roll === undefined || roll === null) return;
-    showDiceRollAnimation(roll, 'Go Pro Roll');
-    return;
-  }
+    // ---- Go Pro roll ----
+if (action.type === ActionTypes.ATTEMPT_ADVANCE_PRO) {
+  // Use the actor index (prevIdx) to be robust in case active player ever changes.
+  const actor = getActor(prevIdx);
+  const roll = actor?.flags?.lastProAdvanceRoll;
+  if (roll === undefined || roll === null) return;
+  showDiceRollAnimation(roll, 'Go Pro Roll');
+  return;
+}
+
 
 
   // ---- Lay Low roll (Lay Low auto-ends the turn, so actor is prevIdx) ----
