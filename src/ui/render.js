@@ -1137,12 +1137,35 @@ if (masterworkProgressEl) {
   }
 
 
-  // --- Culture info (placeholder) ---
-  const cultureInfoEl = $('#cultureInfo');
-  if (gameState.currentCultureCard) {
-    cultureInfoEl.textContent = `${gameState.currentCultureCard.name}: ${gameState.currentCultureCard.text}`;
-  } else {
-    cultureInfoEl.textContent = 'None (not implemented yet)';
+    // --- Zeitgeist info ---
+  const cultureInfoEl = $('#cultureInfo'); // reusing existing element id
+  const z = gameState.zeitgeist?.current || null;
+
+  if (cultureInfoEl) {
+    if (z) {
+      const rollTxt = Number.isFinite(z.roll) ? ` (d6=${z.roll})` : '';
+      cultureInfoEl.textContent = `${z.name}${rollTxt}: ${z.text}`;
+    } else {
+      cultureInfoEl.textContent = 'None (no Zeitgeist yet)';
+    }
+  }
+
+  // --- Zeitgeist: AI Boom controls visibility ---
+  const aiRow = $('#aiConvertRow');
+  const aiBtn = $('#aiConvertBtn');
+  const aiSelect = $('#aiConvertSelect');
+
+  if (aiRow) {
+    const isAI = (z && z.id === 'ai_boom');
+    aiRow.style.display = isAI ? '' : 'none';
+
+    if (isAI && player) {
+      const used = !!(player.flags && player.flags.zeitgeistAIConvertedThisTurn);
+      const hasInsp = (player.inspiration || 0) > 0;
+
+      if (aiBtn) aiBtn.disabled = used || !hasInsp;
+      if (aiSelect) aiSelect.disabled = used || !hasInsp;
+    }
   }
 
   // --- Minor works list (per player) ---
