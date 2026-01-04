@@ -114,6 +114,9 @@ export function applyAction(gameState, action) {
   // If you did ANY action other than Lay Low / start/end turn, you lose Lay Low.
   next = consumeLayLowOnAnyOtherAction(gameState, next, action);
 
+  // ✅ Optional UI stamp: record the last meaningful action this player performed.
+  next = stampLastAction(gameState, next, action);
+
   return next;
 }
 
@@ -123,6 +126,31 @@ const PRO_FOCUS_STATS = ['food', 'inspiration', 'craft'];
 function rollProFocusStat() {
   const i = Math.floor(Math.random() * PRO_FOCUS_STATS.length);
   return PRO_FOCUS_STATS[i];
+}
+
+function stampLastAction(prevState, nextState, action) {
+  if (!action || !action.type) return nextState;
+  if (nextState === prevState) return nextState;
+
+  const t = action.type;
+
+  // Avoid stamping actions that rotate the active player (would stamp the wrong person).
+  if (
+    t === ActionTypes.START_TURN ||
+    t === ActionTypes.END_TURN ||
+    t === ActionTypes.LAY_LOW
+  ) {
+    return nextState;
+  }
+
+  return updateActivePlayer(nextState, (p) => ({
+    ...p,
+    flags: {
+      ...(p.flags || {}),
+      lastActionType: t,
+      lastActionAtTurn: prevState.turn
+    }
+  }));
 }
 
 
