@@ -11,6 +11,9 @@ export const ActionTypes = {
   PLANT_HIT_PIECE: 'PLANT_HIT_PIECE',
   BUYOUT_SCANDAL: 'BUYOUT_SCANDAL',
 
+    // Zeitgeist
+  ZEITGEIST_CONVERT_INSPIRATION: 'ZEITGEIST_CONVERT_INSPIRATION',
+
 
   // Downtime (available on any stage as long as you have time)
   DOWNTIME_PRACTICE: 'DOWNTIME_PRACTICE',
