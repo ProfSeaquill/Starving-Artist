@@ -239,6 +239,12 @@ function handleProgressMinorWork(gameState, action) {
         }
       }
 
+            // Zeitgeist: Indie Wave => +1 Craft on Minor Work completion
+      const zId = gameState.zeitgeist?.current?.id || null;
+      if (zId === 'indie_wave') {
+        out.craft = (out.craft || 0) + 1;
+      }
+
       // Clear “in progress”
       delete progressById[workId];
 
