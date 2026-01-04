@@ -221,11 +221,17 @@ export function createInitialGame(options = {}) {
     profDevDiscard: [],
     proDeck: [],
     proDiscard: [],
-    cultureDeck: [],
-    cultureDiscard: [],
-
-    // Active global culture card
-    currentCultureCard: null, // will hold the full card object once drawn
+    
+        // --- Zeitgeist system ---
+    zeitgeist: {
+      current: null, // { id, name, text, roll, phase, setAtTurn, triggeredByPlayerId }
+      milestones: {
+        dreamer: false,
+        amateur: false,
+        pro: false
+      },
+      history: [] // array of past zeitgeists
+    },
 
     // Global status & loss tracking
     status: STATUS_IN_PROGRESS,
@@ -233,6 +239,7 @@ export function createInitialGame(options = {}) {
 
     // For starvation or other global counters
     starvationCounter: 0       // how many turns Food has been at/below 0
+
   };
 
   return gameState;
