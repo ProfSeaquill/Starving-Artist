@@ -344,7 +344,14 @@ if (player?.stage === STAGE_PRO) {
         dispatch({ type: ActionTypes.DOWNTIME_EAT_AT_HOME });
       });
     }
-    
+
+      // --- Zeitgeist: AI Boom convert button ---
+  $('#aiConvertBtn')?.addEventListener('click', () => {
+    const toStat = $('#aiConvertSelect')?.value;
+    if (!toStat) return;
+    dispatch({ type: ActionTypes.ZEITGEIST_CONVERT_INSPIRATION, toStat });
+  });
+
     // --- Home ---
     const drawHomeBtn = $('#drawHomeBtn');
     if (!drawHomeBtn) {
