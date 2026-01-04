@@ -1328,7 +1328,15 @@ button.guided-btn {
           <div class="section-title">Job & Culture</div>
           <div style="font-size:12px;">
             Job: <span id="jobInfo">No job (or lost job)</span><br />
-            Culture: <span id="cultureInfo">None (not implemented yet)</span>
+            <div id="aiConvertRow" style="display:none; margin-top:8px; gap:8px; align-items:center;">
+        <select id="aiConvertSelect">
+            <option value="money">Money</option>
+            <option value="food">Food</option>
+            <option value="craft">Craft</option>
+        </select>
+  <button id="aiConvertBtn">Convert 1 Inspiration</button>
+</div>
+
           </div>
         </div>
 
