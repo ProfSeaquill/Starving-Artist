@@ -15,6 +15,8 @@ import { homeReducer } from './stages/home_stage.js';
 import { dreamerReducer } from './stages/dreamer_stage.js';
 import { amateurReducer } from './stages/amateur_stage.js';
 import { proReducer } from './stages/pro_stage.js';
+import { getZeitgeistByRoll } from './zeitgeist.js';
+
 
 console.log('[rules] loaded: fame-check enforcement patch v1');
 
@@ -44,6 +46,11 @@ export function applyAction(gameState, action) {
     case ActionTypes.LAY_LOW:
       next = layLow(gameState);
       break;
+
+    case ActionTypes.ZEITGEIST_CONVERT_INSPIRATION:
+     next = zeitgeistConvertInspiration(gameState, action);
+    break;
+
 
     case ActionTypes.PLANT_HIT_PIECE:
       next = plantHitPiece(gameState, action);
@@ -98,6 +105,12 @@ export function applyAction(gameState, action) {
       break;
   }
 
+    // --- Zeitgeist triggers (first-ever Dreamer/Amateur/Pro) ---
+  next = applyZeitgeistMilestones(gameState, next);
+
+  // --- Zeitgeist post-action effects (small global hooks) ---
+  next = applyZeitgeistPostAction(gameState, next, action);
+
   // If you did ANY action other than Lay Low / start/end turn, you lose Lay Low.
   next = consumeLayLowOnAnyOtherAction(gameState, next, action);
 
@@ -140,6 +153,8 @@ function startTurn(gameState) {
             // PR / Scandal (per-turn)
       canLayLowThisTurn: false,
       hasActedThisTurn: false,
+
+      zeitgeistAIConvertedThisTurn: false,
       
       didProMaintenanceThisTurn: false,
       proMaintenanceRequired: false,
@@ -302,6 +317,15 @@ function applyDowntimeAction(gameState, actionType) {
   let deltaFood = 0;
   let deltaInspiration = 0;
   let deltaCraft = 0;
+
+    // Zeitgeist: Wellness Culture grants +1 extra of the same stat
+  const zId = gameState.zeitgeist?.current?.id || null;
+  if (zId === 'wellness_culture') {
+    if (deltaFood) deltaFood += 1;
+    if (deltaInspiration) deltaInspiration += 1;
+    if (deltaCraft) deltaCraft += 1;
+  }
+
 
   switch (actionType) {
     case ActionTypes.DOWNTIME_PRACTICE:
@@ -632,5 +656,210 @@ if (firedJobId) {
   const next = startTurn(base);
   return next;
 }
+
+function ensureZeitgeistShape(state) {
+  if (state && state.zeitgeist && typeof state.zeitgeist === 'object') return state;
+  return {
+    ...state,
+    zeitgeist: {
+      current: null,
+      milestones: { dreamer: false, amateur: false, pro: false },
+      history: []
+    }
+  };
+}
+
+/**
+ * Trigger a Zeitgeist roll the first time ANY player reaches:
+ * - Dreamer
+ * - Amateur
+ * - Pro
+ *
+ * Replaces the current Zeitgeist each time.
+ */
+function applyZeitgeistMilestones(prevState, nextState) {
+  if (!prevState || !nextState || prevState === nextState) return nextState;
+
+  let state = ensureZeitgeistShape(nextState);
+
+  const prevZ = ensureZeitgeistShape(prevState).zeitgeist;
+  const nextZ = state.zeitgeist;
+
+  const milestones = { ...(nextZ.milestones || {}) };
+
+  // Compare player stage transitions (prev -> next)
+  const prevPlayers = prevState.players || [];
+  const nextPlayers = nextState.players || [];
+
+  const considerTrigger = (phaseKey, stageValue) => {
+    if (milestones[phaseKey]) return false;
+
+    for (let i = 0; i < nextPlayers.length; i++) {
+      const before = prevPlayers[i];
+      const after = nextPlayers[i];
+      if (!before || !after) continue;
+
+      if (before.stage !== after.stage && after.stage === stageValue) {
+        const roll = rollD6();
+        const z = getZeitgeistByRoll(roll);
+
+        if (!z) return false;
+
+        const stamped = {
+          ...z,
+          phase: phaseKey,                 // 'dreamer'|'amateur'|'pro'
+          setAtTurn: nextState.turn || 1,
+          triggeredByPlayerId: after.id || null
+        };
+
+        const history = Array.isArray(nextZ.history) ? nextZ.history.slice() : [];
+        if (nextZ.current) history.push(nextZ.current);
+
+        milestones[phaseKey] = true;
+
+        state = {
+          ...state,
+          zeitgeist: {
+            ...nextZ,
+            milestones,
+            current: stamped,
+            history
+          }
+        };
+
+        // Stamp for UI/debug
+        state = updateActivePlayer(state, (p) => ({
+          ...p,
+          flags: {
+            ...(p.flags || {}),
+            lastZeitgeistRoll: roll,
+            lastZeitgeistId: z.id,
+            lastZeitgeistName: z.name,
+            lastZeitgeistPhase: phaseKey
+          }
+        }));
+
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  // Trigger order: Dreamer, then Amateur, then Pro
+  // (If somehow multiple milestones happen in one action, first match wins.)
+  if (considerTrigger('dreamer', 'dreamer')) return state;
+  if (considerTrigger('amateur', 'amateur')) return state;
+  if (considerTrigger('pro', 'pro')) return state;
+
+  // Preserve previous milestones if next state was missing them
+  if (prevZ?.milestones) {
+    for (const k of Object.keys(prevZ.milestones)) {
+      if (milestones[k] === undefined) milestones[k] = prevZ.milestones[k];
+    }
+    state = {
+      ...state,
+      zeitgeist: { ...state.zeitgeist, milestones }
+    };
+  }
+
+  return state;
+}
+
+/**
+ * Small centralized Zeitgeist hooks that apply after specific actions.
+ * (Avoids wiring effects into every stage reducer.)
+ */
+function applyZeitgeistPostAction(prevState, nextState, action) {
+  if (!prevState || !nextState || prevState === nextState) return nextState;
+  if (!action || !action.type) return nextState;
+
+  const zId = nextState.zeitgeist?.current?.id || null;
+  if (!zId) return nextState;
+
+  // Never apply these hooks to START_TURN/END_TURN
+  if (action.type === ActionTypes.START_TURN || action.type === ActionTypes.END_TURN) {
+    return nextState;
+  }
+
+  // 4) Gig Economy: Go To Work => +1 Money
+  if (zId === 'gig_economy' && action.type === ActionTypes.GO_TO_WORK) {
+    return updateActivePlayer(nextState, (p) => ({
+      ...p,
+      money: (p.money || 0) + 1,
+      flags: { ...(p.flags || {}), lastZeitgeistGigMoney: 1 }
+    }));
+  }
+
+  // 5) Streaming Era: after drawing Social/ProfDev/Pro => refund +1 Time
+  if (
+    zId === 'streaming_era' &&
+    (action.type === ActionTypes.DRAW_SOCIAL_CARD ||
+      action.type === ActionTypes.TAKE_PROF_DEV ||
+      action.type === ActionTypes.DRAW_PRO_CARD)
+  ) {
+    return updateActivePlayer(nextState, (p) => ({
+      ...p,
+      timeThisTurn: (p.timeThisTurn || 0) + 1,
+      flags: { ...(p.flags || {}), lastZeitgeistStreamingRefund: 1 }
+    }));
+  }
+
+  // 6) Culture War: Hit Piece => target gains +1 extra Scandal (only if it actually landed)
+  if (zId === 'culture_war' && action.type === ActionTypes.PLANT_HIT_PIECE) {
+    const attacker = getActivePlayer(nextState);
+    const targetId = attacker?.flags?.lastHitPieceTargetId;
+    if (!targetId) return nextState;
+
+    // Only apply if the action did something (attacker used it, target is Pro, etc.)
+    // We detect that by checking for lastHitPieceAmount.
+    const amount = attacker?.flags?.lastHitPieceAmount;
+    if (!Number.isFinite(amount) || amount <= 0) return nextState;
+
+    return updatePlayerById(nextState, targetId, (p) => ({
+      ...p,
+      scandal: (p.scandal || 0) + 1,
+      flags: {
+        ...(p.flags || {}),
+        lastZeitgeistCultureWarBonus: 1
+      }
+    }));
+  }
+
+  return nextState;
+}
+
+/**
+ * Zeitgeist: AI Boom
+ * Convert 1 Inspiration -> +1 Money/Food/Craft once per turn.
+ * action: { type: ZEITGEIST_CONVERT_INSPIRATION, toStat: 'money'|'food'|'craft' }
+ */
+function zeitgeistConvertInspiration(gameState, action) {
+  const zId = gameState.zeitgeist?.current?.id || null;
+  if (zId !== 'ai_boom') return gameState;
+
+  const player = getActivePlayer(gameState);
+  if (!player) return gameState;
+
+  const f = player.flags || {};
+  if (f.zeitgeistAIConvertedThisTurn) return gameState;
+
+  if ((player.inspiration || 0) <= 0) return gameState;
+
+  const toStat = String(action.toStat || '').toLowerCase();
+  if (toStat !== 'money' && toStat !== 'food' && toStat !== 'craft') return gameState;
+
+  return updateActivePlayer(gameState, (p) => ({
+    ...p,
+    inspiration: (p.inspiration || 0) - 1,
+    [toStat]: (p[toStat] || 0) + 1,
+    flags: {
+      ...(p.flags || {}),
+      zeitgeistAIConvertedThisTurn: true,
+      lastZeitgeistAIConvertTo: toStat
+    }
+  }));
+}
+
 
 
