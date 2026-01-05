@@ -698,11 +698,22 @@ export function render(gameState) {
   $('#statInspiration').textContent = String(player.inspiration || 0);
   $('#statCraft').textContent = String(player.craft || 0);
 
+  // --- Scandal ---
     const scandalEl = $('#statScandal');
   if (scandalEl) scandalEl.textContent = String(player.scandal || 0);
 
 
   const timeValue = player.timeThisTurn || 0;
+
+  // --- Starvation ---
+    if (flags.lastStarvationCompAtTurn !== undefined) {
+    if (flags.lastStarvationCompSkipped) {
+      lines.push(`Starvation: no compensation paid (no stats available).`);
+    } else if (flags.lastStarvationCompStat) {
+      lines.push(`Starvation: paid 1 ${flags.lastStarvationCompStat}.`);
+    }
+  }
+
 
     // --- Minor Works buttons: enable/disable rules ---
 
