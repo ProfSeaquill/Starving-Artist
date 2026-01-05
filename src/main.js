@@ -13,6 +13,9 @@ import {
   loadProDeckFromCsv
 } from './engine/cards.js';
 
+import { rollD6 } from './engine/dice.js';
+import { getZeitgeistByRoll } from './engine/zeitgeist.js';
+
 
 
 // --- Load decks from CSV (with fallback to SAMPLE_* arrays) ---
@@ -358,6 +361,122 @@ function isCardOverlayVisible() {
   return !!(el && el.classList.contains('visible'));
 }
 
+function isHotseatOverlayVisible() {
+  const el = document.getElementById('hotseatOverlay');
+  return !!(el && el.classList.contains('visible'));
+}
+
+// --- Zeitgeist popup + initialization --------------------------------------
+
+let pendingZeitgeistPopup = null; 
+// shape: { kind: 'initial'|'change', prevZ?: object|null, nextZ: object }
+
+function ensureZeitgeistShape(state) {
+  if (!state) return state;
+
+  if (!state.zeitgeist) {
+    state.zeitgeist = {
+      current: null,
+      milestones: { dreamer: false, amateur: false, pro: false },
+      history: []
+    };
+  }
+  if (!state.zeitgeist.milestones) {
+    state.zeitgeist.milestones = { dreamer: false, amateur: false, pro: false };
+  }
+  if (!Array.isArray(state.zeitgeist.history)) {
+    state.zeitgeist.history = [];
+  }
+
+  return state;
+}
+
+function ensureInitialZeitgeist(state) {
+  state = ensureZeitgeistShape(state);
+  if (state.zeitgeist.current) return state;
+
+  const roll = rollD6();
+  const z = getZeitgeistByRoll(roll);
+  if (!z) return state;
+
+  state.zeitgeist.current = {
+    ...z,
+    roll,
+    phase: 'start',
+    setAtTurn: state.turn || 1,
+    triggeredByPlayerId: null
+  };
+
+  return state;
+}
+
+function queueZeitgeistPopup(payload) {
+  pendingZeitgeistPopup = payload;
+}
+
+function queueInitialZeitgeistPopup(state) {
+  const z = state?.zeitgeist?.current || null;
+  if (!z) return;
+  queueZeitgeistPopup({ kind: 'initial', nextZ: z });
+}
+
+function queueZeitgeistIfChanged(prevState, nextState) {
+  const prevZ = prevState?.zeitgeist?.current || null;
+  const nextZ = nextState?.zeitgeist?.current || null;
+
+  const prevId = prevZ ? prevZ.id : null;
+  const nextId = nextZ ? nextZ.id : null;
+
+  if (!nextId) return;
+  if (prevId === nextId) return;
+
+  queueZeitgeistPopup({ kind: 'change', prevZ, nextZ });
+}
+
+function formatZeitgeistPhase(phase) {
+  if (phase === 'dreamer') return 'Dreamer';
+  if (phase === 'amateur') return 'Amateur';
+  if (phase === 'pro') return 'Pro';
+  return null;
+}
+
+function maybeShowPendingZeitgeistPopup() {
+  if (!pendingZeitgeistPopup) return;
+  if (isCardOverlayVisible()) return;
+  if (isHotseatOverlayVisible()) return;
+
+  const payload = pendingZeitgeistPopup;
+  pendingZeitgeistPopup = null;
+
+  const nextZ = payload.nextZ;
+  const rollTxt = Number.isFinite(nextZ.roll) ? ` (d6=${nextZ.roll})` : '';
+
+  if (payload.kind === 'initial') {
+    const body =
+      `The world starts the game in a particular mood.\n\n` +
+      `${nextZ.name}${rollTxt}\n` +
+      `${nextZ.text}\n\n` +
+      `This affects all players until the Zeitgeist shifts.`;
+
+    showCardOverlay(`🗞️ Zeitgeist — ${nextZ.name}`, 'The vibe of the times', body);
+    return;
+  }
+
+  const prevName = payload.prevZ ? payload.prevZ.name : 'None';
+  const phaseLabel = formatZeitgeistPhase(nextZ.phase);
+
+  const body =
+    `The Zeitgeist has shifted.\n\n` +
+    `Old: ${prevName}\n` +
+    `New: ${nextZ.name}${rollTxt}\n\n` +
+    `${nextZ.text}\n\n` +
+    (phaseLabel ? `Trigger: first player to reach ${phaseLabel}.\n\n` : '\n') +
+    `This affects all players until it shifts again.`;
+
+  showCardOverlay(`🗞️ New Zeitgeist — ${nextZ.name}`, '', body);
+}
+
+
 function queueStageTutorial(player, stage) {
   if (!player || !player.id || !stage) return;
   pendingTutorialByPlayerId.set(player.id, stage);
@@ -487,6 +606,9 @@ function closeHotseatOverlay() {
 
   overlay.classList.remove('visible');
 
+  // If a Zeitgeist change happened during the pass-the-device moment, show it now.
+  maybeShowPendingZeitgeistPopup();
+  
   if (pendingHotseatStageTutorial) {
     pendingHotseatStageTutorial = false;
     // Show the active player's stage tutorial (only if they haven't seen it)
@@ -1103,6 +1225,10 @@ function dispatch(action) {
   console.log('[dispatch] new state:', gameState);
   render(gameState);
 
+    // If the Zeitgeist changed as a result of this action, queue a popup.
+  queueZeitgeistIfChanged(prevState, gameState);
+
+
   // 3) If we passed the device to the next player, show hotseat overlay first.
   const prevIndex = prevState ? prevState.activePlayerIndex : null;
   const nextIndex = gameState ? gameState.activePlayerIndex : null;
@@ -1125,6 +1251,8 @@ function dispatch(action) {
   const prevPlayerId = prevPlayer ? prevPlayer.id : null;
   const nextPlayerId = gameState?.players?.[gameState.activePlayerIndex]?.id || null;
   const stageArg = (prevPlayerId && nextPlayerId && prevPlayerId === nextPlayerId) ? prevStage : null;
+    // If no other popup is currently showing, show Zeitgeist now (otherwise it’ll show on close).
+  maybeShowPendingZeitgeistPopup();
   maybeShowStageTutorial(stageArg);
 }
 
@@ -1210,16 +1338,24 @@ function startNewGameFromSetup({ numPlayers, names, artPaths }) {
     if (n) players[i].name = n;
   }
 
-  // Seed decks
+    // Seed decks
   gameState = seedDecks(gameState);
+
+  // NEW: start the game with a Zeitgeist
+  gameState = ensureInitialZeitgeist(gameState);
 
   gameStarted = true;
 
   render(gameState);
+
+  // NEW: show the initial Zeitgeist popup (tutorial will defer automatically)
+  queueInitialZeitgeistPopup(gameState);
+  maybeShowPendingZeitgeistPopup();
+
   dispatch({ type: ActionTypes.START_TURN });
   // Force show the stage tutorial once for the active player.
   maybeShowStageTutorial(null);
-}
+
 
 function initSetupOverlay() {
   const overlay = document.getElementById('setupOverlay');
@@ -1356,9 +1492,12 @@ const cardOverlaySkip = document.getElementById('cardOverlaySkip');
 
 if (cardOverlay && cardOverlayClose) {
   const hideOverlay = () => {
-    cardOverlay.classList.remove('visible');
-    maybeShowPendingStageTutorial();
-  };
+  cardOverlay.classList.remove('visible');
+  // Priority: Zeitgeist first, then stage tutorial (tutorial will re-queue if overlay opens)
+  maybeShowPendingZeitgeistPopup();
+  maybeShowPendingStageTutorial();
+};
+
 
   cardOverlayClose.addEventListener('click', () => {
   hideOverlay(); // hide the *current* overlay first
