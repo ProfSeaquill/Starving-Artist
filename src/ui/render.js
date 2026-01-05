@@ -706,11 +706,11 @@ export function render(gameState) {
   const timeValue = player.timeThisTurn || 0;
 
   // --- Starvation ---
-    if (flags.lastStarvationCompAtTurn !== undefined) {
-    if (flags.lastStarvationCompSkipped) {
+      if (pFlags.lastStarvationCompAtTurn !== undefined) {
+    if (pFlags.lastStarvationCompSkipped) {
       lines.push(`Starvation: no compensation paid (no stats available).`);
-    } else if (flags.lastStarvationCompStat) {
-      lines.push(`Starvation: paid 1 ${flags.lastStarvationCompStat}.`);
+    } else if (pFlags.lastStarvationCompStat) {
+      lines.push(`Starvation: paid 1 ${pFlags.lastStarvationCompStat}.`);
     }
   }
 
