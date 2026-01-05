@@ -1355,6 +1355,7 @@ function startNewGameFromSetup({ numPlayers, names, artPaths }) {
   dispatch({ type: ActionTypes.START_TURN });
   // Force show the stage tutorial once for the active player.
   maybeShowStageTutorial(null);
+}
 
 
 function initSetupOverlay() {
