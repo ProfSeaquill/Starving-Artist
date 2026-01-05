@@ -599,6 +599,57 @@ function endTurn(gameState) {
     }
   }
 
+    // --- Starvation (Option 2): if you end the turn with 0 Food,
+  // spend 1 of another stat to compensate.
+  // If you're at 0 across ALL core stats, do nothing (no piling on).
+  const starvingPlayer = getActivePlayer(state);
+  if (starvingPlayer) {
+    const money = starvingPlayer.money || 0;
+    const food = starvingPlayer.food || 0;
+    const inspiration = starvingPlayer.inspiration || 0;
+    const craft = starvingPlayer.craft || 0;
+
+    const allZero =
+      money === 0 &&
+      food === 0 &&
+      inspiration === 0 &&
+      craft === 0;
+
+    if (!allZero && food <= 0) {
+      // Deterministic priority to keep UI simple:
+      // Money -> Inspiration -> Craft
+      const payStat =
+        money > 0 ? 'money' :
+        inspiration > 0 ? 'inspiration' :
+        craft > 0 ? 'craft' :
+        null;
+
+      if (payStat) {
+        state = updateActivePlayer(state, (p) => ({
+          ...p,
+          [payStat]: Math.max(0, (p[payStat] || 0) - 1),
+          flags: {
+            ...(p.flags || {}),
+            lastStarvationCompStat: payStat,
+            lastStarvationCompAtTurn: state.turn
+          }
+        }));
+      } else {
+        // Edge case: food is 0 but no other stats are payable (should be rare).
+        // Per your request, do nothing beyond stamping a debug note.
+        state = updateActivePlayer(state, (p) => ({
+          ...p,
+          flags: {
+            ...(p.flags || {}),
+            lastStarvationCompStat: null,
+            lastStarvationCompAtTurn: state.turn,
+            lastStarvationCompSkipped: true
+          }
+        }));
+      }
+    }
+  }
+
 
   // --- Work skip / firing logic for the active player ---
   const activePlayer = getActivePlayer(state);
