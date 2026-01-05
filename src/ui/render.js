@@ -1155,7 +1155,7 @@ if (masterworkProgressEl) {
   if (zeitgeistInfoEl) {
     if (z) {
       const rollTxt = Number.isFinite(z.roll) ? ` (d6=${z.roll})` : '';
-      zeitgeistInfoEl.textContent = `${z.name}$: ${z.text}`;
+      zeitgeistInfoEl.textContent = `${z.name}: ${z.text}`;
     } else {
       zeitgeistInfoEl.textContent = 'None (no Zeitgeist yet)';
     }
