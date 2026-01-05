@@ -1137,18 +1137,19 @@ if (masterworkProgressEl) {
   }
 
 
-    // --- Zeitgeist info ---
-  const cultureInfoEl = $('#cultureInfo'); // reusing existing element id
+     // --- Zeitgeist info ---
+  const zeitgeistInfoEl = $('#zeitgeistInfo');
   const z = gameState.zeitgeist?.current || null;
 
-  if (cultureInfoEl) {
+  if (zeitgeistInfoEl) {
     if (z) {
       const rollTxt = Number.isFinite(z.roll) ? ` (d6=${z.roll})` : '';
-      cultureInfoEl.textContent = `${z.name}${rollTxt}: ${z.text}`;
+      zeitgeistInfoEl.textContent = `${z.name}${rollTxt}: ${z.text}`;
     } else {
-      cultureInfoEl.textContent = 'None (no Zeitgeist yet)';
+      zeitgeistInfoEl.textContent = 'None (no Zeitgeist yet)';
     }
   }
+
 
   // --- Zeitgeist: AI Boom controls visibility ---
   const aiRow = $('#aiConvertRow');
