@@ -453,10 +453,8 @@ function maybeShowPendingZeitgeistPopup() {
 
   if (payload.kind === 'initial') {
     const body =
-      `The world starts the game in a particular mood.\n\n` +
-      `${nextZ.name}${rollTxt}\n` +
-      `${nextZ.text}\n\n` +
-      `This affects all players until the Zeitgeist shifts.`;
+      `${nextZ.text}`
+;
 
     showCardOverlay(`🗞️ Zeitgeist — ${nextZ.name}`, 'The vibe of the times', body);
     return;
@@ -466,12 +464,7 @@ function maybeShowPendingZeitgeistPopup() {
   const phaseLabel = formatZeitgeistPhase(nextZ.phase);
 
   const body =
-    `The Zeitgeist has shifted.\n\n` +
-    `Old: ${prevName}\n` +
-    `New: ${nextZ.name}${rollTxt}\n\n` +
-    `${nextZ.text}\n\n` +
-    (phaseLabel ? `Trigger: first player to reach ${phaseLabel}.\n\n` : '\n') +
-    `This affects all players until it shifts again.`;
+    `${nextZ.text}\n\n`;
 
   showCardOverlay(`🗞️ New Zeitgeist — ${nextZ.name}`, '', body);
 }
