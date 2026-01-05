@@ -346,15 +346,6 @@ function applyDowntimeAction(gameState, actionType) {
   let deltaInspiration = 0;
   let deltaCraft = 0;
 
-    // Zeitgeist: Wellness Culture grants +1 extra of the same stat
-  const zId = gameState.zeitgeist?.current?.id || null;
-  if (zId === 'wellness_culture') {
-    if (deltaFood) deltaFood += 1;
-    if (deltaInspiration) deltaInspiration += 1;
-    if (deltaCraft) deltaCraft += 1;
-  }
-
-
   switch (actionType) {
     case ActionTypes.DOWNTIME_PRACTICE:
       // Practice your art → craft
@@ -376,6 +367,14 @@ function applyDowntimeAction(gameState, actionType) {
 
     default:
       return gameState;
+  }
+
+    // Zeitgeist: Wellness Culture grants +1 extra of the same stat
+  const zId = gameState.zeitgeist?.current?.id || null;
+  if (zId === 'wellness_culture') {
+    if (deltaFood > 0) deltaFood += 1;
+    if (deltaInspiration > 0) deltaInspiration += 1;
+    if (deltaCraft > 0) deltaCraft += 1;
   }
 
   // Enforce the 1-per-turn cap for this specific downtime action
