@@ -491,7 +491,32 @@ function maybeShowStageTutorial(prevStage) {
   markStageTutorialSeen(player, nextStage);
 }
 
+function maybeShowDeferredStageTutorial() {
+  const player = gameState?.players?.[gameState.activePlayerIndex];
+  if (!player) return;
 
+  // Don't stack/overwrite an existing card overlay.
+  if (isCardOverlayVisible()) return;
+
+  const stage = deferredStageTutorialByPlayerId.get(player.id);
+  if (!stage) return;
+
+  if (hasSeenStageTutorial(player, stage)) {
+    deferredStageTutorialByPlayerId.delete(player.id);
+    return;
+  }
+
+  const tutorial = STAGE_TUTORIALS[stage];
+  if (!tutorial) {
+    deferredStageTutorialByPlayerId.delete(player.id);
+    markStageTutorialSeen(player, stage);
+    return;
+  }
+
+  showCardOverlay(tutorial.title, tutorial.name, tutorial.body);
+  markStageTutorialSeen(player, stage);
+  deferredStageTutorialByPlayerId.delete(player.id);
+}
 
 let cardOverlayPrimaryAction = null;
 let cardOverlaySecondaryAction = null;
@@ -572,6 +597,7 @@ function closeHotseatOverlay() {
     pendingHotseatStageTutorial = false;
     // Show the active player's stage tutorial (only if they haven't seen it)
     maybeShowStageTutorial(null);
+    maybeShowDeferredStageTutorial();
   }
 }
 
@@ -890,6 +916,10 @@ function getCardDrawDenyReason(state, action) {
   }
 }
 
+// One-shot callback to run when the dice overlay closes.
+// Used to auto-end turn after certain rolls (e.g., rank advance).
+let pendingDiceOverlayCloseAction = null;
+
 function showDiceRollAnimation(finalValue, titleText = '') {
   const overlay = document.getElementById('diceOverlay');
   const face = document.getElementById('diceFace');
@@ -917,6 +947,10 @@ function showDiceRollAnimation(finalValue, titleText = '') {
   const onBackdropClick = (evt) => {
     if (evt.target === overlay) {
       close();
+      // Run any one-shot post-close callback.
+const cb = pendingDiceOverlayCloseAction;
+pendingDiceOverlayCloseAction = null;
+if (typeof cb === 'function') cb();
     }
   };
 
@@ -1038,6 +1072,21 @@ if (action.type === ActionTypes.ATTEMPT_ADVANCE_PRO) {
     showDiceRollAnimation(roll, 'Fame Check');
     return;
   }
+
+  if (shouldAutoEndTurn) {
+  const diceEl = document.getElementById('diceOverlay');
+  const diceVisible = !!(diceEl && diceEl.classList.contains('visible'));
+
+  // If we didn't show dice for some reason, end immediately (and don't leak the callback).
+  if (!diceVisible && typeof pendingDiceOverlayCloseAction === 'function') {
+    const cb = pendingDiceOverlayCloseAction;
+    pendingDiceOverlayCloseAction = null;
+    cb();
+  }
+
+  // IMPORTANT: don't show stage tutorial this dispatch; it will show next turn.
+  return;
+}
 }
 
 
@@ -1198,6 +1247,40 @@ function dispatch(action) {
     console.error('[dispatch] render crashed; continuing turn flow', err);
   }
 
+  // 2.5) Rank advances should end the player's turn (after the roll popup closes).
+// This also lets the "new stage" tutorial wait until next turn.
+const nextPlayer = gameState?.players?.[gameState.activePlayerIndex] || null;
+const nextStageNow = nextPlayer?.stage || null;
+const stageChanged = !!(
+  nextPlayer &&
+  prevPlayer &&
+  nextPlayer.id === prevPlayer.id &&
+  nextStageNow &&
+  prevStage &&
+  nextStageNow !== prevStage
+);
+
+const isRankAdvanceAction =
+  action.type === ActionTypes.ATTEMPT_LEAVE_HOME ||
+  action.type === ActionTypes.ATTEMPT_ADVANCE_DREAMER ||
+  action.type === ActionTypes.ATTEMPT_ADVANCE_PRO;
+
+const shouldAutoEndTurn = stageChanged && isRankAdvanceAction;
+
+if (shouldAutoEndTurn && nextPlayer && nextStageNow) {
+  // Defer stage tutorial until the start of this player's next turn.
+  deferredStageTutorialByPlayerId.set(nextPlayer.id, nextStageNow);
+
+  // After the dice overlay closes, end the turn.
+  // NOTE: advancing into Pro should not be blocked by the Pro maintenance gate.
+  pendingDiceOverlayCloseAction = () => {
+    const meta = { reason: 'rank_advance' };
+    if (nextStageNow === 'pro') meta.skipProMaintenanceGate = true;
+    dispatch({ type: ActionTypes.END_TURN, meta });
+  };
+}
+
+
     // If the Zeitgeist changed as a result of this action, queue a popup.
   queueZeitgeistIfChanged(prevState, gameState);
 
@@ -1227,6 +1310,9 @@ function dispatch(action) {
     // If no other popup is currently showing, show Zeitgeist now (otherwise it’ll show on close).
   maybeShowPendingZeitgeistPopup();
   maybeShowStageTutorial(stageArg);
+  if (action.type === ActionTypes.END_TURN) {
+  maybeShowDeferredStageTutorial();
+}
 }
 
 
