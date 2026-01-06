@@ -1182,7 +1182,11 @@ function dispatch(action) {
     // 2) Commit new state + render.
   gameState = nextState;
   console.log('[dispatch] new state:', gameState);
-  render(gameState);
+  try {
+    render(gameState);
+  } catch (err) {
+    console.error('[dispatch] render crashed; continuing turn flow', err);
+  }
 
     // If the Zeitgeist changed as a result of this action, queue a popup.
   queueZeitgeistIfChanged(prevState, gameState);
