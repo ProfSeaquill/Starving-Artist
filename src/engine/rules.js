@@ -35,8 +35,8 @@ export function applyAction(gameState, action) {
       break;
 
     case ActionTypes.END_TURN:
-      next = endTurn(gameState);
-      break;
+  next = endTurn(gameState, action);
+  break;
 
     case ActionTypes.ROLL_TIME:
       next = rollTime(gameState);
@@ -577,7 +577,7 @@ function consumeLayLowOnAnyOtherAction(prev, next, action) {
  *   or simply increment the turn counter (for single-player).
  * - Automatically start the next player's turn (Minor Work income, flags reset, etc.).
  */
-function endTurn(gameState) {
+function endTurn(gameState, action) {
   if (!gameState) return gameState;
 
   let state = gameState;
@@ -597,6 +597,11 @@ function endTurn(gameState) {
       }));
     }
   }
+
+  const bypass = !!(action && action.meta && action.meta.skipProMaintenanceGate);
+if (!bypass && !f.didProMaintenanceThisTurn) {
+  ...
+}
 
     // --- Starvation (Option 2): if you end the turn with 0 Food,
   // spend 1 of another stat to compensate.
