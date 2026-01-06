@@ -13,9 +13,6 @@ import {
   loadProDeckFromCsv
 } from './engine/cards.js';
 
-import { rollD6 } from './engine/dice.js';
-import { getZeitgeistByRoll } from './engine/zeitgeist.js';
-
 
 
 // --- Load decks from CSV (with fallback to SAMPLE_* arrays) ---
@@ -391,34 +388,11 @@ function ensureZeitgeistShape(state) {
   return state;
 }
 
-function ensureInitialZeitgeist(state) {
-  state = ensureZeitgeistShape(state);
-  if (state.zeitgeist.current) return state;
-
-  const roll = rollD6();
-  const z = getZeitgeistByRoll(roll);
-  if (!z) return state;
-
-  state.zeitgeist.current = {
-    ...z,
-    roll,
-    phase: 'start',
-    setAtTurn: state.turn || 1,
-    triggeredByPlayerId: null
-  };
-
-  return state;
-}
 
 function queueZeitgeistPopup(payload) {
   pendingZeitgeistPopup = payload;
 }
 
-function queueInitialZeitgeistPopup(state) {
-  const z = state?.zeitgeist?.current || null;
-  if (!z) return;
-  queueZeitgeistPopup({ kind: 'initial', nextZ: z });
-}
 
 function queueZeitgeistIfChanged(prevState, nextState) {
   const prevZ = prevState?.zeitgeist?.current || null;
@@ -445,29 +419,21 @@ function maybeShowPendingZeitgeistPopup() {
   if (isCardOverlayVisible()) return;
   if (isHotseatOverlayVisible()) return;
 
-  const payload = pendingZeitgeistPopup;
+  const { prevZ, nextZ } = pendingZeitgeistPopup;
   pendingZeitgeistPopup = null;
 
-  const nextZ = payload.nextZ;
   const rollTxt = Number.isFinite(nextZ.roll) ? ` (d6=${nextZ.roll})` : '';
-
-  if (payload.kind === 'initial') {
-    const body =
-      `${nextZ.text}`
-;
-
-    showCardOverlay(`🗞️ Zeitgeist — ${nextZ.name}`, 'The vibe of the times', body);
-    return;
-  }
-
-  const prevName = payload.prevZ ? payload.prevZ.name : 'None';
+  const prevName = prevZ ? prevZ.name : 'None';
   const phaseLabel = formatZeitgeistPhase(nextZ.phase);
 
-  const body =
-    `${nextZ.text}\n\n`;
-
-  showCardOverlay(`🗞️ New Zeitgeist — ${nextZ.name}`, '', body);
+  showCardOverlay(
+    `🗞️ New Zeitgeist — ${nextZ.name}`,
+    '',
+    `The Zeitgeist has shifted.\n\n` +
+    `${nextZ.text}\n\n` +
+  );
 }
+
 
 
 function queueStageTutorial(player, stage) {
@@ -1334,16 +1300,10 @@ function startNewGameFromSetup({ numPlayers, names, artPaths }) {
     // Seed decks
   gameState = seedDecks(gameState);
 
-  // NEW: start the game with a Zeitgeist
-  gameState = ensureInitialZeitgeist(gameState);
 
   gameStarted = true;
 
   render(gameState);
-
-  // NEW: show the initial Zeitgeist popup (tutorial will defer automatically)
-  queueInitialZeitgeistPopup(gameState);
-  maybeShowPendingZeitgeistPopup();
 
   dispatch({ type: ActionTypes.START_TURN });
   // Force show the stage tutorial once for the active player.
