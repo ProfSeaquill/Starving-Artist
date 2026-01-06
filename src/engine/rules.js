@@ -584,12 +584,11 @@ function endTurn(gameState, action) {
 
   const bypass = !!(action && action.meta && action.meta.skipProMaintenanceGate);
 
-      // --- Pro: Fame Check must happen before you can end turn ---
+        // --- Pro: Fame Check must happen before you can end turn ---
   const activeBefore = getActivePlayer(state);
   if (activeBefore && activeBefore.stage === STAGE_PRO) {
     const f = activeBefore.flags || {};
     if (!bypass && !f.didProMaintenanceThisTurn) {
-    if (!f.didProMaintenanceThisTurn) {
       // Block END_TURN; leave the player active.
       return updateActivePlayer(state, (p) => ({
         ...p,
@@ -600,8 +599,7 @@ function endTurn(gameState, action) {
       }));
     }
   }
-}
-}
+
     // --- Starvation (Option 2): if you end the turn with 0 Food,
   // spend 1 of another stat to compensate.
   // If you're at 0 across ALL core stats, do nothing (no piling on).
