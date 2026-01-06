@@ -976,6 +976,16 @@ function maybeShowDiceRoll(state, action, prevState) {
     return;
   }
 
+    // ---- Dreamer → Amateur roll ----
+  if (action.type === ActionTypes.ATTEMPT_ADVANCE_DREAMER) {
+    // Use actor index for consistency with other “advance” rolls
+    const actor = getActor(prevIdx);
+    const roll = actor?.flags?.lastDreamerAdvanceRoll;
+    if (roll === undefined || roll === null) return;
+    showDiceRollAnimation(roll, 'Go Amateur Roll');
+    return;
+  }
+
     // ---- Go Pro roll ----
 if (action.type === ActionTypes.ATTEMPT_ADVANCE_PRO) {
   // Use the actor index (prevIdx) to be robust in case active player ever changes.
