@@ -430,7 +430,7 @@ function maybeShowPendingZeitgeistPopup() {
     `🗞️ New Zeitgeist — ${nextZ.name}`,
     '',
     `The Zeitgeist has shifted.\n\n` +
-    `${nextZ.text}\n\n` +
+    `${nextZ.text}` 
   );
 }
 
