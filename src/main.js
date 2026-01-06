@@ -352,6 +352,7 @@ function markStageTutorialSeen(player, stage) {
 }
 
 const pendingTutorialByPlayerId = new Map();
+const deferredStageTutorialByPlayerId = new Map();
 
 function isCardOverlayVisible() {
   const el = document.getElementById('cardOverlay');
@@ -936,21 +937,24 @@ function showDiceRollAnimation(finalValue, titleText = '') {
   let closed = false;
 
   const close = () => {
-    if (closed) return;
-    closed = true;
-    overlay.classList.remove('visible');
-    face.classList.remove('rolling');
-    overlay.removeEventListener('click', onBackdropClick);
-    okBtn.removeEventListener('click', close);
-  };
+  if (closed) return;
+  closed = true;
+
+  overlay.classList.remove('visible');
+  face.classList.remove('rolling');
+  overlay.removeEventListener('click', onBackdropClick);
+  okBtn.removeEventListener('click', close);
+
+  // Run any one-shot post-close callback.
+  const cb = pendingDiceOverlayCloseAction;
+  pendingDiceOverlayCloseAction = null;
+  if (typeof cb === 'function') cb();
+};
+
 
   const onBackdropClick = (evt) => {
     if (evt.target === overlay) {
       close();
-      // Run any one-shot post-close callback.
-const cb = pendingDiceOverlayCloseAction;
-pendingDiceOverlayCloseAction = null;
-if (typeof cb === 'function') cb();
     }
   };
 
@@ -1072,21 +1076,6 @@ if (action.type === ActionTypes.ATTEMPT_ADVANCE_PRO) {
     showDiceRollAnimation(roll, 'Fame Check');
     return;
   }
-
-  if (shouldAutoEndTurn) {
-  const diceEl = document.getElementById('diceOverlay');
-  const diceVisible = !!(diceEl && diceEl.classList.contains('visible'));
-
-  // If we didn't show dice for some reason, end immediately (and don't leak the callback).
-  if (!diceVisible && typeof pendingDiceOverlayCloseAction === 'function') {
-    const cb = pendingDiceOverlayCloseAction;
-    pendingDiceOverlayCloseAction = null;
-    cb();
-  }
-
-  // IMPORTANT: don't show stage tutorial this dispatch; it will show next turn.
-  return;
-}
 }
 
 
@@ -1309,10 +1298,25 @@ if (shouldAutoEndTurn && nextPlayer && nextStageNow) {
   const stageArg = (prevPlayerId && nextPlayerId && prevPlayerId === nextPlayerId) ? prevStage : null;
     // If no other popup is currently showing, show Zeitgeist now (otherwise it’ll show on close).
   maybeShowPendingZeitgeistPopup();
-  maybeShowStageTutorial(stageArg);
-  if (action.type === ActionTypes.END_TURN) {
+
+if (shouldAutoEndTurn) {
+  // If dice didn't open, close-callback won't run—handle it immediately.
+  const diceEl = document.getElementById('diceOverlay');
+  const diceVisible = !!(diceEl && diceEl.classList.contains('visible'));
+  if (!diceVisible && typeof pendingDiceOverlayCloseAction === 'function') {
+    const cb = pendingDiceOverlayCloseAction;
+    pendingDiceOverlayCloseAction = null;
+    cb();
+  }
+  return; // DO NOT show stage tutorial this dispatch
+}
+
+maybeShowStageTutorial(stageArg);
+
+if (action.type === ActionTypes.END_TURN) {
   maybeShowDeferredStageTutorial();
 }
+
 }
 
 
@@ -1383,6 +1387,7 @@ function startNewGameFromSetup({ numPlayers, names, artPaths }) {
   // Reset tutorial tracking for a true fresh game
   tutorialSeenByPlayerId.clear();
   pendingTutorialByPlayerId.clear();
+  deferredStageTutorialByPlayerId.clear();
 
   // Create base state
   gameState = createInitialGame({
