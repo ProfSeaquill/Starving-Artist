@@ -682,6 +682,11 @@ export function render(gameState) {
   // Cache flags once for this render pass
   const pFlags = player.flags || {};
 
+  // --- Current / recent card info accumulator (used throughout render) ---
+  const cardInfoEl = $('#cardInfo');
+  const flags = pFlags;
+  const lines = [];
+
   // --- Basic header info ---
   $('#turn').textContent = String(gameState.turn);
   const headerPlayerNameEl = $('#headerPlayerName');
@@ -1182,9 +1187,10 @@ if (masterworkProgressEl) {
 
   // --- Minor works list (per player) ---
   const minorListEl = $('#minorWorksList');
-  minorListEl.textContent = '';
-  if (Array.isArray(player.minorWorks) && player.minorWorks.length > 0) {
-    const lines = player.minorWorks.map((mw, idx) => {
+  if (minorListEl) {
+    minorListEl.textContent = '';
+    if (Array.isArray(player.minorWorks) && player.minorWorks.length > 0) {
+      const mwLines = player.minorWorks.map((mw, idx) => {
       const effects =
         Array.isArray(mw.effectsPerTurn) && mw.effectsPerTurn.length
           ? mw.effectsPerTurn
@@ -1201,15 +1207,11 @@ if (masterworkProgressEl) {
 
       return `${idx + 1}. ${mw.name} (${effects})`;
     });
-    minorListEl.textContent = lines.join('\n');
-  } else {
-    minorListEl.textContent = 'None yet.';
+      minorListEl.textContent = mwLines.join('\n');
+    } else {
+      minorListEl.textContent = 'None yet.';
+    }
   }
-
-  // --- Current / recent card info (per player) ---
-  const cardInfoEl = $('#cardInfo');
-  const flags = pFlags;
-  const lines = [];
 
   if (flags.lastTurnStartedAtTurn !== undefined) {
     lines.push(`Turn ${flags.lastTurnStartedAtTurn} started.`);
@@ -1349,9 +1351,11 @@ if (masterworkProgressEl) {
     );
   }
 
-  cardInfoEl.textContent = lines.length
-    ? lines.join('\n')
-    : 'No recent events yet.';
+  if (cardInfoEl) {
+    cardInfoEl.textContent = lines.length
+      ? lines.join('\n')
+      : 'No recent events yet.';
+  }
 
   // --- Board visuals (all players) ---
   renderStagePlayers(gameState, STAGE_HOME, 'homeStagePlayers');
