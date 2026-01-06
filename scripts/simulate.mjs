@@ -38,10 +38,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 
-const HOME_CSV = getArg("home", path.join(ROOT, "src/data/cards/home_deck.csv"));
-const SOCIAL_CSV = getArg("social", path.join(ROOT, "src/data/cards/social_deck.csv"));
-const PROFDEV_CSV = getArg("profdev", path.join(ROOT, "src/data/cards/prof_dev_deck.csv"));
-const PRO_CSV = getArg("pro", path.join(ROOT, "src/data/cards/pro_deck.csv"));
+const HOME_CSV   = getArg("home",   path.join(ROOT, "data/cards/home_deck.csv"));
+const SOCIAL_CSV = getArg("social", path.join(ROOT, "data/cards/social_deck.csv"));
+const PROFDEV_CSV= getArg("profdev",path.join(ROOT, "data/cards/prof_dev_deck.csv"));
+const PRO_CSV    = getArg("pro",    path.join(ROOT, "data/cards/pro_deck.csv"));
+
 
 // -------------------------
 // Seeded RNG (monkey patch)
