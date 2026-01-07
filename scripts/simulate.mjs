@@ -29,6 +29,12 @@ if (QUIET) {
   // keep console.error so you still see real failures
 }
 
+// --- Save real console functions so we can restore after --quiet ---
+const REAL_LOG = console.log;
+const REAL_WARN = console.warn;
+const REAL_ERROR = console.error;
+
+
 // -------------------------
 // Dynamic imports (so quiet mode applies to module-load logs too)
 // -------------------------
@@ -617,5 +623,9 @@ try {
   }
 } finally {
   Math.random = REAL_RANDOM;
-  if (QUIET) console.log = REAL_LOG;
+  if (QUIET) {
+  console.log = REAL_LOG;
+  console.warn = REAL_WARN;
+  console.error = REAL_ERROR;
+}
 }
