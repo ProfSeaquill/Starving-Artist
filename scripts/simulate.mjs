@@ -32,6 +32,12 @@ const GAMES = Number(getArg("games", "50"));
 const PLAYERS = Number(getArg("players", "2"));
 const SEED0 = Number(getArg("seed", "1"));
 const OUT = getArg("out", "");
+const QUIET = process.argv.includes("--quiet");
+
+// Optionally silence noisy console.log from engine while sim runs
+const REAL_LOG = console.log;
+if (QUIET) console.log = () => {};
+
 
 // Deck paths (adjust to your repo layout)
 const __filename = fileURLToPath(import.meta.url);
@@ -511,18 +517,80 @@ try {
   }
 
   // Aggregate
-  const wins = results.filter((r) => r.status === STATUS_WON).length;
+  const won = results.filter((r) => r.status === STATUS_WON);
+  const notWon = results.filter((r) => r.status !== STATUS_WON);
+
+  const wins = won.length;
+  const winRate = wins / Math.max(1, GAMES);
+
+  const turnsAll = results.map((r) => Number(r.turns) || 0).sort((a, b) => a - b);
+  const turnsWon = won.map((r) => Number(r.turns) || 0).sort((a, b) => a - b);
+
   const avgTurns =
     results.reduce((s, r) => s + (Number(r.turns) || 0), 0) / Math.max(1, results.length);
+
+  function median(sorted) {
+    if (!sorted.length) return null;
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+
+  function percentile(sorted, p) {
+    if (!sorted.length) return null;
+    const idx = Math.max(0, Math.min(sorted.length - 1, Math.floor(p * (sorted.length - 1))));
+    return sorted[idx];
+  }
+
+  // Stage counts among players at end of not-won games (stall signal)
+  const stallStageCounts = {};
+  for (const r of notWon) {
+    for (const p of r.players) {
+      stallStageCounts[p.stage] = (stallStageCounts[p.stage] || 0) + 1;
+    }
+  }
+
+  // Stage counts among players at end of won games (where winners/losers ended)
+  const endStageCountsWonGames = {};
+  for (const r of won) {
+    for (const p of r.players) {
+      endStageCountsWonGames[p.stage] = (endStageCountsWonGames[p.stage] || 0) + 1;
+    }
+  }
 
   const summary = {
     games: GAMES,
     players: PLAYERS,
     seedStart: SEED0,
-    winRate: wins / Math.max(1, GAMES),
+
+    winRate,
+    wins,
+    notWon: notWon.length,
+
     avgTurns,
+    medianTurns: median(turnsAll),
+    p25Turns: percentile(turnsAll, 0.25),
+    p75Turns: percentile(turnsAll, 0.75),
+
+    // Only for games that actually won
+    avgTurnsToWin: turnsWon.length
+      ? turnsWon.reduce((s, x) => s + x, 0) / turnsWon.length
+      : null,
+    medianTurnsToWin: median(turnsWon),
+    p90TurnsToWin: percentile(turnsWon, 0.9),
+
+    stallStageCounts,
+    endStageCountsWonGames,
+
     results
   };
+
+  // Also print a quick human-readable console line
+  console.log(
+    `[sim] games=${GAMES} players=${PLAYERS} winRate=${(winRate * 100).toFixed(1)}% avgTurns=${avgTurns.toFixed(
+      2
+    )} notWon=${notWon.length} stallStages=${JSON.stringify(stallStageCounts)}`
+  );
+
 
   const text = JSON.stringify(summary, null, 2);
 
@@ -534,4 +602,5 @@ try {
   }
 } finally {
   Math.random = REAL_RANDOM;
+  if (QUIET) console.log = REAL_LOG;
 }
