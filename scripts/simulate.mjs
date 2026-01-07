@@ -3,21 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  createInitialGame,
-  getActivePlayer,
-  isGameOver,
-  STAGE_HOME,
-  STAGE_DREAMER,
-  STAGE_AMATEUR,
-  STAGE_PRO,
-  STATUS_WON
-} from "../src/engine/state.js";
-
-import { applyAction } from "../src/engine/rules.js";
-import { ActionTypes } from "../src/engine/actions.js";
-import { getMinorWorkTemplatesForArtPath } from "../src/engine/minor_works.js";
-
 // -------------------------
 // CLI args
 // -------------------------
@@ -32,11 +17,41 @@ const GAMES = Number(getArg("games", "50"));
 const PLAYERS = Number(getArg("players", "2"));
 const SEED0 = Number(getArg("seed", "1"));
 const OUT = getArg("out", "");
+// -------------------------
+// Quiet mode (must run BEFORE importing engine modules)
+// -------------------------
 const QUIET = process.argv.includes("--quiet");
+if (QUIET) {
+  const noop = () => {};
+  console.log = noop;
+  console.info = noop;
+  console.warn = noop;
+  // keep console.error so you still see real failures
+}
 
-// Optionally silence noisy console.log from engine while sim runs
-const REAL_LOG = console.log;
-if (QUIET) console.log = () => {};
+// -------------------------
+// Dynamic imports (so quiet mode applies to module-load logs too)
+// -------------------------
+const stateMod = await import("../src/engine/state.js");
+const rulesMod = await import("../src/engine/rules.js");
+const actionsMod = await import("../src/engine/actions.js");
+const minorWorksMod = await import("../src/engine/minor_works.js");
+
+const {
+  createInitialGame,
+  getActivePlayer,
+  isGameOver,
+  STAGE_HOME,
+  STAGE_DREAMER,
+  STAGE_AMATEUR,
+  STAGE_PRO,
+  STATUS_WON
+} = stateMod;
+
+const { applyAction } = rulesMod;
+const { ActionTypes } = actionsMod;
+const { getMinorWorkTemplatesForArtPath } = minorWorksMod;
+
 
 
 // Deck paths (adjust to your repo layout)
