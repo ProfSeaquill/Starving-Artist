@@ -494,7 +494,7 @@ function runOneGame(seed) {
   };
   counters.actions[ActionTypes.START_TURN]++;
 
-  const maxTurns = state.config?.global?.maxTurns ?? 40;
+  const maxTurns = state.config?.global?.maxTurns ?? 60;
 
   let winnerId = null;
   while (!isGameOver(state) && (state.turn || 1) <= maxTurns) {
