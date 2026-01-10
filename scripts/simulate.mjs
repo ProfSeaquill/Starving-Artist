@@ -588,6 +588,23 @@ function runOneGame(seed) {
   // Initialize
   let state = createInitialGame({ numPlayers: PLAYERS });
 
+  // Optional: make sims more realistic + readable
+const PATHS = getArg("paths", "visual_artist,writer,musician,performer")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+
+// reset ids to P1..Pn for each run, and assign art paths deterministically
+state = {
+  ...state,
+  players: state.players.map((p, i) => ({
+    ...p,
+    id: `P${i + 1}`,
+    artPath: PATHS[i % PATHS.length]
+  }))
+};
+
+
   // Load decks
   const homeDeck = shuffle(loadDeckFromCsv(HOME_CSV, convertHomeRow));
   const socialDeck = shuffle(loadDeckFromCsv(SOCIAL_CSV, convertSocialRow));
