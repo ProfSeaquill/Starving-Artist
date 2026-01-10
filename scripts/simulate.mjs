@@ -17,10 +17,20 @@ const GAMES = Number(getArg("games", "50"));
 const PLAYERS = Number(getArg("players", "2"));
 const SEED0 = Number(getArg("seed", "1"));
 const OUT = getArg("out", "");
+
 // -------------------------
 // Quiet mode (must run BEFORE importing engine modules)
 // -------------------------
 const QUIET = process.argv.includes("--quiet");
+
+// --- Save real console functions so we can restore after --quiet ---
+// IMPORTANT: must be captured BEFORE we overwrite console.* in quiet mode.
+const REAL_LOG = console.log;
+const REAL_INFO = console.info;
+const REAL_WARN = console.warn;
+const REAL_ERROR = console.error;
+
+
 if (QUIET) {
   const noop = () => {};
   console.log = noop;
@@ -28,11 +38,6 @@ if (QUIET) {
   console.warn = noop;
   // keep console.error so you still see real failures
 }
-
-// --- Save real console functions so we can restore after --quiet ---
-const REAL_LOG = console.log;
-const REAL_WARN = console.warn;
-const REAL_ERROR = console.error;
 
 
 // -------------------------
@@ -270,6 +275,88 @@ function chooseSocialChoice(card) {
   return a >= b ? "attend" : "skip";
 }
 
+function scoreEffects(effects) {
+  return (effects || []).reduce(
+    (s, e) => s + (e.type === "stat" ? (e.delta || 0) : 0),
+    0
+  );
+}
+
+function activeHasPendingProfDev(state) {
+  const p = getActivePlayer(state);
+  return !!p?.flags?.pendingProfDevCard;
+}
+
+function buildProfDevPayloadCandidates(card) {
+  // If your prof dev card has explicit choices, pick the best index first.
+  // (If it doesn't, we'll fall back to generic variants.)
+  const candidates = [];
+
+  if (card && Array.isArray(card.choices) && card.choices.length) {
+    let bestIdx = 0;
+    let bestScore = -Infinity;
+    for (let i = 0; i < card.choices.length; i++) {
+      const sc = scoreEffects(card.choices[i]?.effects);
+      if (sc > bestScore) {
+        bestScore = sc;
+        bestIdx = i;
+      }
+    }
+
+    // Put “best” first, then second-best-ish
+    candidates.push({ choiceIndex: bestIdx });
+    candidates.push({ index: bestIdx });
+    candidates.push({ choice: bestIdx });
+    candidates.push({ pick: bestIdx });
+
+    // Also try A/B style for 2-choice cards
+    if (card.choices.length === 2) {
+      candidates.push({ choice: bestIdx === 0 ? "A" : "B" });
+      candidates.push({ choiceKey: bestIdx === 0 ? "A" : "B" });
+      candidates.push({ option: bestIdx === 0 ? "A" : "B" });
+      candidates.push({ selection: bestIdx === 0 ? "A" : "B" });
+    }
+  }
+
+  // Generic fallback payload shapes (common patterns)
+  candidates.push({ choiceIndex: 0 }, { choiceIndex: 1 });
+  candidates.push({ index: 0 }, { index: 1 });
+  candidates.push({ choice: 0 }, { choice: 1 });
+  candidates.push({ pick: 0 }, { pick: 1 });
+  candidates.push({ choice: "A" }, { choice: "B" });
+  candidates.push({ outcome: "success" }, { outcome: "fail" });
+
+  // Sometimes reducer expects no payload at all
+  candidates.push({});
+
+  return candidates;
+}
+
+function tryResolvePendingProfDev(state, counters) {
+  const p = getActivePlayer(state);
+  const card = p?.flags?.pendingProfDevCard;
+  if (!card) return state;
+
+  const candidates = buildProfDevPayloadCandidates(card);
+
+  for (const payload of candidates) {
+    try {
+      const next = dispatch(state, ActionTypes.RESOLVE_PROF_DEV_CHOICE, payload);
+      if (!activeHasPendingProfDev(next)) {
+        counters.actions[ActionTypes.RESOLVE_PROF_DEV_CHOICE]++;
+        return next;
+      }
+    } catch (_err) {
+      // ignore and try next payload shape
+    }
+  }
+
+  // If none worked, bail out so we don't spin forever this turn.
+  // (The run will likely hit turn cap again, but now it's diagnosable.)
+  return state;
+}
+
+
 function pickNextMinorWorkId(player) {
   const templates = getMinorWorkTemplatesForArtPath(player.artPath) || [];
   const completed = new Set((player.minorWorks || []).map((mw) => mw.id));
@@ -309,6 +396,40 @@ function playTurn(state, counters) {
       counters.actions[ActionTypes.RESOLVE_PRO_CARD_CHOICE]++;
       continue;
     }
+
+        if (p.flags?.pendingProfDevCard) {
+      const card = p.flags.pendingProfDevCard;
+
+      // Heuristic: if the card has choices, pick the best by total stat delta.
+      const score = (effects) =>
+        (effects || []).reduce((s, e) => s + (e.type === "stat" ? (e.delta || 0) : 0), 0);
+
+      // ---- Variant A: engine uses choiceIndex ----
+      if (Array.isArray(card.choices) && card.choices.length) {
+        let bestIdx = 0;
+        let best = -Infinity;
+        for (let i = 0; i < card.choices.length; i++) {
+          const sc = score(card.choices[i]?.effects);
+          if (sc > best) { best = sc; bestIdx = i; }
+        }
+        state = dispatch(state, ActionTypes.RESOLVE_PROF_DEV_CHOICE, { choiceIndex: bestIdx });
+        counters.actions[ActionTypes.RESOLVE_PROF_DEV_CHOICE]++;
+        continue;
+      }
+
+      // ---- Variant B: engine uses outcome: 'success'/'fail' (or similar) ----
+      // state = dispatch(state, ActionTypes.RESOLVE_PROF_DEV_CHOICE, { outcome: "success" });
+
+      // ---- Variant C: engine uses choiceKey: 'A'/'B' ----
+      // state = dispatch(state, ActionTypes.RESOLVE_PROF_DEV_CHOICE, { choice: "A" });
+
+      // If your prof dev cards are “no-choice” in the engine, you may still need to resolve
+      // with a default payload. Use what grep shows.
+      state = dispatch(state, ActionTypes.RESOLVE_PROF_DEV_CHOICE);
+      counters.actions[ActionTypes.RESOLVE_PROF_DEV_CHOICE]++;
+      continue;
+    }
+
 
     // Stage policies
     if (p.stage === STAGE_HOME) {
@@ -505,6 +626,8 @@ function runOneGame(seed) {
     }
   }
 
+  const cappedTurns = Math.min(Number(state.turn || 0), maxTurns);
+
   const result = {
     seed,
     status: state.status,
@@ -625,6 +748,7 @@ try {
   Math.random = REAL_RANDOM;
   if (QUIET) {
   console.log = REAL_LOG;
+  console.info = REAL_INFO;
   console.warn = REAL_WARN;
   console.error = REAL_ERROR;
 }
